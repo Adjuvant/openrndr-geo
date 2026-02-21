@@ -55,6 +55,9 @@ data class Bounds(
      * @return A new bounds containing this bounds and the point
      */
     fun expandToInclude(x: Double, y: Double): Bounds {
+        if (isEmpty()) {
+            return Bounds(x, y, x, y)
+        }
         return Bounds(
             minX = minOf(minX, x),
             minY = minOf(minY, y),
