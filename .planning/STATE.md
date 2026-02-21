@@ -10,33 +10,34 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 2 of 5 (Coordinate Systems)
-Plan: 1 of 3 in current phase
-Status: In progress - Projection infrastructure complete
-Last activity: 2026-02-21 — Completed 02-01-PLAN.md (Projection Infrastructure)
+Plan: 2 of 3 in current phase
+Status: In progress - Public projections complete
+Last activity: 2026-02-21 — Completed 02-02-PLAN.md (Public Projection Implementations)
 
-Progress: [███░░░░░░░] 25%
+Progress: [████░░░░░░] 28%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: 10.6 min
-- Total execution time: 0.84 hours
+- Total plans completed: 6
+- Average duration: 10.2 min
+- Total execution time: 1.02 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Data Layer | 4/4 ✓ | 46m | 11.5m |
-| 2. Coordinate Systems | 1/3 | 6m | 6m |
+| 2. Coordinate Systems | 2/3 | 14m | 7m |
 | 3. Core Rendering | 0/3 | - | - |
 | 4. Layer System | 0/3 | - | - |
 | 5. Animation | 0/3 | - | - |
 
 **Recent Trend:**
-- 02-01 completed in 6 minutes (projection infrastructure)
+- 02-02 completed in 8 minutes (public projections)
 - 4 tasks committed atomically
-- proj4j dependencies added for EPSG code support
+- DSL builder pattern established with invoke() operator
+- BNG projection with CRS transformation using proj4j
 
 ## Accumulated Context
 
@@ -65,6 +66,10 @@ Progress: [███░░░░░░░] 25%
 | 02-01 | Internal package for complex math | Separates complexity from public API, follows isolation pattern |
 | 02-01 | Throw ProjectionOverflowException with clamp recommendation | CONTEXT.md decision: explicit error handling for Mercator poles |
 | 02-01 | Normalize longitudes automatically | CONTEXT.md decision: prevent coordinate wrapping issues |
+| 02-02 | DSL syntax with invoke() operator | Enables clean configuration: ProjectionMercator { width = 800 } |
+| 02-02 | ProjectionBNG uses Helmert transformation (~3-5m) | Simpler than OSTN15 (~1cm) which requires grid interpolation |
+| 02-02 | Companion object static utilities for BNG | latLngToBNG and bngToLatLng available without instance |
+| 02-02 | Factory object with default parameters | Convenient presets: ProjectionFactory.mercator(width, height) |
 
 ### Pending Todos
 
@@ -76,6 +81,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-21 16:05 UTC
-Stopped at: Completed 02-01-SUMMARY.md, ready for 02-02
+Last session: 2026-02-21 16:18 UTC
+Stopped at: Completed 02-02-SUMMARY.md, ready for 02-03
 Resume file: None
