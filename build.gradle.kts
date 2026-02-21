@@ -140,6 +140,10 @@ dependencies {
     /* GeoPackage support for reading spatial data files */
     implementation("mil.nga.geopackage:geopackage:6.6.5")
 
+    /* Coordinate reference system transformations */
+    implementation("org.locationtech.proj4j:proj4j:1.4.1")
+    implementation("org.locationtech.proj4j:proj4j-epsg:1.4.1")
+
     implementation(libs.slf4j.api)
     implementation(libs.kotlin.logging)
 
