@@ -9,34 +9,34 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 
 ## Current Position
 
-Phase: 1 of 5 (Data Layer)
-Plan: 4 of 4 in current phase - **PHASE COMPLETE**
-Status: Phase complete with gap closure, ready for Phase 2
-Last activity: 2026-02-21 — Completed 01-04-PLAN.md (Convenience Functions Gap Closure)
+Phase: 2 of 5 (Coordinate Systems)
+Plan: 1 of 3 in current phase
+Status: In progress - Projection infrastructure complete
+Last activity: 2026-02-21 — Completed 02-01-PLAN.md (Projection Infrastructure)
 
-Progress: [██░░░░░░░░] 20%
+Progress: [███░░░░░░░] 25%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 4
-- Average duration: 11.5 min
-- Total execution time: 0.74 hours
+- Total plans completed: 5
+- Average duration: 10.6 min
+- Total execution time: 0.84 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Data Layer | 4/4 ✓ | 46m | 11.5m |
-| 2. Coordinate Systems | 0/3 | - | - |
+| 2. Coordinate Systems | 1/3 | 6m | 6m |
 | 3. Core Rendering | 0/3 | - | - |
 | 4. Layer System | 0/3 | - | - |
 | 5. Animation | 0/3 | - | - |
 
 **Recent Trend:**
-- 01-04 completed in 7 minutes (gap closure)
-- 75 tests passing (+7 new convenience function tests)
-- 3 tasks committed atomically
+- 02-01 completed in 6 minutes (projection infrastructure)
+- 4 tasks committed atomically
+- proj4j dependencies added for EPSG code support
 
 ## Accumulated Context
 
@@ -60,6 +60,11 @@ Progress: [██░░░░░░░░] 20%
 | 01-04 | Convenience-first API design | Make common case easy (direct features), keep advanced case possible (Source objects) |
 | 01-04 | Thin wrapper pattern for convenience functions | Delegate to load().features - no code duplication |
 | 01-04 | Document tradeoffs in KDoc | Help users choose right API for their use case |
+| 02-01 | Use proj4j for CRS transformations | Proven Java library with EPSG code support (27700 for BNG, 4326 for WGS84) |
+| 02-01 | Interface-based projection abstraction | Allows mixing coordinate systems (lat/lng + BNG) in single visualization |
+| 02-01 | Internal package for complex math | Separates complexity from public API, follows isolation pattern |
+| 02-01 | Throw ProjectionOverflowException with clamp recommendation | CONTEXT.md decision: explicit error handling for Mercator poles |
+| 02-01 | Normalize longitudes automatically | CONTEXT.md decision: prevent coordinate wrapping issues |
 
 ### Pending Todos
 
@@ -71,6 +76,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-21 15:17 UTC
-Stopped at: Completed 01-04-SUMMARY.md, Phase 1 complete with gap closure, ready for Phase 2
+Last session: 2026-02-21 16:05 UTC
+Stopped at: Completed 02-01-SUMMARY.md, ready for 02-02
 Resume file: None
