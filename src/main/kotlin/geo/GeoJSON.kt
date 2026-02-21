@@ -87,6 +87,33 @@ object GeoJSON {
     }
 
     /**
+     * Convenience function to load a GeoJSON file and return features directly.
+     *
+     * This is a wrapper around [load] that simplifies the common case where you just need
+     * the features without requiring access to the GeoJSONSource object's additional functionality
+     * such as CRS tracking or spatial queries.
+     *
+     * @param path The file path to the GeoJSON file
+     * @return A [Sequence] of [Feature] from the GeoJSON file
+     * @throws FileNotFoundException if the file doesn't exist
+     * @throws IllegalArgumentException if the JSON is not a valid FeatureCollection or Feature
+     */
+    fun features(path: String): Sequence<Feature> = load(path).features
+
+    /**
+     * Convenience function to parse a GeoJSON string and return features directly.
+     *
+     * This is a wrapper around [loadString] that simplifies the common case where you just need
+     * the features without requiring access to the GeoJSONSource object's additional functionality
+     * such as CRS tracking or spatial queries.
+     *
+     * @param content The GeoJSON string content
+     * @return A [Sequence] of [Feature] from the GeoJSON content
+     * @throws IllegalArgumentException if the JSON is not a valid FeatureCollection or Feature
+     */
+    fun featuresString(content: String): Sequence<Feature> = loadString(content).features
+
+    /**
      * Parses a GeoJSON feature into a Feature object.
      */
     private fun parseFeature(geoJsonFeature: GeoJSONFeature): Feature? {
