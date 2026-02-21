@@ -80,28 +80,28 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | - | Pending |
-| DATA-02 | - | Pending |
-| DATA-03 | - | Pending |
-| COORD-01 | - | Pending |
-| COORD-02 | - | Pending |
-| COORD-03 | - | Pending |
-| REND-01 | - | Pending |
-| REND-02 | - | Pending |
-| REND-03 | - | Pending |
-| REND-04 | - | Pending |
-| REND-05 | - | Pending |
-| REND-06 | - | Pending |
-| OUTP-01 | - | Pending |
-| ANIM-01 | - | Pending |
-| ANIM-02 | - | Pending |
-| ANIM-03 | - | Pending |
-| REF-01 | - | Pending |
+| DATA-01 | 1 | Pending |
+| DATA-02 | 1 | Pending |
+| DATA-03 | 1 | Pending |
+| COORD-01 | 2 | Pending |
+| COORD-02 | 2 | Pending |
+| COORD-03 | 2 | Pending |
+| REND-01 | 3 | Pending |
+| REND-02 | 3 | Pending |
+| REND-03 | 3 | Pending |
+| REND-04 | 3 | Pending |
+| REND-05 | 4 | Pending |
+| REND-06 | 4 | Pending |
+| OUTP-01 | 4 | Pending |
+| ANIM-01 | 5 | Pending |
+| ANIM-02 | 5 | Pending |
+| ANIM-03 | 5 | Pending |
+| REF-01 | 4 | Pending |
 
 **Coverage:**
 - v1 requirements: 17 total
-- Mapped to phases: 0
-- Unmapped: 17 ⚠️
+- Mapped to phases: 17
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-21*
