@@ -43,13 +43,13 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. User can transform geographic coordinates (lat/lng) to screen coordinates
   2. User can render data in Mercator and Equirectangular projections
-  3. User can transform British National Grid (BNG) coordinates with OSTN15 accuracy (~1cm)
-**Plans**: TBD
+  3. User can transform British National Grid (BNG) coordinates with CRS accuracy (~3-5m using Helmert transformation)
+**Plans**: 3 plans
 
 Plans:
-- [ ] 02-01: Coordinate transformation infrastructure
-- [ ] 02-02: Basic projection implementations (Mercator, Equirectangular)
-- [ ] 02-03: British National Grid with OSTN15 grid transformation
+- [ ] 02-01: Projection infrastructure (interface, config, exceptions, internal implementations)
+- [ ] 02-02: Public projection implementations (Mercator, Equirectangular, BNG) with DSL configuration
+- [ ] 02-03: Screen transformation utilities (procedural + extension) and helper functions
 
 ### Phase 3: Core Rendering
 **Goal**: Users can visualize geo primitives with configurable styling
@@ -105,8 +105,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Data Layer | 3/3 | **Complete** | 2026-02-21 |
-| 2. Coordinate Systems | 0/3 | Not started | - |
+| 1. Data Layer | 4/4 | **Complete** | 2026-02-21 |
+| 2. Coordinate Systems | 0/3 | Planned, ready for execution | 2026-02-21 |
 | 3. Core Rendering | 0/3 | Not started | - |
 | 4. Layer System | 0/3 | Not started | - |
 | 5. Animation | 0/3 | Not started | - |
