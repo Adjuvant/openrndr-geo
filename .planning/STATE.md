@@ -10,34 +10,35 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 2 of 5 (Coordinate Systems)
-Plan: 2 of 3 in current phase
-Status: In progress - Public projections complete
-Last activity: 2026-02-21 — Completed 02-02-PLAN.md (Public Projection Implementations)
+Plan: 3 of 3 in current phase - Phase complete
+Status: Phase complete - Ready for Phase 3 (Core Rendering)
+Last activity: 2026-02-21 — Completed 02-03-PLAN.md (Screen Transformation Utilities)
 
-Progress: [████░░░░░░] 28%
+Progress: [██████░░░░] 36%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: 10.2 min
-- Total execution time: 1.02 hours
+- Total plans completed: 7
+- Average duration: 9.1 min
+- Total execution time: 1.06 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 1. Data Layer | 4/4 ✓ | 46m | 11.5m |
-| 2. Coordinate Systems | 2/3 | 14m | 7m |
+| 2. Coordinate Systems | 3/3 ✓ | 16m | 5.3m |
 | 3. Core Rendering | 0/3 | - | - |
 | 4. Layer System | 0/3 | - | - |
 | 5. Animation | 0/3 | - | - |
 
 **Recent Trend:**
-- 02-02 completed in 8 minutes (public projections)
-- 4 tasks committed atomically
-- DSL builder pattern established with invoke() operator
-- BNG projection with CRS transformation using proj4j
+- 02-03 completed in 2 minutes (screen transformation utilities)
+- 2 tasks committed atomically
+- Dual API style: procedural functions + extension methods
+- Batch operations with Sequence/List overloads for performance
+- Screen transformation utilities complete - Phase 2 done
 
 ## Accumulated Context
 
@@ -70,6 +71,10 @@ Progress: [████░░░░░░] 28%
 | 02-02 | ProjectionBNG uses Helmert transformation (~3-5m) | Simpler than OSTN15 (~1cm) which requires grid interpolation |
 | 02-02 | Companion object static utilities for BNG | latLngToBNG and bngToLatLng available without instance |
 | 02-02 | Factory object with default parameters | Convenient presets: ProjectionFactory.mercator(width, height) |
+| 02-03 | Dual API style (procedural + extension) | Supports both explicit control and fluent chaining |
+| 02-03 | Sequence for lazy batch operations | Performance for large datasets with lazy evaluation |
+| 02-03 | Default clamp 85.05112878° (Web Mercator limit) | Prevents pole overflow in Mercator projections |
+| 02-03 | Off-screen coordinates remain valid | User controls filtering via isOnScreen() helper |
 
 ### Pending Todos
 
@@ -81,6 +86,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-21 16:18 UTC
-Stopped at: Completed 02-02-SUMMARY.md, ready for 02-03
+Last session: 2026-02-21 16:26 UTC
+Stopped at: Completed 02-03-SUMMARY.md, Phase 2 complete, ready for Phase 3
 Resume file: None
