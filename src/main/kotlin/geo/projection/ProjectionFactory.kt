@@ -66,7 +66,8 @@ object ProjectionFactory {
         width: Double = 800.0,
         height: Double = 600.0
     ): GeoProjection {
-        return ProjectionMercator(ProjectionConfig(width, height)).fitWorld()
+        val config = ProjectionConfig(width, height, Vector2(0.0, 0.0), 1.0, null)
+        return ProjectionMercator(config)
     }
 
     /**
@@ -79,6 +80,7 @@ object ProjectionFactory {
         width: Double = 800.0,
         height: Double = 600.0
     ): GeoProjection {
-        return ProjectionEquirectangular(ProjectionConfig(width, height)).fitWorld()
+        val config = ProjectionConfig(width, height, Vector2(0.0, 0.0), 1.0, null)
+        return ProjectionEquirectangular(config)
     }
 }

@@ -45,6 +45,6 @@ class ProjectionEquirectangular(
     }
 
     override fun fitWorld(config: ProjectionConfig): GeoProjection {
-        return ProjectionEquirectangular(internal.fitWorld(config).let { ProjectionEquirectangularInternal(it as ProjectionConfig) })
+        return ProjectionEquirectangular(config.copy(center = Vector2(0.0, 0.0), scale = 1.0))
     }
 }

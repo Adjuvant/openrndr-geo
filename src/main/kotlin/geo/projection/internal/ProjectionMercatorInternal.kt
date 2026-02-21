@@ -24,7 +24,6 @@ class ProjectionMercatorInternal(
         val lat = latLng.y
         val lon = latLng.x
 
-        // Throw for exact poles (CONTEXT.md decision)
         if (lat == 90.0 || lat == -90.0) {
             throw ProjectionOverflowException(
                 "Latitude $lat is exactly at pole. Mercator cannot represent ±90°. " +
@@ -32,23 +31,19 @@ class ProjectionMercatorInternal(
             )
         }
 
-        // Clamp to valid range
         val clampedLat = lat.coerceIn(-MAX_LATITUDE, MAX_LATITUDE)
 
-        // Web Mercator formula
-        val x = EARTH_RADIUS * Math.toRadians(lon)
-        val y = EARTH_RADIUS * ln(tan(PI / 4 + Math.toRadians(clampedLat) / 2))
+        val x = Math.toRadians(lon)
+        val y = ln(tan(PI / 4 + Math.toRadians(clampedLat) / 2))
 
-        // Apply screen offset and scale
         return toScreenOffset(x, y)
     }
 
     override fun unproject(screen: Vector2): Vector2 {
-        val projX = fromScreenOffset(screen.x, screen.y).x
-        val projY = fromScreenOffset(screen.x, screen.y).y
+        val proj = fromScreenOffset(screen.x, screen.y)
 
-        val lon = Math.toDegrees(projX / EARTH_RADIUS)
-        val lat = Math.toDegrees(2 * kotlin.math.atan(kotlin.math.exp(projY / EARTH_RADIUS)) - PI / 2)
+        val lon = Math.toDegrees(proj.x)
+        val lat = Math.toDegrees(2 * kotlin.math.atan(kotlin.math.exp(proj.y)) - PI / 2)
 
         return Vector2(lon, lat)
     }
@@ -58,36 +53,39 @@ class ProjectionMercatorInternal(
     }
 
     override fun fitWorld(config: ProjectionConfig): GeoProjection {
-        // Web Mercator is cylindrical, fit to full extent
+        val worldWidth = 2 * PI
+        val worldHeight = 2 * ln(tan(PI / 4 + Math.toRadians(MAX_LATITUDE) / 2))
+        
+        val scaleX = config.width / worldWidth
+        val scaleY = config.height / worldHeight
+        val scale = minOf(scaleX, scaleY)
+        
         return ProjectionMercatorInternal(config.copy(
             center = Vector2(0.0, 0.0),
-            scale = 1.0
+            scale = scale
         ))
     }
 
     private fun toScreenOffset(x: Double, y: Double): Vector2 {
-        // Center world coordinates
-        val centerX = config.center?.x ?: 0.0
-        val centerY = config.center?.y ?: 0.0
+        val centerX = config.center?.x?.let { Math.toRadians(it) } ?: 0.0
+        val centerY = config.center?.y?.let { ln(tan(PI / 4 + Math.toRadians(it) / 2)) } ?: 0.0
 
-        // Apply scale
         val scaledX = (x - centerX) * config.scale
         val scaledY = (y - centerY) * config.scale
 
-        // Offset to screen origin
         return Vector2(
             config.width / 2.0 + scaledX,
-            config.height / 2.0 - scaledY // Y flipped for screen
+            config.height / 2.0 - scaledY
         )
     }
 
     private fun fromScreenOffset(x: Double, y: Double): Vector2 {
-        val centerX = config.center?.x ?: 0.0
-        val centerY = config.center?.y ?: 0.0
+        val centerX = config.center?.x?.let { Math.toRadians(it) } ?: 0.0
+        val centerY = config.center?.y?.let { ln(tan(PI / 4 + Math.toRadians(it) / 2)) } ?: 0.0
 
-        val unscaledX = (x - config.width / 2.0) / config.scale + centerX
-        val unscaledY = (config.height / 2.0 - y) / config.scale + centerY
+        val projX = (x - config.width / 2.0) / config.scale + centerX
+        val projY = (config.height / 2.0 - y) / config.scale + centerY
 
-        return Vector2(unscaledX, unscaledY)
+        return Vector2(projX, projY)
     }
 }

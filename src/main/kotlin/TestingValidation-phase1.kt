@@ -1,15 +1,5 @@
 import geo.Bounds
-import geo.Feature
-import geo.GeoJSON
-import geo.GeoJSONSource
-import geo.Geometry
 import geo.GeoPackage
-import geo.LineString
-import geo.MultiLineString
-import geo.MultiPoint
-import geo.MultiPolygon
-import geo.Point
-import geo.Polygon
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.loadFont

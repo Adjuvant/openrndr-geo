@@ -1,7 +1,7 @@
 package geo.projection
 
 import org.openrndr.math.Vector2
-import org.openrndr.shapes.Rectangle
+import org.openrndr.shape.Rectangle
 
 /**
  * Clamp latitude to valid Mercator range (avoid pole overflow).
