@@ -177,4 +177,100 @@ class GeoJSONTest {
         assertEquals(1, features.size)
         assertTrue(features[0].geometry is Point)
     }
+
+    @Test
+    fun `convenience features should return same features as load`() {
+        val geoJson = """
+            {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [10.0, 20.0]
+                        },
+                        "properties": {"name": "Point 1"}
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [30.0, 40.0]
+                        },
+                        "properties": {"name": "Point 2"}
+                    }
+                ]
+            }
+        """.trimIndent()
+
+        val source = GeoJSON.loadString(geoJson)
+        val sourceFeatures = source.listFeatures()
+        
+        val convenienceFeatures = GeoJSON.featuresString(geoJson).toList()
+
+        assertEquals(sourceFeatures.size, convenienceFeatures.size)
+        assertEquals(2, convenienceFeatures.size)
+        assertEquals("Point 1", convenienceFeatures[0].stringProperty("name"))
+        assertEquals("Point 2", convenienceFeatures[1].stringProperty("name"))
+    }
+
+    @Test
+    fun `convenience featuresString should return empty sequence for empty collection`() {
+        val geoJson = """
+            {
+                "type": "FeatureCollection",
+                "features": []
+            }
+        """.trimIndent()
+
+        val features = GeoJSON.featuresString(geoJson).toList()
+
+        assertTrue(features.isEmpty())
+    }
+
+    @Test
+    fun `convenience featuresString should parse multiple geometry types`() {
+        val geoJson = """
+            {
+                "type": "FeatureCollection",
+                "features": [
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Point",
+                            "coordinates": [0.0, 0.0]
+                        },
+                        "properties": {"type": "point"}
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "LineString",
+                            "coordinates": [[0.0, 0.0], [10.0, 10.0]]
+                        },
+                        "properties": {"type": "line"}
+                    },
+                    {
+                        "type": "Feature",
+                        "geometry": {
+                            "type": "Polygon",
+                            "coordinates": [[[0.0, 0.0], [10.0, 0.0], [10.0, 10.0], [0.0, 10.0], [0.0, 0.0]]]
+                        },
+                        "properties": {"type": "polygon"}
+                    }
+                ]
+            }
+        """.trimIndent()
+
+        val features = GeoJSON.featuresString(geoJson).toList()
+
+        assertEquals(3, features.size)
+        assertTrue(features[0].geometry is Point)
+        assertTrue(features[1].geometry is LineString)
+        assertTrue(features[2].geometry is Polygon)
+        assertEquals("point", features[0].stringProperty("type"))
+        assertEquals("line", features[1].stringProperty("type"))
+        assertEquals("polygon", features[2].stringProperty("type"))
+    }
 }
