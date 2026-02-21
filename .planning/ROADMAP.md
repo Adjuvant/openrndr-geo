@@ -28,7 +28,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. User can load a GeoJSON file and access its features with Point/LineString/Polygon/Multi* geometries
   2. User can load a GeoPackage file and query features by bounding box (region-filtered access)
   3. User can access feature properties (key-value pairs) for data-driven operations
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
 - [ ] 01-01: Data model and GeoPrimitive hierarchy
