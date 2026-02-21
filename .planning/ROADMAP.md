@@ -31,9 +31,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01: Data model and GeoPrimitive hierarchy
-- [ ] 01-02: GeoJSON reader implementation
-- [ ] 01-03: GeoPackage reader with spatial indexing
+- [x] 01-01: Data model and GeoPrimitive hierarchy
+- [x] 01-02: GeoJSON reader implementation
+- [x] 01-03: GeoPackage reader with spatial indexing
 
 ### Phase 2: Coordinate Systems
 **Goal**: Users can transform coordinates between geographic systems and render in basic projections

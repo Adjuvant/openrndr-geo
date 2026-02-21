@@ -9,9 +9,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Data Ingestion
 
-- [ ] **DATA-01**: User can load GeoJSON files (Feature, FeatureCollection, Point/LineString/Polygon/Multi* geometries)
-- [ ] **DATA-02**: User can load GeoPackage files with spatial indexing for efficient region-filtered access
-- [ ] **DATA-03**: User can access feature properties for data-driven styling
+- [x] **DATA-01**: User can load GeoJSON files (Feature, FeatureCollection, Point/LineString/Polygon/Multi* geometries)
+- [x] **DATA-02**: User can load GeoPackage files with spatial indexing for efficient region-filtered access
+- [x] **DATA-03**: User can access feature properties for data-driven styling
 
 ### Coordinate Systems
 
@@ -80,9 +80,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | 1 | Pending |
-| DATA-02 | 1 | Pending |
-| DATA-03 | 1 | Pending |
+| DATA-01 | 1 | Complete |
+| DATA-02 | 1 | Complete |
+| DATA-03 | 1 | Complete |
 | COORD-01 | 2 | Pending |
 | COORD-02 | 2 | Pending |
 | COORD-03 | 2 | Pending |
