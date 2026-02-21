@@ -13,14 +13,14 @@
         "verification": "opencode/glm-4.7-free"
       },
       "balanced": {
-        "planning": "opencode/glm-4.7-free",
-        "execution": "opencode/minimax-m2.1-free",
-        "verification": "opencode/glm-4.7-free"
+        "planning": "opencode/glm-4.7",
+        "execution": "opencode/kimi-k2.5",
+        "verification": "opencode/glm-4.7"
       },
       "budget": {
-        "planning": "opencode/minimax-m2.1-free",
-        "execution": "opencode/grok-code",
-        "verification": "opencode/minimax-m2.1-free"
+        "planning": "opencode/glm-5-free",
+        "execution": "opencode/minimax-m2.5-free",
+        "verification": "opencode/glm-5-free"
       }
     },
     "custom_overrides": {
