@@ -34,7 +34,7 @@ Plans:
 - [x] 01-01: Data model and GeoPrimitive hierarchy
 - [x] 01-02: GeoJSON reader implementation
 - [x] 01-03: GeoPackage reader with spatial indexing
-- [ ] 01-04: Convenience functions for direct feature access (gap closure)
+- [x] 01-04: Convenience functions for direct feature access (gap closure)
 
 ### Phase 2: Coordinate Systems
 **Goal**: Users can transform coordinates between geographic systems and render in basic projections
