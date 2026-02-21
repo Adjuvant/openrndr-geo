@@ -1,12 +1,12 @@
 ---
-status: complete
+status: diagnosed
 phase: 1
 source:
   - 01-01-SUMMARY.md
   - 01-02-SUMMARY.md
   - 01-03-SUMMARY.md
 started: 2026-02-21T14:00:00Z
-updated: 2026-02-21T15:05:00Z
+updated: 2026-02-21T15:10:00Z
 ---
 
 ## Current Test
@@ -68,7 +68,10 @@ skipped: 0
   reason: "User reported: Initializer type mismatch: expected 'Sequence<Feature>', actual 'GeoJSONSource'. in GeoJSON.load, needs to be GeoJSONSource"
   severity: major
   test: 1
-  root_cause: ""
-  artifacts: []
-  missing: []
+  root_cause: "API follows Source-based factory pattern (not a bug). GeoJSON.load() returns GeoJSONSource which extends GeoSource, providing features AND additional functionality (CRS tracking, spatial queries). User expected direct Sequence<Feature> but actual API returns Source objects with .features property. Both GeoJSON and GeoPackage follow this pattern consistently."
+  artifacts:
+    - path: "src/main/kotlin/geo/GeoJSON.kt"
+      issue: "API returns GeoJSONSource, users expect direct Sequence<Feature>"
+  missing:
+    - "Add convenience function GeoJSON.features(path) returning Sequence<Feature> directly"
   debug_session: ""

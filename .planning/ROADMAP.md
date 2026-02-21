@@ -28,12 +28,13 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. User can load a GeoJSON file and access its features with Point/LineString/Polygon/Multi* geometries
   2. User can load a GeoPackage file and query features by bounding box (region-filtered access)
   3. User can access feature properties (key-value pairs) for data-driven operations
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
 - [x] 01-01: Data model and GeoPrimitive hierarchy
 - [x] 01-02: GeoJSON reader implementation
 - [x] 01-03: GeoPackage reader with spatial indexing
+- [ ] 01-04: Convenience functions for direct feature access (gap closure)
 
 ### Phase 2: Coordinate Systems
 **Goal**: Users can transform coordinates between geographic systems and render in basic projections
