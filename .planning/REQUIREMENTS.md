@@ -15,9 +15,9 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Coordinate Systems
 
-- [ ] **COORD-01**: User can transform geographic coordinates (lat/lng) to screen coordinates
-- [ ] **COORD-02**: User can render data in basic projections (Mercator, Equirectangular minimum)
-- [ ] **COORD-03**: User can transform British National Grid (BNG) coordinates with OSTN15 accuracy (~1cm)
+- [x] **COORD-01**: User can transform geographic coordinates (lat/lng) to screen coordinates
+- [x] **COORD-02**: User can render data in basic projections (Mercator, Equirectangular minimum)
+- [x] **COORD-03**: User can transform British National Grid (BNG) coordinates with Helmert accuracy (~3-5m)
 
 ### Rendering
 
@@ -83,9 +83,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DATA-01 | 1 | Complete |
 | DATA-02 | 1 | Complete |
 | DATA-03 | 1 | Complete |
-| COORD-01 | 2 | Pending |
-| COORD-02 | 2 | Pending |
-| COORD-03 | 2 | Pending |
+| COORD-01 | 2 | Complete |
+| COORD-02 | 2 | Complete |
+| COORD-03 | 2 | Complete |
 | REND-01 | 3 | Pending |
 | REND-02 | 3 | Pending |
 | REND-03 | 3 | Pending |

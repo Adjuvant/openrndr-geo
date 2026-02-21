@@ -5,7 +5,7 @@
 See: .planning/PROJECT.md (updated 2026-02-21)
 
 **Core value:** An expressive, well-architected API that makes exploring intersections of geo datasets feel fluid and creative — decoupling data operations from rendering so new visual ideas can be prototyped quickly.
-**Current focus:** Phase 1 - Data Layer
+**Current focus:** Phase 3 - Core Rendering (Coordinate Systems complete)
 
 ## Current Position
 
