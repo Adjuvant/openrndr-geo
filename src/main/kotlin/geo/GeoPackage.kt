@@ -100,6 +100,24 @@ object GeoPackage {
     }
 
     /**
+     * Convenience function to load a GeoPackage file and return features directly.
+     *
+     * This is a wrapper around [load] that simplifies the common case where you just need
+     * the features without requiring access to the GeoPackageSource object's additional
+     * functionality such as spatial indexing and queryByBounds().
+     *
+     * Note: When using this convenience function, spatial indexing is not available.
+     * Use [load] directly if you need [GeoPackageSource.queryByBounds] functionality.
+     *
+     * @param path The path to the GeoPackage file
+     * @param maxFeatures Maximum number of features to load (prevents OOM on huge files)
+     * @return A [Sequence] of [Feature] from the GeoPackage file
+     * @throws FileNotFoundException if the file doesn't exist
+     * @throws IllegalArgumentException if the GeoPackage has no feature layers
+     */
+    fun features(path: String, maxFeatures: Int = Int.MAX_VALUE): Sequence<Feature> = load(path, maxFeatures).features
+
+    /**
      * Determines the CRS from the first feature table, defaulting to WGS84.
      */
     private fun determineCRS(
