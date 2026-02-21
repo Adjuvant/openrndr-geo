@@ -136,6 +136,10 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.serialization.core)
     implementation(libs.kotlinx.serialization.json)
+
+    /* GeoPackage support for reading spatial data files */
+    implementation("mil.nga.geopackage:geopackage:6.6.5")
+
     implementation(libs.slf4j.api)
     implementation(libs.kotlin.logging)
 
