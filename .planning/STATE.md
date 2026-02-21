@@ -60,7 +60,7 @@ Progress: [██░░░░░░░░] 20%
 
 ### Pending Todos
 
-None yet.
+1. Create comprehensive GeoPackage test file with all geometry types (2026-02-21)
 
 ### Blockers/Concerns
 
