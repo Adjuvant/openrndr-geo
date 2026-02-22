@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Coordinate Systems** - Transform coordinates between geographic systems and projections
 - [x] **Phase 3: Core Rendering** - Visualize geo primitives with configurable styling
 - [x] **Phase 4: Layer System** - Composite multiple data sources with blend modes and output
-- [ ] **Phase 5: Animation** - Create animated visualizations from geo data
+- [x] **Phase 5: Animation** - Create animated visualizations from geo data
 
 ## Phase Details
 
@@ -117,7 +117,7 @@ Plans:
 Plans:
 - [x] 05-01-PLAN.md — GeoAnimator infrastructure with Animatable lifecycle
 - [x] 05-02-PLAN.md — Property tweening primitives and interpolators
-- [ ] 05-03-PLAN.md — Procedural motion and animation composition
+- [x] 05-03-PLAN.md — Procedural motion and animation composition
 
 ## Progress
 
@@ -131,7 +131,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 3. Core Rendering | 6/6 | **Complete** | 2026-02-22 |
 | 4. Layer System | 2/2 | **Complete** | 2026-02-22 |
 | 4.1 CRS-Aware GeoSource | 3/3 | **Complete** | 2026-02-22 |
-| 5. Animation | 2/3 | In progress | 2026-02-22 |
+| 5. Animation | 3/3 | **Complete** | 2026-02-22 |
 
 ---
 *Roadmap created: 2026-02-21*
