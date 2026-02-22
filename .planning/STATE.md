@@ -9,18 +9,18 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 
 ## Current Position
 
-Phase: 4 of 5 (Layer System)
-Plan: 2 of 2 in current phase
-Status: Phase 4 complete - UAT gaps fixed, ready for Phase 5
-Last activity: 2026-02-22 — Completed 04-02-PLAN.md (UAT Gap Closure)
+Phase: 04.1 of 5+ (CRS-Aware GeoSource)
+Plan: 1 of 3 in current phase
+Status: In progress - CRSTransformer foundation complete
+Last activity: 2026-02-22 — Completed 04.1-01-PLAN.md (CRSTransformer)
 
-Progress: [████████████] 90%
+Progress: [█████████████░] 92%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 12
-- Average duration: 8.0 min
+- Total plans completed: 13
+- Average duration: 7.5 min
 - Total execution time: 1.6 hours
 
 **By Phase:**
@@ -31,21 +31,18 @@ Progress: [████████████] 90%
 | 2. Coordinate Systems | 3/3 ✓ | 16m | 5.3m |
 | 3. Core Rendering | 4/4 ✓ | 24m | 6.0m |
 | 4. Layer System | 2/2 ✓ | 18m | 9.0m |
+| 4.1 CRS-Aware | 1/3 | 2m | 2.0m |
 | 5. Animation | 0/2 | - | - |
 
 **Recent Trend:**
+- 04.1-01 completed in 2 minutes (CRSTransformer foundation)
+- Created CRSTransformer wrapper around proj4j with O(1) performance
+- Added CRSTransformationException for clear CRS error messages
+- 8 synthetic tests verify Helmert transformation accuracy (~3-5m)
 - 04-01 completed in 15 minutes (Layer System - orx-compositor integration)
 - 04-02 completed in 3 minutes (UAT Gap Closure)
-- Created GeoLayer wrapper with DSL syntax for compositional layers
-- Created graticule generator (1°, 5°, 10° spacing) for lat/lng reference
-- Created 4 examples: LayerComposition, LayerBlendModes, LayerGraticule, LayerOutput
-- Demonstrates orx-compositor DSL: compose { layer { draw { } blend() } }
-- Shows all 4 blend modes: Multiply, Overlay, Screen, Add
-- Screenshot capture now uses native Screenshots extension
-- Graticule generation now has OOM protection
-- macOS Metal backend compatibility documented in examples
 - Phase 4 (Layer System) fully complete
-- Ready for Phase 5: Animation
+- Ready for 04.1-02: Geometry.transform() implementation
 
 ## Accumulated Context
 
@@ -105,6 +102,9 @@ Progress: [████████████] 90%
 | 04-02 | Input validation via require() for safety | Graticule OOM prevented with require(spacing >= 1.0) |
 | 04-02 | Native Screenshots extension preferred | OpenRNDR's extend(Screenshots()) over manual renderTarget |
 | 04-02 | macOS Metal issue is library issue | Document as orx-fx issue, not openrndr-geo issue |
+| 04.1-01 | Wrap UnknownAuthorityCodeException in CRSTransformationException | Cleaner API with domain-specific exception |
+| 04.1-01 | Case-insensitive CRS codes via .lowercase() | Consistent behavior for EPSG/EPSG |
+| 04.1-01 | Helmert transformation accuracy ~3-5m in tests | Creative coding acceptable, no need for OSTN15 sub-meter |
 
 ### Roadmap Evolution
 
@@ -112,9 +112,7 @@ Progress: [████████████] 90%
 
 ### Pending Todos
 
-1 pending todo(s):
-
-- Simplify CRS handling API - Make BNG coordinates and other CRS easy to use without manual conversion
+No pending todos - 04.1 addresses CRS simplification through GeoSource auto-transformation.
 
 ### Blockers/Concerns
 
@@ -123,5 +121,5 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-22 17:33 UTC
-Stopped at: Completed 04-02-PLAN.md (UAT Gap Closure - all 3 issues resolved)
-Resume file: None
+Stopped at: Completed 04.1-01-PLAN.md (CRSTransformer with tests)
+Resume file: .planning/phases/04.1-design-fix-crs-aware-geosource-with-auto-reprojection/04.1-01-SUMMARY.md
