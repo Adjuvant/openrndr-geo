@@ -182,17 +182,17 @@ fun main() = application {
                         }
 
                         // Debug: print first line's screen coordinates
-                        if (lineCount == 0) {
-                            println("=== FIRST LINE DEBUG ===")
-                            println("First line has ${screenPoints.size} points")
-                            screenPoints.take(3).forEach { pt ->
-                                println("  Screen: (${pt.x.toInt()}, ${pt.y.toInt()})")
-                            }
-                            println("First line center: (${(screenPoints.sumOf { it.x } / screenPoints.size).toInt()}, ${(screenPoints.sumOf { it.y } / screenPoints.size).toInt()})")
-                            println("Viewport: ${width}x${height}")
-                            println("Lines should be visible!")
-                            println("=== END DEBUG ===")
-                        }
+//                        if (lineCount == 0) {
+//                            println("=== FIRST LINE DEBUG ===")
+//                            println("First line has ${screenPoints.size} points")
+//                            screenPoints.take(3).forEach { pt ->
+//                                println("  Screen: (${pt.x.toInt()}, ${pt.y.toInt()})")
+//                            }
+//                            println("First line center: (${(screenPoints.sumOf { it.x } / screenPoints.size).toInt()}, ${(screenPoints.sumOf { it.y } / screenPoints.size).toInt()})")
+//                            println("Viewport: ${width}x${height}")
+//                            println("Lines should be visible!")
+//                            println("=== END DEBUG ===")
+//                        }
 
                         drawLineString(drawer, screenPoints, Style {
                             stroke = lineColor
@@ -223,9 +223,9 @@ fun main() = application {
             }
 
             // Debug: print render stats once per second (every 60 frames)
-            if (frameCount % 60 == 0) {
-                println("Frame $frameCount: rendered $renderedCount features (points=$pointCount, lines=$lineCount, polys=$polyCount)")
-            }
+//            if (frameCount % 60 == 0) {
+//                println("Frame $frameCount: rendered $renderedCount features (points=$pointCount, lines=$lineCount, polys=$polyCount)")
+//            }
 
             // TEST: Draw the center point as a red marker to verify projection works
             val centerScreen = Point(centerLatLon.y, centerLatLon.x).toScreen(projection)

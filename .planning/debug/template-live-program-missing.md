@@ -1,6 +1,5 @@
 ---
-status: diagnosed
-status: investigating
+status: solved
 
 ---
 
