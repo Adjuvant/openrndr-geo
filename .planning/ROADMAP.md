@@ -115,7 +115,7 @@ Plans:
 **Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 05-01-PLAN.md — GeoAnimator infrastructure with Animatable lifecycle
+- [x] 05-01-PLAN.md — GeoAnimator infrastructure with Animatable lifecycle
 - [ ] 05-02-PLAN.md — Property tweening primitives and interpolators
 - [ ] 05-03-PLAN.md — Procedural motion and animation composition
 
@@ -131,7 +131,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 3. Core Rendering | 6/6 | **Complete** | 2026-02-22 |
 | 4. Layer System | 2/2 | **Complete** | 2026-02-22 |
 | 4.1 CRS-Aware GeoSource | 3/3 | **Complete** | 2026-02-22 |
-| 5. Animation | 0/3 | Not started | - |
+| 5. Animation | 1/3 | In progress | 2026-02-22 |
 
 ---
 *Roadmap created: 2026-02-21*

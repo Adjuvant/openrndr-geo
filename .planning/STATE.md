@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 5 of 5 (Animation)
-Plan: 0 of 3 in current phase
-Status: Phase 04.1 verified and complete — ready for Phase 5: Animation
-Last activity: 2026-02-22 — Verified 04.1 phase (CRS-aware GeoSource with auto-reprojection)
+Plan: 1 of 3 in current phase
+Status: In progress - 05-01 GeoAnimator infrastructure complete
+Last activity: 2026-02-22 — Completed 05-01 (GeoAnimator with Animatable lifecycle)
 
-Progress: [███████████████░░░] 88%
+Progress: [██████████████░░░░] 90%
 
 ## Performance Metrics
 
@@ -32,10 +32,14 @@ Progress: [███████████████░░░] 88%
 | 3. Core Rendering | 4/4 ✓ | 24m | 6.0m |
 | 4. Layer System | 2/2 ✓ | 18m | 9.0m |
 | 4.1 CRS-Aware | 3/3 ✓ | 13m | 4.3m |
-| 5. Animation | 0/2 | - | - |
+| 5. Animation | 1/3 | 12m | 12m |
 
 **Recent Trend:**
-- 04.1-03 completed in 7 minutes (CRS-aware GeoSource with auto-reprojection)
+- 05-01 completed in 12 minutes (GeoAnimator infrastructure with Animatable lifecycle)
+- Created GeoAnimator singleton extending OpenRNDR Animatable
+- 15 convenience easing functions for OpenRNDR's built-in Easing enum
+- Extension function Program.animator() for OpenRNDR integration
+- 7 synthetic tests for infrastructure verification
 - Implemented autoTransformTo() with identity optimization and lazy evaluation
 - Added materialize() for converting lazy sequences to in-memory lists
 - Created CRSExtensions.kt with fluent API: toWGS84(), toWebMercator(), materialize()
@@ -114,6 +118,10 @@ Progress: [███████████████░░░] 88%
 | 04.1-03 | CRSTransformer created once, reused for all features | Avoids O(n²) performance penalty vs creating in loop |
 | 04.1-03 | Fluent API pattern for CRS transformations | Enables chaining: load().toWGS84().materialize() |
 | 04.1-03 | Integration tests with real GeoPackage data | End-to-end verification with ness-vectors.gpkg |
+| 05-01 | Use OpenRNDR built-in Easing enum (not orx-easing) | Minimal dependencies - orx-easing commented out in build.gradle |
+| 05-01 | Top-level convenience functions (not Companion extensions) | Cleaner DSL: easeInOut() vs Easing.Companion.easeInOut() |
+| 05-01 | @JvmStatic singleton property to avoid JVM signature clash | lazy delegate creates getter conflicting with getInstance() method |
+| 05-01 | Mutable var properties for zero-allocation animation | Required for 60fps per CONTEXT.md, Animatable updates in-place |
 
 ### Roadmap Evolution
 
@@ -121,10 +129,10 @@ Progress: [███████████████░░░] 88%
 
 ### Pending Todos
 
-None - Phase 04.1 complete with all 3 plans done:
-- 04.1-01: CRSTransformer foundation ✓
-- 04.1-02: Geometry.transform() implementation ✓
-- 04.1-03: CRS-aware GeoSource with Auto-Reprojection ✓
+Phase 5 in progress - 1/3 plans complete:
+- 05-01: GeoAnimator infrastructure ✓ (COMPLETED)
+- 05-02: Property tweening primitives (PENDING)
+- 05-03: Procedural motion and composition (PENDING)
 
 ### Blockers/Concerns
 
@@ -132,6 +140,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-22 18:55 UTC
-Stopped at: Completed Phase 04.1 execution and verification
-Resume file: .planning/phases/04.1-design-fix-crs-aware-geosource-with-auto-reprojection/04.1-VERIFICATION.md
+Last session: 2026-02-22 19:07 UTC
+Stopped at: Completed 05-01-PLAN.md (GeoAnimator infrastructure)
+Resume file: .planning/phases/05-animation/05-01-SUMMARY.md
