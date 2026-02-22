@@ -1,5 +1,7 @@
 package geo
 
+import geo.projection.CRSTransformer
+
 /**
  * Abstract base class for all geospatial data sources.
  * GeoSource provides a unified interface for accessing features from
@@ -60,19 +62,44 @@ abstract class GeoSource(
     }
 
     /**
-     * Attempts to transform this data source to a different CRS.
-     * Phase 2 will implement actual CRS transformation.
+     * Transforms this data source to a different CRS.
+     * Creates a new GeoSource with lazy transformed Sequence.
      *
-     * @param targetCRS The target CRS identifier (e.g., "EPSG:3857")
-     * @return A GeoSource in the target CRS
-     * @throws UnsupportedOperationException if transformation is not implemented
+     * Identity optimization: Returns this instance if source CRS equals target CRS.
+     *
+     * @param targetCRS The target CRS identifier (e.g., "EPSG:4326")
+     * @return A GeoSource in the target CRS (same instance if CRS matches)
      */
     open fun autoTransformTo(targetCRS: String): GeoSource {
-        if (crs == targetCRS) return this
-        // Phase 2 will implement CRS transformation
-        throw UnsupportedOperationException(
-            "CRS transformation from $crs to $targetCRS coming in Phase 2"
-        )
+        if (crs == targetCRS) return this  // Identity optimization
+
+        val transformer = CRSTransformer(crs, targetCRS)
+
+        return object : GeoSource(targetCRS) {
+            override val features: Sequence<Feature> =
+                this@GeoSource.features.map { feature ->
+                    Feature(
+                        geometry = feature.geometry.transform(transformer),
+                        properties = feature.properties
+                    )
+                }
+        }
+    }
+
+    /**
+     * Materializes lazy sequences into in-memory lists.
+     * Use this for render loops where features are accessed multiple times.
+     *
+     * Tradeoff: Lazy = per-frame CRS transform cost; eager = upfront cost + memory.
+     *
+     * @return A new GeoSource backed by in-memory List
+     */
+    fun materialize(): GeoSource {
+        val materializedFeatures = listFeatures()
+
+        return object : GeoSource(crs) {
+            override val features: Sequence<Feature> = materializedFeatures.asSequence()
+        }
     }
 
     /**
