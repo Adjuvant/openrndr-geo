@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 04.1 of 5+ (CRS-Aware GeoSource)
-Plan: 2 of 3 in current phase
-Status: In progress - Geometry.transform() complete
-Last activity: 2026-02-22 — Completed 04.1-02-PLAN.md (Geometry transformation)
+Plan: 3 of 3 in current phase
+Status: Phase 04.1 complete - CRS-aware GeoSource with auto-reprojection ready
+Last activity: 2026-02-22 — Completed 04.1-03-PLAN.md (CRS-aware GeoSource)
 
-Progress: [██████████████░] 94%
+Progress: [███████████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 7.1 min
-- Total execution time: 1.7 hours
+- Total plans completed: 15
+- Average duration: 7.0 min
+- Total execution time: 1.8 hours
 
 **By Phase:**
 
@@ -31,20 +31,19 @@ Progress: [██████████████░] 94%
 | 2. Coordinate Systems | 3/3 ✓ | 16m | 5.3m |
 | 3. Core Rendering | 4/4 ✓ | 24m | 6.0m |
 | 4. Layer System | 2/2 ✓ | 18m | 9.0m |
-| 4.1 CRS-Aware | 2/3 | 6m | 3.0m |
+| 4.1 CRS-Aware | 3/3 ✓ | 13m | 4.3m |
 | 5. Animation | 0/2 | - | - |
 
 **Recent Trend:**
+- 04.1-03 completed in 7 minutes (CRS-aware GeoSource with auto-reprojection)
+- Implemented autoTransformTo() with identity optimization and lazy evaluation
+- Added materialize() for converting lazy sequences to in-memory lists
+- Created CRSExtensions.kt with fluent API: toWGS84(), toWebMercator(), materialize()
+- CRSIntegrationTest: 6 tests verify end-to-end workflow with real GeoPackage data
+- All 151 tests pass including new CRS integration tests
 - 04.1-02 completed in 4 minutes (Geometry.transform() implementation)
-- Added transform() extension for all 6 geometry types via sealed class pattern
-- GeometryTransformTest: 7 tests verify structural integrity and immutability
-- Polygon holes (interior rings) preserve nested structure across transformations
-- Multi* geometries properly delegate to base geometry transformations
 - 04.1-01 completed in 2 minutes (CRSTransformer foundation)
-- 04-01 completed in 15 minutes (Layer System - orx-compositor integration)
-- 04-02 completed in 3 minutes (UAT Gap Closure)
-- Phase 4 (Layer System) fully complete
-- Ready for 04.1-03: CRS-aware GeoSource with Auto-Reprojection
+- Phase 04.1 (CRS-Aware GeoSource) fully complete - 3/3 plans done
 
 ## Accumulated Context
 
@@ -111,6 +110,10 @@ Progress: [██████████████░] 94%
 | 04.1-02 | Sealed class exhaustive when for all geometry types | Compile-time safety ensures all types handled |
 | 04.1-02 | Polygon holes transformed with structure preservation | Nested interior rings mapped recursively |
 | 04.1-02 | Multi* geometries delegate to base transformations | Reuses Point, LineString, Polygon transform logic |
+| 04.1-03 | Identity optimization in autoTransformTo() | Returns same instance if source CRS equals target CRS |
+| 04.1-03 | CRSTransformer created once, reused for all features | Avoids O(n²) performance penalty vs creating in loop |
+| 04.1-03 | Fluent API pattern for CRS transformations | Enables chaining: load().toWGS84().materialize() |
+| 04.1-03 | Integration tests with real GeoPackage data | End-to-end verification with ness-vectors.gpkg |
 
 ### Roadmap Evolution
 
@@ -118,7 +121,10 @@ Progress: [██████████████░] 94%
 
 ### Pending Todos
 
-No pending todos - 04.1 addresses CRS simplification through GeoSource auto-transformation.
+None - Phase 04.1 complete with all 3 plans done:
+- 04.1-01: CRSTransformer foundation ✓
+- 04.1-02: Geometry.transform() implementation ✓
+- 04.1-03: CRS-aware GeoSource with Auto-Reprojection ✓
 
 ### Blockers/Concerns
 
@@ -126,6 +132,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-22 18:39 UTC
-Stopped at: Completed 04.1-02-PLAN.md (Geometry.transform() with tests)
-Resume file: .planning/phases/04.1-design-fix-crs-aware-geosource-with-auto-reprojection/04.1-02-SUMMARY.md
+Last session: 2026-02-22 18:49 UTC
+Stopped at: Completed 04.1-03-PLAN.md (CRS-aware GeoSource with auto-reprojection)
+Resume file: .planning/phases/04.1-design-fix-crs-aware-geosource-with-auto-reprojection/04.1-03-SUMMARY.md
