@@ -292,12 +292,14 @@ object GeoJSON {
 /**
  * A GeoSource implementation for GeoJSON data.
  *
+ * GeoJSON uses WGS84 per RFC 7946 (no CRS property in modern GeoJSON).
+ *
  * @property features The sequence of features from the GeoJSON file
  * @param crs The Coordinate Reference System identifier (default: "EPSG:4326" for WGS84)
  */
 class GeoJSONSource(
     override val features: Sequence<Feature>,
-    crs: String = "EPSG:4326"
+    crs: String = "EPSG:4326"  // WGS84 per RFC 7946
 ) : GeoSource(crs) {
     companion object {
         /**
