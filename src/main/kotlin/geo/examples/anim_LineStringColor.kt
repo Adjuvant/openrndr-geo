@@ -3,8 +3,11 @@ package geo.examples
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.math.Vector2
-import geo.geojson.loadGeoJSON
+import geo.GeoJSON
+import geo.LineString
+import geo.MultiLineString
 import geo.projection.ProjectionFactory
+import geo.render.Style
 import geo.render.drawLineString
 import geo.animation.animator
 
@@ -25,12 +28,28 @@ fun main() = application {
     }
 
     program {
-        // Load GeoJSON and get bounding box for framing
-        val geojson = loadGeoJSON("data/geo/catchment-topo.geojson")
-        val bbox = geojson.bbox!!
+        // Load GeoJSON
+        val geojson = GeoJSON.load("data/geo/catchment-topo.geojson")
+        
+        // Get bounding box for auto-framing
+        val bbox = geojson.totalBoundingBox()
+        val center = Vector2(bbox.center.first, bbox.center.second)
+        
+        // Calculate scale to fit data in view
+        val scaleX = width / bbox.width
+        val scaleY = height / bbox.height
+        val scale = minOf(scaleX, scaleY) * 0.9  // 90% to add padding
 
-        // Create projection to fit data to screen with padding
-        val projection = ProjectionFactory.equirectangular(bbox, width, height, 0.1)
+        // Create projection centered on data
+        val projection = ProjectionFactory.equirectangular(
+            width = width.toDouble(),
+            height = height.toDouble(),
+            center = center,
+            scale = scale
+        )
+
+        // Collect features for rendering
+        val features = geojson.listFeatures()
 
         // Get animator for color animation
         val animator = animator()
@@ -41,8 +60,8 @@ fun main() = application {
         }
 
         // Define colors to interpolate between
-        val startColor = ColorRGBa.fromHex("#4a90d9")  // Blue
-        val endColor = ColorRGBa.fromHex("#e74c3c")    // Red
+        val startColor = ColorRGBa(0.29, 0.56, 0.85)  // Blue #4a90d9
+        val endColor = ColorRGBa(0.91, 0.30, 0.24)    // Red #e74c3c
 
         extend {
             // Update animation each frame
@@ -51,25 +70,19 @@ fun main() = application {
             drawer.clear(ColorRGBa.fromHex("#1a1a2e"))
 
             // Interpolate color based on animation progress
-            val currentColor = startColor.mix(endColor, animator.progress)
+            val currentColor = mixColors(startColor, endColor, animator.progress)
 
             // Draw all LineString features with animated color
-            geojson.features.forEach { feature ->
+            features.forEach { feature ->
                 when (val geom = feature.geometry) {
-                    is geo.LineString -> {
-                        val screenCoords = geom.coordinates.map { projection(it) }
-                        drawer.stroke = currentColor
-                        drawer.strokeWeight = 1.5
-                        drawer.fill = null
-                        drawer.lineSegments(screenCoords.map { listOf(it) })
+                    is LineString -> {
+                        val screenCoords = geom.points.map { pt: Vector2 -> projection.project(pt) }
+                        drawLineString(drawer, screenCoords, Style(stroke = currentColor, strokeWeight = 1.5))
                     }
-                    is geo.MultiLineString -> {
-                        geom.coordinates.forEach { line ->
-                            val screenCoords = line.map { projection(it) }
-                            drawer.stroke = currentColor
-                            drawer.strokeWeight = 1.5
-                            drawer.fill = null
-                            drawer.lineSegments(screenCoords.map { listOf(it) })
+                    is MultiLineString -> {
+                        geom.lineStrings.forEach { line ->
+                            val screenCoords = line.points.map { pt: Vector2 -> projection.project(pt) }
+                            drawLineString(drawer, screenCoords, Style(stroke = currentColor, strokeWeight = 1.5))
                         }
                     }
                     else -> { /* Skip non-line geometries */ }
@@ -80,7 +93,7 @@ fun main() = application {
             drawer.fill = ColorRGBa.WHITE
             drawer.text("LineString Color Animation", 20.0, 30.0)
             drawer.text("Progress: ${(animator.progress * 100).toInt()}%", 20.0, 55.0)
-            drawer.text("Features: ${geojson.features.count()}", 20.0, 80.0)
+            drawer.text("Features: ${features.size}", 20.0, 80.0)
         }
     }
 }
@@ -88,11 +101,11 @@ fun main() = application {
 /**
  * Linear color interpolation between two colors
  */
-private fun ColorRGBa.mix(other: ColorRGBa, t: Double): ColorRGBa {
+private fun mixColors(c1: ColorRGBa, c2: ColorRGBa, t: Double): ColorRGBa {
     return ColorRGBa(
-        r = r + (other.r - r) * t,
-        g = g + (other.g - g) * t,
-        b = b + (other.b - b) * t,
-        a = a + (other.a - a) * t
+        r = c1.r + (c2.r - c1.r) * t,
+        g = c1.g + (c2.g - c1.g) * t,
+        b = c1.b + (c2.b - c1.b) * t,
+        alpha = c1.a + (c2.a - c1.a) * t
     )
 }
