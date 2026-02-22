@@ -1,12 +1,12 @@
 ---
-status: complete
+status: diagnosed
 phase: 03-core-rendering
 source:
   - 03-01-SUMMARY.md
   - 03-02-SUMMARY.md
   - 03-03-SUMMARY.md
 started: 2026-02-22T15:00:00Z
-updated: 2026-02-22T15:25:00Z
+updated: 2026-02-22T15:35:00Z
 ---
 
 ## Current Test
@@ -75,27 +75,54 @@ skipped: 0
   reason: "User reported: nothing to run - directory src/test/kotlin/geo/render/ does not exist"
   severity: major
   test: 1
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Phase 03 plans were incomplete - they specified main source code files but completely omitted test file requirements. Verification steps only checked for main source code existence, not test files."
+  artifacts:
+    - path: ".planning/phases/03-core-rendering/03-01-PLAN.md"
+      issue: "Missing test requirements in files_modified"
+    - path: ".planning/phases/03-core-rendering/03-02-PLAN.md"
+      issue: "Missing test requirements in files_modified"
+    - path: ".planning/phases/03-core-rendering/03-03-PLAN.md"
+      issue: "Missing test requirements in files_modified"
+  missing:
+    - "src/test/kotlin/geo/render/StyleTest.kt - Style class creation and DSL syntax testing"
+    - "src/test/kotlin/geo/render/PointRendererTest.kt - drawPoint with different shapes"
+    - "src/test/kotlin/geo/render/LineRendererTest.kt - drawLineString with stroke styling"
+    - "src/test/kotlin/geo/render/PolygonRendererTest.kt - drawPolygon with fill and opacity"
+    - "src/test/kotlin/geo/render/MultiRendererTest.kt - drawMultiPoint, drawMultiLineString, drawMultiPolygon"
+    - "src/test/kotlin/geo/render/GeometryProjectionTest.kt - Point.toScreen() projection helper"
+  debug_session: ".planning/debug/resolved/missing-render-tests.md"
 
 - truth: "Runnable example program exists at src/main/kotlin/geo/examples/BasicRendering.kt"
   status: failed
   reason: "User reported: files don't exist"
   severity: major
   test: 2
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Example scripts were NEVER explicitly planned in any of the three Phase 03 PLAN files. The expectation was implicit, not explicit in planning documents."
+  artifacts:
+    - path: ".planning/phases/03-core-rendering/03-01-PLAN.md"
+      issue: "No example programs in tasks"
+    - path: ".planning/phases/03-core-rendering/03-02-PLAN.md"
+      issue: "No example programs in tasks"
+    - path: ".planning/phases/03-core-rendering/03-03-PLAN.md"
+      issue: "No example programs in tasks - only documentation"
+  missing:
+    - "src/main/kotlin/geo/examples/BasicRendering.kt - Demonstrates rendering with TemplateProgram.kt pattern"
+    - "src/main/kotlin/geo/examples/ directory"
+  debug_session: ".planning/debug/missing-example-scripts.md"
 
 - truth: "Runnable example program exists at src/main/kotlin/geo/examples/LiveRendering.kt"
   status: failed
   reason: "User reported: same - files don't exist"
   severity: major
   test: 3
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Example scripts were never included in Phase 3 plans. The expectation for live-coding examples was implicit from the creative coding context, but not explicitly planned."
+  artifacts:
+    - path: ".planning/phases/03-core-rendering/03-01-PLAN.md"
+      issue: "No live example programs"
+    - path: ".planning/phases/03-core-rendering/03-02-PLAN.md"
+      issue: "No live example programs"
+    - path: ".planning/phases/03-core-rendering/03-03-PLAN.md"
+      issue: "Documentation created but no runnable programs"
+  missing:
+    - "src/main/kotlin/geo/examples/LiveRendering.kt - Demonstrates rendering with TemplateLiveProgram.kt pattern and oliveProgram hot reload"
+  debug_session: ".planning/debug/template-live-program-missing.md"
