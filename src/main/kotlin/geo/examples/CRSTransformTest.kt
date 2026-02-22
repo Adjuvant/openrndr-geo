@@ -1,11 +1,12 @@
 package geo.examples
 
 import geo.*
+import geo.exception.CRSTransformationException
 import geo.projection.CRSTransformer
-import geo.projection.CRSTransformationException
 import geo.projection.toWGS84
 import geo.projection.toWebMercator
 import geo.projection.materialize
+import org.openrndr.math.Vector2
 
 /**
  * CRS (Coordinate Reference System) Transformation Test Script
@@ -34,13 +35,14 @@ fun main() {
         val result = transformer.transform(530000.0, 180000.0)
 
         // Expected: approximately (51.5, -0.1) for London area
+        // Note: transform returns Vector2 where x=longitude, y=latitude
         val expectedLat = 51.5
         val expectedLng = -0.1
-        val latDiff = kotlin.math.abs(result.second - expectedLat)
-        val lngDiff = kotlin.math.abs(result.first - expectedLng)
+        val latDiff = kotlin.math.abs(result.y - expectedLat)
+        val lngDiff = kotlin.math.abs(result.x - expectedLng)
 
         println("  Input BNG: (530000, 180000)")
-        println("  Output WGS84: (lat=${result.second}, lng=${result.first})")
+        println("  Output WGS84: (lat=${result.y}, lng=${result.x})")
         println("  Expected: (lat=$expectedLat, lng=$expectedLng)")
         println("  Difference: lat=$latDiff°, lng=$lngDiff°")
 
@@ -79,9 +81,9 @@ fun main() {
         val transformed = point.transform(transformer)
 
         println("  Original: Point(${point.x}, ${point.y}) - BNG")
-        println("  Transformed: Point(${transformed.x}, ${transformed.y}) - WGS84")
 
         if (transformed is Point) {
+            println("  Transformed: Point(${transformed.x}, ${transformed.y}) - WGS84")
             val latDiff = kotlin.math.abs(transformed.y - 51.5)
             val lngDiff = kotlin.math.abs(transformed.x - (-0.1))
 
@@ -106,9 +108,9 @@ fun main() {
     try {
         val line = LineString(
             listOf(
-                Point(530000.0, 180000.0),
-                Point(531000.0, 181000.0),
-                Point(532000.0, 182000.0)
+                Vector2(530000.0, 180000.0),
+                Vector2(531000.0, 181000.0),
+                Vector2(532000.0, 182000.0)
             )
         )
         val transformer = CRSTransformer("EPSG:27700", "EPSG:4326")
@@ -133,29 +135,29 @@ fun main() {
     println("\n[Test 5] Geometry.transform() - Polygon with holes")
     try {
         val exterior = listOf(
-            Point(530000.0, 180000.0),
-            Point(540000.0, 180000.0),
-            Point(540000.0, 190000.0),
-            Point(530000.0, 190000.0),
-            Point(530000.0, 180000.0)
+            Vector2(530000.0, 180000.0),
+            Vector2(540000.0, 180000.0),
+            Vector2(540000.0, 190000.0),
+            Vector2(530000.0, 190000.0),
+            Vector2(530000.0, 180000.0)
         )
         val hole = listOf(
-            Point(533000.0, 183000.0),
-            Point(537000.0, 183000.0),
-            Point(537000.0, 187000.0),
-            Point(533000.0, 187000.0),
-            Point(533000.0, 183000.0)
+            Vector2(533000.0, 183000.0),
+            Vector2(537000.0, 183000.0),
+            Vector2(537000.0, 187000.0),
+            Vector2(533000.0, 187000.0),
+            Vector2(533000.0, 183000.0)
         )
-        val polygon = Polygon(listOf(exterior, hole))
+        val polygon = Polygon(exterior, listOf(hole))
         val transformer = CRSTransformer("EPSG:27700", "EPSG:4326")
         val transformed = polygon.transform(transformer)
 
-        println("  Original: Polygon with ${polygon.rings.size} rings (1 exterior, ${polygon.rings.size - 1} interior) - BNG")
-        println("  Transformed: Polygon with ${(transformed as Polygon).rings.size} rings - WGS84")
+        println("  Original: Polygon with exterior + ${polygon.interiors.size} interior ring(s) - BNG")
+        println("  Transformed: Polygon with exterior + ${(transformed as Polygon).interiors.size} interior ring(s) - WGS84")
 
-        if (transformed is Polygon && transformed.rings.size == polygon.rings.size) {
+        if (transformed is Polygon && transformed.interiors.size == polygon.interiors.size) {
             // Verify hole structure preserved
-            val holePreserved = transformed.rings[1].size == hole.size
+            val holePreserved = transformed.interiors[0].size == hole.size
             if (holePreserved) {
                 println("  ✓ PASS: Polygon with holes transformed, structure preserved")
                 passedTests++
@@ -183,19 +185,21 @@ fun main() {
 
         // MultiLineString
         val multiLine = MultiLineString(listOf(
-            LineString(listOf(Point(530000.0, 180000.0), Point(531000.0, 181000.0)))
+            LineString(listOf(Vector2(530000.0, 180000.0), Vector2(531000.0, 181000.0)))
         ))
         val transformedMultiLine = multiLine.transform(transformer)
 
         // MultiPolygon
         val multiPoly = MultiPolygon(listOf(
-            Polygon(listOf(listOf(
-                Point(530000.0, 180000.0),
-                Point(540000.0, 180000.0),
-                Point(540000.0, 190000.0),
-                Point(530000.0, 190000.0),
-                Point(530000.0, 180000.0)
-            )))
+            Polygon(
+                exterior = listOf(
+                    Vector2(530000.0, 180000.0),
+                    Vector2(540000.0, 180000.0),
+                    Vector2(540000.0, 190000.0),
+                    Vector2(530000.0, 190000.0),
+                    Vector2(530000.0, 180000.0)
+                )
+            )
         ))
         val transformedMultiPoly = multiPoly.transform(transformer)
 
@@ -225,9 +229,11 @@ fun main() {
         val transformed = original.transform(transformer)
 
         println("  Original after transform: Point(${original.x}, ${original.y})")
-        println("  Transformed: Point(${transformed.x}, ${transformed.y})")
 
         if (original.x == 530000.0 && original.y == 180000.0) {
+            if (transformed is Point) {
+                println("  Transformed: Point(${transformed.x}, ${transformed.y})")
+            }
             println("  ✓ PASS: Original geometry unchanged (immutable)")
             passedTests++
         } else {
@@ -242,14 +248,13 @@ fun main() {
     // Test 8: GeoSource.autoTransformTo identity optimization
     println("\n[Test 8] GeoSource.autoTransformTo() - Identity optimization")
     try {
-        // Create a mock GeoSource with WGS84 CRS
+        // Create a GeoSource with WGS84 CRS
         val features = listOf(
             Feature(Point(-0.1, 51.5), mapOf("name" to "London")),
             Feature(Point(-3.2, 55.9), mapOf("name" to "Edinburgh"))
         )
-        val source = object : GeoSource {
-            override val crs: String = "EPSG:4326"
-            override fun iterator(): Iterator<Feature> = features.iterator()
+        val source = object : GeoSource("EPSG:4326") {
+            override val features: Sequence<Feature> = features.asSequence()
         }
 
         val transformed = source.autoTransformTo("EPSG:4326")
@@ -266,6 +271,7 @@ fun main() {
         }
     } catch (e: Exception) {
         println("  ✗ FAIL: Exception - ${e.message}")
+        e.printStackTrace()
         failedTests++
     }
 
@@ -277,13 +283,12 @@ fun main() {
             Feature(Point(530000.0, 180000.0), mapOf("name" to "London-BNG")),
             Feature(Point(326000.0, 673000.0), mapOf("name" to "Edinburgh-BNG"))
         )
-        val bngSource = object : GeoSource {
-            override val crs: String = "EPSG:27700"
-            override fun iterator(): Iterator<Feature> = bngFeatures.iterator()
+        val bngSource = object : GeoSource("EPSG:27700") {
+            override val features: Sequence<Feature> = bngFeatures.asSequence()
         }
 
         val wgs84Source = bngSource.autoTransformTo("EPSG:4326")
-        val transformedFeatures = wgs84Source.toList()
+        val transformedFeatures = wgs84Source.listFeatures()
 
         println("  BNG source CRS: ${bngSource.crs}")
         println("  Transformed source CRS: ${wgs84Source.crs}")
@@ -318,18 +323,18 @@ fun main() {
             Feature(Point(-0.1, 51.5), mapOf("name" to "London")),
             Feature(Point(-3.2, 55.9), mapOf("name" to "Edinburgh"))
         )
-        val source = object : GeoSource {
-            override val crs: String = "EPSG:4326"
-            override fun iterator(): Iterator<Feature> = features.iterator()
+        val source = object : GeoSource("EPSG:4326") {
+            override val features: Sequence<Feature> = features.asSequence()
         }
 
         val materialized = source.materialize()
+        val materializedList = materialized.listFeatures()
 
         println("  Source type: ${source::class.simpleName}")
         println("  Materialized type: ${materialized::class.simpleName}")
-        println("  Materialized size: ${materialized.size}")
+        println("  Materialized size: ${materializedList.size}")
 
-        if (materialized is List && materialized.size == 2) {
+        if (materializedList is List<Feature> && materializedList.size == 2) {
             println("  ✓ PASS: GeoSource materialized to List<Feature>")
             passedTests++
         } else {
@@ -347,9 +352,8 @@ fun main() {
         val bngFeatures = listOf(
             Feature(Point(530000.0, 180000.0), mapOf("name" to "London"))
         )
-        val source = object : GeoSource {
-            override val crs: String = "EPSG:27700"
-            override fun iterator(): Iterator<Feature> = bngFeatures.iterator()
+        val source = object : GeoSource("EPSG:27700") {
+            override val features: Sequence<Feature> = bngFeatures.asSequence()
         }
 
         // Test toWGS84() extension
@@ -359,10 +363,11 @@ fun main() {
 
         // Test chaining with materialize()
         val materialized = wgs84.materialize()
+        val materializedList = materialized.listFeatures()
         println("  materialize() result type: ${materialized::class.simpleName}")
-        println("  materialize() result size: ${materialized.size}")
+        println("  materialize() result size: ${materializedList.size}")
 
-        if (wgs84.crs == "EPSG:4326" && materialized is List && materialized.size == 1) {
+        if (wgs84.crs == "EPSG:4326" && materializedList is List<Feature> && materializedList.size == 1) {
             println("  ✓ PASS: Fluent API chaining works")
             passedTests++
         } else {
@@ -381,16 +386,15 @@ fun main() {
         val wgs84Features = listOf(
             Feature(Point(-0.1, 51.5), mapOf("name" to "London"))
         )
-        val source = object : GeoSource {
-            override val crs: String = "EPSG:4326"
-            override fun iterator(): Iterator<Feature> = wgs84Features.iterator()
+        val source = object : GeoSource("EPSG:4326") {
+            override val features: Sequence<Feature> = wgs84Features.asSequence()
         }
 
         val webMercator = source.toWebMercator()
         println("  Original CRS: ${source.crs}")
         println("  toWebMercator() result CRS: ${webMercator.crs}")
 
-        val materialized = webMercator.materialize()
+        val materialized = webMercator.listFeatures()
         val point = materialized[0].geometry as Point
 
         println("  London in Web Mercator: x=${point.x}, y=${point.y}")
@@ -474,14 +478,14 @@ fun main() {
         val originalY = 180000.0
 
         val wgs84 = toWgs84.transform(originalX, originalY)
-        val backToBng = toBng.transform(wgs84.first, wgs84.second)
+        val backToBng = toBng.transform(wgs84.x, wgs84.y)
 
-        val diffX = kotlin.math.abs(backToBng.first - originalX)
-        val diffY = kotlin.math.abs(backToBng.second - originalY)
+        val diffX = kotlin.math.abs(backToBng.x - originalX)
+        val diffY = kotlin.math.abs(backToBng.y - originalY)
 
         println("  Original BNG: ($originalX, $originalY)")
-        println("  WGS84: (${wgs84.first}, ${wgs84.second})")
-        println("  Back to BNG: (${backToBng.first}, ${backToBng.second})")
+        println("  WGS84: (lng=${wgs84.x}, lat=${wgs84.y})")
+        println("  Back to BNG: (${backToBng.x}, ${backToBng.y})")
         println("  Difference: ($diffX, $diffY) meters")
 
         // Helmert transformation ~3-5m accuracy
