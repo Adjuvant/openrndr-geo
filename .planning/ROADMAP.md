@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Data Layer** - Load and access geo data from GeoJSON and GeoPackage formats
 - [x] **Phase 2: Coordinate Systems** - Transform coordinates between geographic systems and projections
 - [x] **Phase 3: Core Rendering** - Visualize geo primitives with configurable styling
-- [ ] **Phase 4: Layer System** - Composite multiple data sources with blend modes and output
+- [x] **Phase 4: Layer System** - Composite multiple data sources with blend modes and output
 - [ ] **Phase 5: Animation** - Create animated visualizations from geo data
 
 ## Phase Details
@@ -82,7 +82,7 @@ Plans:
 **Plans**: 1 plan
 
 Plans:
-- [ ] 04-01-PLAN.md — Integrate orx-compositor, create GeoLayer wrapper, graticule generator, and 4 examples
+- [x] 04-01-PLAN.md — Integrate orx-compositor, create GeoLayer wrapper, graticule generator, and 4 examples
 
 ### Phase 5: Animation
 **Goal**: Users can create animated visualizations by animating geo structures over time
@@ -109,7 +109,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Data Layer | 4/4 | **Complete** | 2026-02-21 |
 | 2. Coordinate Systems | 3/3 | **Complete** | 2026-02-21 |
 | 3. Core Rendering | 6/6 | **Complete** | 2026-02-22 |
-| 4. Layer System | 0/3 | Not started | - |
+| 4. Layer System | 1/1 | **Complete** | 2026-02-22 |
 | 5. Animation | 0/3 | Not started | - |
 
 ---

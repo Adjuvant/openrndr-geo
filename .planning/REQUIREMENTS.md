@@ -25,12 +25,12 @@ Requirements for initial release. Each maps to roadmap phases.
 - [x] **REND-02**: User can render LineString geometries with configurable styling (color, stroke weight)
 - [x] **REND-03**: User can render Polygon geometries with configurable fill and stroke
 - [x] **REND-04**: User can apply styling API (color, stroke, fill, opacity) to geometries
-- [ ] **REND-05**: User can stack multiple data sources as layers
-- [ ] **REND-06**: User can apply blend modes to layers (multiply, overlay, screen, etc.)
+- [x] **REND-05**: User can stack multiple data sources as layers
+- [x] **REND-06**: User can apply blend modes to layers (multiply, overlay, screen, etc.)
 
 ### Output
 
-- [ ] **OUTP-01**: User can capture screenshots via OpenRNDR's existing screenshot function — preserve natural creative coding workflow, don't build separate batch infrastructure
+- [x] **OUTP-01**: User can capture screenshots via OpenRNDR's existing screenshot function — preserve natural creative coding workflow, don't build separate batch infrastructure
 
 ### Animation
 
@@ -40,7 +40,7 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Reference
 
-- [ ] **REF-01**: User can draw graticule/grid lines for lat/lng reference
+- [x] **REF-01**: User can draw graticule/grid lines for lat/lng reference
 
 ## v2 Requirements
 
@@ -90,13 +90,13 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REND-02 | 3 | Complete |
 | REND-03 | 3 | Complete |
 | REND-04 | 3 | Complete |
-| REND-05 | 4 | Pending |
-| REND-06 | 4 | Pending |
-| OUTP-01 | 4 | Pending |
+| REND-05 | 4 | Complete |
+| REND-06 | 4 | Complete |
+| OUTP-01 | 4 | Complete |
 | ANIM-01 | 5 | Pending |
 | ANIM-02 | 5 | Pending |
 | ANIM-03 | 5 | Pending |
-| REF-01 | 4 | Pending |
+| REF-01 | 4 | Complete |
 
 **Coverage:**
 - v1 requirements: 17 total
