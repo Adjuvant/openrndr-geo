@@ -14,6 +14,7 @@ import java.io.FileNotFoundException
 /**
  * Object providing GeoJSON file loading and parsing capabilities.
  * Converts GeoJSON format files into the unified Feature/Geometry data model.
+ * Based on RFC 7946 (2016)
  */
 object GeoJSON {
     private val json = Json {

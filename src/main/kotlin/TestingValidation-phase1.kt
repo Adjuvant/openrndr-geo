@@ -1,5 +1,6 @@
 import geo.Bounds
 import geo.GeoPackage
+import geo.GeoPackageSource
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.loadFont
@@ -101,7 +102,7 @@ fun main() = application {
 //      Phase 1 test 4
 
         // Load GeoPackage
-        val source = GeoPackage.load("data/geo/ness-vectors.gpkg")
+        val source: GeoPackageSource = GeoPackage.load("data/geo/ness-vectors.gpkg")
 // Get all features first
         val allFeatures = source.features.toList()
         println("Total features: $allFeatures")
