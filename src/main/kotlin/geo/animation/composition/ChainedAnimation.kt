@@ -53,18 +53,13 @@ import org.openrndr.animatable.easing.Easing
  *
  * @author Phase 05-animation - 05-03
  */
-class ChainedAnimationBuilder {
+class ChainedAnimationBuilder(private val target: GeoAnimator) {
 
     /**
      * Single step in the animation chain.
-     *
-     * @property block Lambda that configures animation properties
-     * @property animator The GeoAnimator instance for this step
-     * @property duration Expected duration of this step's animation
      */
     private data class ChainStep(
         val block: GeoAnimator.() -> Unit,
-        val animator: GeoAnimator = GeoAnimator(),
         val duration: Long = 1000L
     )
 
@@ -141,14 +136,20 @@ class ChainedAnimationBuilder {
      * ```
      */
     fun update() {
+        // Auto-start first step if not started
+        if (currentStepIndex < 0) {
+            startStep(0)
+        }
+        
         if (currentStepIndex < 0 || currentStepIndex >= steps.size) return
 
-        val currentStep = steps[currentStepIndex]
-        currentStep.animator.updateAnimation()
+        // Update the target animator
+        target.updateAnimation()
 
         // Check if current step completed
         val elapsed = System.currentTimeMillis() - stepStartTime
-        if (elapsed >= currentStep.duration && !currentStep.animator.hasAnimations()) {
+        val currentStep = steps[currentStepIndex]
+        if (elapsed >= currentStep.duration && !target.hasAnimations()) {
             // Advance to next step
             val nextIndex = currentStepIndex + 1
             if (nextIndex < steps.size) {
@@ -166,9 +167,9 @@ class ChainedAnimationBuilder {
         currentStepIndex = index
         stepStartTime = System.currentTimeMillis()
 
-        // Execute the block on the animator to set up animation
+        // Execute the block on the target animator to set up animation
         val step = steps[index]
-        step.animator.apply(step.block)
+        target.apply(step.block)
     }
 
     /**
@@ -187,7 +188,7 @@ class ChainedAnimationBuilder {
 
         val lastStep = steps.last()
         val elapsed = System.currentTimeMillis() - stepStartTime
-        return elapsed >= lastStep.duration && !lastStep.animator.hasAnimations()
+        return elapsed >= lastStep.duration && !target.hasAnimations()
     }
 
     /**
@@ -200,10 +201,12 @@ class ChainedAnimationBuilder {
  * Entry point for creating chained animations.
  *
  * Starts a fluent animation chain using `then {}` for sequential steps.
+ * The chain animates properties on the provided target GeoAnimator.
  *
  * ## Example: Simple Chain
  * ```kotlin
- * val chain = animate {
+ * val shape = GeoAnimator().apply { x = 100.0; y = 100.0 }
+ * val chain = animate(shape) {
  *     ::x.animate(300.0, 1000, Easing.CubicInOut)
  * }.then {
  *     ::y.animate(200.0, 1000, Easing.CubicOut)
@@ -212,7 +215,8 @@ class ChainedAnimationBuilder {
  *
  * ## Example: Complex Chain with Feature Animation
  * ```kotlin
- * val chain = animate {
+ * val shape = GeoAnimator().apply { x = 100.0; y = 100.0; opacity = 0.0 }
+ * val chain = animate(shape) {
  *     // Step 1: Fade in
  *     ::opacity.animate(1.0, 500, Easing.Linear)
  * }.then(1000) {
@@ -226,12 +230,24 @@ class ChainedAnimationBuilder {
  *     // Step 4: Change color
  *     ::colorR.animate(1.0, 300, Easing.Linear)
  * }
+ * ```
+ *
+ * ## Integration with Extend Loop
+ * ```kotlin
+ * val shape = GeoAnimator()
+ * val chain = animate(shape) {
+ *     ::x.animate(300.0, 1000)
+ * }.then {
+ *     ::y.animate(200.0, 1000)
+ * }
  *
  * extend {
- *     chain.update()
+ *     chain.update()  // Updates target animator automatically
+ *     drawer.circle(shape.x, shape.y, shape.size)
  * }
  * ```
  *
+ * @param target The GeoAnimator instance to animate
  * @param duration Duration of first animation step (default: 1000ms)
  * @param block Lambda configuring the first step's animation
  * @return ChainedAnimationBuilder for fluent `then {}` chaining
@@ -239,6 +255,6 @@ class ChainedAnimationBuilder {
  * @see ChainedAnimationBuilder.then Add subsequent animation steps
  * @see GeoTimeline For offset-based composition alternative
  */
-fun animate(duration: Long = 1000L, block: GeoAnimator.() -> Unit): ChainedAnimationBuilder {
-    return ChainedAnimationBuilder().first(duration, block)
+fun animate(target: GeoAnimator, duration: Long = 1000L, block: GeoAnimator.() -> Unit): ChainedAnimationBuilder {
+    return ChainedAnimationBuilder(target).first(duration, block)
 }
