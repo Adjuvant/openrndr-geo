@@ -33,14 +33,27 @@ import geo.Point
  * - **5.0**: Regional view, good balance of detail and clarity
  * - **10.0**: Continental view, clean reference without clutter
  *
- * @param spacing Grid spacing in degrees (e.g., 1.0, 5.0, 10.0)
- * @param bounds The geographic bounds to cover with the graticule
+ *  *
+ * @param spacing Grid spacing in degrees (minimum 1.0, typical: 1.0, 5.0, 10.0)
+ * @throws IllegalArgumentException if spacing < 1.0 or bounds are unreasonably large
  * @return List of Point features at grid intersections
  *
  * @see generateGraticuleSource Generate a GeoSource from graticule features
  */
 fun generateGraticule(spacing: Double, bounds: Bounds): List<Feature> {
     if (bounds.isEmpty()) return emptyList()
+
+    // Validate minimum spacing to prevent excessive memory usage
+    require(spacing >= 1.0) {
+        "Graticule spacing must be at least 1.0 degrees (got $spacing). Small values cause excessive point generation."
+    }
+
+    // Validate bounds are reasonable (prevent extreme ranges)
+    val boundsWidth = bounds.maxX - bounds.minX
+    val boundsHeight = bounds.maxY - bounds.minY
+    require(boundsWidth <= 360.0 && boundsHeight <= 180.0) {
+        "Bounds too large for graticule generation (width=$boundsWidth, height=$boundsHeight)"
+    }
 
     val features = mutableListOf<Feature>()
 
@@ -50,16 +63,17 @@ fun generateGraticule(spacing: Double, bounds: Bounds): List<Feature> {
     val minLat = kotlin.math.floor(bounds.minY / spacing) * spacing
     val maxLat = kotlin.math.ceil(bounds.maxY / spacing) * spacing
 
-    // Generate grid intersection points
-    var lon = minLon
-    while (lon <= maxLon) {
-        var lat = minLat
-        while (lat <= maxLat) {
-            // Create a point at this grid intersection
+    // Calculate number of steps (integer-based with safety limit)
+    val lonSteps = kotlin.math.round((maxLon - minLon) / spacing).toInt().coerceAtMost(1000)
+    val latSteps = kotlin.math.round((maxLat - minLat) / spacing).toInt().coerceAtMost(1000)
+
+    // Generate using integer indices to avoid floating-point accumulation errors
+    for (i in 0..lonSteps) {
+        val lon = minLon + i * spacing
+        for (j in 0..latSteps) {
+            val lat = minLat + j * spacing
             features.add(Feature(Point(lon, lat)))
-            lat += spacing
         }
-        lon += spacing
     }
 
     return features
@@ -82,8 +96,9 @@ fun generateGraticule(spacing: Double, bounds: Bounds): List<Feature> {
  * }
  * ```
  *
- * @param spacing Grid spacing in degrees (e.g., 1.0, 5.0, 10.0)
+ * @param spacing Grid spacing in degrees (minimum 1.0, typical: 1.0, 5.0, 10.0)
  * @param bounds The geographic bounds to cover with the graticule
+ * @throws IllegalArgumentException if spacing < 1.0 or bounds are unreasonably large
  * @return GeoSource containing Point features at grid intersections
  */
 fun generateGraticuleSource(spacing: Double, bounds: Bounds): GeoSource {
