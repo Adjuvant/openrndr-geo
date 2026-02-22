@@ -15,6 +15,7 @@ import geo.projection.ProjectionFactory
 import geo.projection.toScreen
 import geo.projection.toWGS84
 import geo.projection.materialize
+import geo.projection.toWebMercator
 import org.openrndr.math.Vector2
 
 /**
@@ -190,11 +191,13 @@ fun main() = application {
                 }
             }
 
-            // Draw center point marker
-            val centerScreen = Point(centerLatLon.y, centerLatLon.x).toScreen(projection)
-            drawer.stroke = ColorRGBa.RED
-            drawer.strokeWeight = 3.0
-            drawer.circle(Vector2(centerScreen.x, centerScreen.y), 30.0)
+            // Draw center point marker at the center of the data bounds
+            // centerLatLon is Vector2(lon, lat), project directly
+            val centerScreen = projection.project(centerLatLon)
+            drawer.fill = ColorRGBa.RED
+            drawer.stroke = ColorRGBa.BLACK
+            drawer.strokeWeight = 2.0
+            drawer.circle(centerScreen, 8.0)
 
             // TIPS FOR LIVE CODING:
             // - Try changing ColorRGBa.RED to other colors
