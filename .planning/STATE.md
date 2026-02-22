@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 
 ## Current Position
 
-Phase: 3 of 5 (Core Rendering)
-Plan: 5 of 5 in current phase (Gap Closure)
-Status: Phase complete - Core Rendering finished, UAT gap closure complete
-Last activity: 2026-02-22 — Completed 03-06-PLAN.md (Live Rendering Example - gap closure)
+Phase: 4 of 5 (Layer System)
+Plan: 1 of 1 in current phase
+Status: Phase 4 Plan 1 complete - orx-compositor integration with GeoLayer, graticule, and 4 examples
+Last activity: 2026-02-22 — Completed 04-01-PLAN.md (Layer System - orx-compositor integration)
 
-Progress: [██████████] 65%
+Progress: [████████████] 85%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 10
-- Average duration: 7.5 min
-- Total execution time: 1.25 hours
+- Total plans completed: 11
+- Average duration: 8.2 min
+- Total execution time: 1.5 hours
 
 **By Phase:**
 
@@ -30,18 +30,19 @@ Progress: [██████████] 65%
 | 1. Data Layer | 4/4 ✓ | 46m | 11.5m |
 | 2. Coordinate Systems | 3/3 ✓ | 16m | 5.3m |
 | 3. Core Rendering | 4/4 ✓ | 24m | 6.0m |
-| 4. Layer System | 0/3 | - | - |
+| 4. Layer System | 1/1 ✓ | 15m | 15.0m |
 | 5. Animation | 0/3 | - | - |
 
 **Recent Trend:**
-- 03-06 completed in 1 minute (Live Rendering Example - gap closure)
-- Created LiveRendering.kt with oliveProgram hot reload support
-- Renders GeoPackage data (ness-vectors.gpkg) with all geometry types
-- Demonstrates projection-to-screen transformation pipeline
-- Live-coding capabilities enable creative experimentation without restart
-- Phase 3 (Core Rendering) UAT gap closure complete
-- All UAT issues resolved: unit tests, basic rendering example, live rendering example
-- Ready for Phase 4: Layer System
+- 04-01 completed in 15 minutes (Layer System - orx-compositor integration)
+- Created GeoLayer wrapper with DSL syntax for compositional layers
+- Created graticule generator (1°, 5°, 10° spacing) for lat/lng reference
+- Created 4 examples: LayerComposition, LayerBlendModes, LayerGraticule, LayerOutput
+- Demonstrates orx-compositor DSL: compose { layer { draw { } blend() } }
+- Shows all 4 blend modes: Multiply, Overlay, Screen, Add
+- Screenshot capture via renderTarget() and colorBuffer.saveToFile()
+- Phase 4 (Layer System) complete
+- Ready for Phase 5: Animation
 
 ## Accumulated Context
 
@@ -94,6 +95,10 @@ Progress: [██████████] 65%
 | 03-04 | Functional testing approach for visual components | Verify configuration and function calls, not pixel output (requires drawer mocking) |
 | 03-06 | Use oliveProgram {} for live-coding examples | Enables hot reload - code changes reflect without restart |
 | 03-06 | GeoPackage over GeoJSON for richer example data | More features and geometry types for visual demonstration |
+| 04-01 | Blend modes applied in compositor, not GeoLayer | Compositor's blend() is right place; GeoLayer focuses on source+style |
+| 04-01 | Graticule as Point features at grid intersections | Simplest approach that works with existing rendering pipeline |
+| 04-01 | Screenshot via renderTarget() offscreen rendering | Native OpenRNDR approach with colorBuffer.saveToFile() |
+| 04-01 | No custom layer management infrastructure | Reuses orx-compositor entirely - no new APIs needed |
 
 ### Pending Todos
 
@@ -107,6 +112,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-22 14:58 UTC
-Stopped at: Completed 03-06-PLAN.md (Live Rendering Example), UAT gap closure complete
+Last session: 2026-02-22 16:38 UTC
+Stopped at: Completed 04-01-PLAN.md (Layer System - orx-compositor integration)
 Resume file: None
