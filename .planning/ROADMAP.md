@@ -92,9 +92,9 @@ Plans:
 **Plans:** 3 plans
 
 Plans:
-- [ ] 04.1-01-PLAN.md — Create CRSTransformer wrapper with fail-fast error handling and synthetic tests
-- [ ] 04.1-02-PLAN.md — Add Geometry.transform() extension for all 6 geometry types
-- [ ] 04.1-03-PLAN.md — Implement autoTransformTo(), materialize(), and CRSExtensions.kt
+- [x] 04.1-01-PLAN.md — Create CRSTransformer wrapper with fail-fast error handling and synthetic tests
+- [x] 04.1-02-PLAN.md — Add Geometry.transform() extension for all 6 geometry types
+- [x] 04.1-03-PLAN.md — Implement autoTransformTo(), materialize(), and CRSExtensions.kt
 
 **Details:**
 - CRSTransformer: Wrapper around proj4j's CoordinateTransform, validates CRS codes at construction
@@ -130,6 +130,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Coordinate Systems | 3/3 | **Complete** | 2026-02-21 |
 | 3. Core Rendering | 6/6 | **Complete** | 2026-02-22 |
 | 4. Layer System | 2/2 | **Complete** | 2026-02-22 |
+| 4.1 CRS-Aware GeoSource | 3/3 | **Complete** | 2026-02-22 |
 | 5. Animation | 0/3 | Not started | - |
 
 ---
