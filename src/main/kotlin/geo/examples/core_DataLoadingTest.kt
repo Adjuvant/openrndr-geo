@@ -2,7 +2,6 @@ package geo.examples
 
 import geo.GeoJSON
 import geo.GeoJSONSource
-import geo.Feature
 import geo.Point
 import geo.LineString
 

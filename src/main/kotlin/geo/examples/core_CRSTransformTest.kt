@@ -5,7 +5,6 @@ import geo.exception.CRSTransformationException
 import geo.projection.CRSTransformer
 import geo.projection.toWGS84
 import geo.projection.toWebMercator
-import geo.projection.materialize
 import org.openrndr.math.Vector2
 
 /**
