@@ -1,0 +1,290 @@
+package geo.examples
+
+import geo.GeoPackage
+import geo.GeoJSON
+import geo.Point
+import geo.LineString
+import geo.Polygon
+import geo.render.Style
+import geo.render.drawPoint
+import geo.render.drawLineString
+import geo.render.drawPolygon
+import geo.render.withAlpha
+import geo.projection.GeoProjection
+import geo.projection.ProjectionFactory
+import geo.projection.toScreen
+import org.openrndr.application
+import org.openrndr.color.ColorRGBa
+import org.openrndr.draw.RenderTarget
+import org.openrndr.draw.colorBuffer
+import org.openrndr.draw.renderTarget
+import org.openrndr.draw.isolatedWithTarget
+// Key constants can be found in org.openrndr.Key but we'll use string literal for space
+import org.openrndr.extra.compositor.compose
+import org.openrndr.extra.compositor.layer
+import org.openrndr.extra.compositor.draw
+import org.openrndr.extra.compositor.blend
+import org.openrndr.extra.fx.blend.Multiply
+import org.openrndr.extra.fx.blend.Overlay
+import org.openrndr.math.Vector2
+import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+/**
+ * Layer Output Example - Screenshot Capture
+ *
+ * Demonstrates screenshot capture workflow using OpenRNDR's screenshot functionality.
+ * Preserves the natural creative coding workflow - users capture when needed.
+ *
+ * ## Screenshot Workflow
+ *
+ * ### Automatic Capture on Frame 100
+ * This example captures a screenshot automatically at frame 100 and saves it
+ * to the screenshots/ directory with a timestamped filename.
+ *
+ * ### Key Press Capture (Spacebar)
+ * Press SPACE to capture an additional screenshot at any time.
+ *
+ * ## File Naming Convention
+ *
+ * Screenshots are saved with descriptive names:
+ * ```
+ * layer-composition-2026-02-22T14-30-45.png
+ * ```
+ *
+ * Format: `{description}-{timestamp}.png`
+ *
+ * ## Screenshot Location
+ *
+ * By default, OpenRNDR saves screenshots to the `screenshots/` directory
+ * relative to the project root. This directory is created automatically if
+ * it doesn't exist.
+ *
+ * ## Usage in Creative Coding
+ *
+ * The screenshot workflow follows the creative coding paradigm:
+ * 1. Run the program
+ * 2. Iterate and experiment visually
+ * 3. Capture when you see something you like
+ * 4. No separate batch infrastructure needed
+ *
+ * This preserves the fluid, exploratory nature of creative coding while
+ * still enabling output capture for documentation or further processing.
+ *
+ * ## Alternative: Programmatic Capture
+ *
+ * For automated capture (not shown here but supported):
+ * ```kotlin
+ * // Render to offscreen buffer
+ * val target = renderTarget(width, height) { colorBuffer() }
+ * drawer.isolatedWithTarget(target) {
+ *     // Draw your composition
+ * }
+ * // Save to file
+ * target.colorBuffer(0).saveToFile(File("output.png"))
+ * ```
+ */
+fun main() = application {
+    configure {
+        width = 1024
+        height = 768
+    }
+
+    program {
+        // Load geo data
+        val data = try {
+            GeoPackage.load("data/geo/ness-vectors.gpkg")
+        } catch (e: Exception) {
+            println("Could not load ness-vectors.gpkg: ${e.message}")
+            println("Falling back to sample.geojson")
+            GeoJSON.load("data/sample.geojson")
+        }
+
+        // Calculate bounds from data
+        var minX = Double.POSITIVE_INFINITY
+        var minY = Double.POSITIVE_INFINITY
+        var maxX = Double.NEGATIVE_INFINITY
+        var maxY = Double.NEGATIVE_INFINITY
+        var count = 0
+
+        data.features.take(1000).forEach { feature ->
+            val bbox = feature.geometry.boundingBox
+            if (!bbox.isEmpty()) {
+                minX = kotlin.math.min(minX, bbox.minX)
+                minY = kotlin.math.min(minY, bbox.minY)
+                maxX = kotlin.math.max(maxX, bbox.maxX)
+                maxY = kotlin.math.max(maxY, bbox.maxY)
+                count++
+            }
+        }
+
+        if (count == 0) {
+            minX = -8.0; maxX = 2.0; minY = 50.0; maxY = 60.0
+        }
+
+        // Create projection
+        val padding = 50.0
+        val dataWidth = maxX - minX
+        val dataHeight = maxY - minY
+        val scaleX = (width - 2 * padding) / dataWidth
+        val scaleY = (height - 2 * padding) / dataHeight
+        val scale = kotlin.math.min(scaleX, scaleY)
+        val center = Vector2((minX + maxX) / 2, (minY + maxY) / 2)
+
+        val projection: GeoProjection = ProjectionFactory.mercator(
+            width = width.toDouble(),
+            height = height.toDouble(),
+            center = center,
+            scale = scale
+        )
+
+        // Track frame count for auto-capture
+        var frameCount = 0
+        var autoCaptureDone = false
+
+        // Create screenshots directory
+        val screenshotDir = File("screenshots")
+        if (!screenshotDir.exists()) {
+            screenshotDir.mkdirs()
+            println("Created screenshots directory: ${screenshotDir.absolutePath}")
+        }
+
+        // Create composite with layered data
+        val composite = compose {
+            // Background layer
+            draw {
+                drawer.clear(ColorRGBa.BLACK)
+            }
+
+            // Base data layer
+            layer {
+                draw {
+                    data.features.take(400).forEach { feature ->
+                        when (val geometry = feature.geometry) {
+                            is Point -> {
+                                val screen = geometry.toScreen(projection)
+                                drawPoint(drawer, screen.x, screen.y, Style {
+                                    fill = ColorRGBa.CYAN.withAlpha(0.6)
+                                    stroke = ColorRGBa.WHITE
+                                    strokeWeight = 1.0
+                                    size = 5.0
+                                })
+                            }
+                            is LineString -> {
+                                val screenPoints = geometry.points.map { pt ->
+                                    Point(pt.x, pt.y).toScreen(projection)
+                                }
+                                drawLineString(drawer, screenPoints, Style {
+                                    stroke = ColorRGBa.WHITE.withAlpha(0.5)
+                                    strokeWeight = 1.5
+                                })
+                            }
+                            is Polygon -> {
+                                val screenPoints = geometry.exterior.map { pt ->
+                                    Point(pt.x, pt.y).toScreen(projection)
+                                }
+                                drawPolygon(drawer, screenPoints, Style {
+                                    fill = ColorRGBa.BLUE.withAlpha(0.3)
+                                    stroke = ColorRGBa.CYAN.withAlpha(0.4)
+                                    strokeWeight = 1.0
+                                })
+                            }
+                            else -> { }
+                        }
+                    }
+                }
+                blend(Multiply())
+            }
+
+            // Highlight layer (animated)
+            layer {
+                draw {
+                    // Draw a pulsing highlight circle
+                    val pulse = kotlin.math.sin(frameCount * 0.05) * 0.5 + 0.5
+                    val radius = 100.0 + pulse * 50.0
+                    drawer.fill = ColorRGBa.MAGENTA.withAlpha(0.2 * pulse)
+                    drawer.stroke = ColorRGBa.MAGENTA.withAlpha(0.5 * pulse)
+                    drawer.strokeWeight = 2.0
+                    drawer.circle(Vector2(width / 2.0, height / 2.0), radius)
+                }
+                blend(Overlay())
+            }
+
+            // UI Layer (labels and status)
+            layer {
+                draw {
+                    drawer.fill = ColorRGBa.WHITE
+                    
+                    // Title
+                    drawer.text("Layer Output Example - Screenshot Demo", 20.0, 30.0)
+                    
+                    // Status info
+                    drawer.fill = ColorRGBa.WHITE.withAlpha(0.7)
+                    drawer.text("Frame: $frameCount", 20.0, 55.0)
+                    
+                    if (autoCaptureDone) {
+                        drawer.fill = ColorRGBa.GREEN
+                        drawer.text("Screenshot captured automatically!", 20.0, 80.0)
+                    } else {
+                        drawer.fill = ColorRGBa.YELLOW
+                        drawer.text("Auto-capture at frame 100...", 20.0, 80.0)
+                    }
+                    
+                    drawer.fill = ColorRGBa.WHITE.withAlpha(0.7)
+                    drawer.text("Press SPACE to capture manually", 20.0, 105.0)
+                    drawer.text("Screenshots saved to: ${screenshotDir.absolutePath}", 20.0, 130.0)
+                }
+            }
+        }
+
+        extend {
+            composite.draw(drawer)
+            
+            // Auto-capture at frame 100
+            if (frameCount == 100 && !autoCaptureDone) {
+                val timestamp = LocalDateTime.now().format(
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss")
+                )
+                val filename = "layer-composition-$timestamp.png"
+                val file = File(screenshotDir, filename)
+                
+                println("Capturing screenshot: ${file.absolutePath}")
+                
+                // Render to offscreen buffer and save
+                val target = renderTarget(width, height) { colorBuffer() }
+                drawer.isolatedWithTarget(target) {
+                    composite.draw(this)
+                }
+                target.colorBuffer(0).saveToFile(file)
+                
+                println("Screenshot saved: ${file.absolutePath}")
+                autoCaptureDone = true
+            }
+            
+            frameCount++
+        }
+
+        // Keyboard handler for manual capture
+        keyboard.keyDown.listen { keyEvent ->
+            if (keyEvent.key == 32) {  // Space key code
+                val timestamp = LocalDateTime.now().format(
+                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss")
+                )
+                val filename = "layer-composition-manual-$timestamp.png"
+                val file = File(screenshotDir, filename)
+                
+                println("Manual screenshot: ${file.absolutePath}")
+                
+                // Render to offscreen buffer and save
+                val target = renderTarget(width, height) { colorBuffer() }
+                drawer.isolatedWithTarget(target) {
+                    composite.draw(this)
+                }
+                target.colorBuffer(0).saveToFile(file)
+                
+                println("Manual screenshot saved: ${file.absolutePath}")
+            }
+        }
+    }
+}
