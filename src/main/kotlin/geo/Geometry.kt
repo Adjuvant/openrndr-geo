@@ -1,5 +1,6 @@
 package geo
 
+import geo.projection.GeoProjection
 import org.openrndr.math.Vector2
 
 /**
@@ -27,6 +28,16 @@ data class Point(val x: Double, val y: Double) : Geometry() {
      * Converts this point to an OpenRNDR Vector2.
      */
     fun toVector2() = Vector2(x, y)
+
+    /**
+     * Projects this geographic point to screen coordinates using the given projection.
+     *
+     * @param projection The projection to use for coordinate transformation
+     * @return Screen coordinates as Vector2
+     */
+    fun toScreen(projection: GeoProjection): Vector2 {
+        return projection.project(Vector2(x, y))
+    }
 
     /**
      * Converts an OpenRNDR Vector2 to a Point.
