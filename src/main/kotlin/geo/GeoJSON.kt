@@ -39,7 +39,8 @@ object GeoJSON {
     @Serializable
     private data class GeoJSONFeatureCollection(
         val type: String,
-        val features: List<GeoJSONFeature> = emptyList()
+        val features: List<GeoJSONFeature> = emptyList(),
+        val bbox: List<Double>? = null
     )
 
     /**
@@ -72,19 +73,24 @@ object GeoJSON {
         val rootObject = root.jsonObject
         val type = rootObject["type"]?.jsonPrimitive?.content
 
-        val features = when (type) {
+        val (features, bbox) = when (type) {
             "FeatureCollection" -> {
                 val collection = json.decodeFromString(GeoJSONFeatureCollection.serializer(), content)
-                collection.features.mapNotNull { parseFeature(it) }
+                Pair(
+                    collection.features.mapNotNull { parseFeature(it) },
+                    collection.bbox?.let { b ->
+                        if (b.size >= 4) Bounds(b[0], b[1], b[2], b[3]) else null
+                    }
+                )
             }
             "Feature" -> {
                 val feature = json.decodeFromString(GeoJSONFeature.serializer(), content)
-                listOfNotNull(parseFeature(feature))
+                Pair(listOfNotNull(parseFeature(feature)), null)
             }
             else -> throw IllegalArgumentException("Expected FeatureCollection or Feature, got: ${type ?: "unknown"}")
         }
 
-        return GeoJSONSource(features.asSequence())
+        return GeoJSONSource(features.asSequence(), bbox = bbox)
     }
 
     /**
@@ -299,8 +305,11 @@ object GeoJSON {
  */
 class GeoJSONSource(
     override val features: Sequence<Feature>,
-    crs: String = "EPSG:4326"  // WGS84 per RFC 7946
+    crs: String = "EPSG:4326",
+    private val bbox: Bounds? = null
 ) : GeoSource(crs) {
+    
+    fun boundingBox(): Bounds = bbox ?: totalBoundingBox()
     companion object {
         /**
          * Loads a GeoJSON file from the given path.

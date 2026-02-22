@@ -11,16 +11,6 @@ import geo.render.Style
 import geo.render.drawLineString
 import geo.animation.animator
 
-/**
- * LineString Color Animation Demo
- *
- * Intermediate example demonstrating:
- * 1. Loading GeoJSON with bounding box for auto-framing
- * 2. Animating LineString stroke colors via GeoAnimator
- * 3. Using animation progress to interpolate colors
- *
- * To run: ./gradlew run --main=geo.examples.anim_LineStringColor
- */
 fun main() = application {
     configure {
         width = 800
@@ -28,39 +18,8 @@ fun main() = application {
     }
 
     program {
-        // Load GeoJSON
         val geojson = GeoJSON.load("data/geo/catchment-topo.geojson")
-        
-        // Get bounding box for auto-framing
-        val bbox = geojson.totalBoundingBox()
-        
-        // For equirectangular, we need to set center and scale appropriately
-        // The center is the geographic center, scale controls zoom level
-        val center = Vector2(bbox.center.first, bbox.center.second)
-        
-        // Calculate a reasonable scale based on the data extent
-        // At scale=1, the full world (-180 to 180 lng, -90 to 90 lat) fills the smallest dimension
-        // We want our data extent to fill about 80% of the screen
-        val dataWidthDegrees = bbox.width
-        val dataHeightDegrees = bbox.height
-        val worldWidthDegrees = 360.0
-        val worldHeightDegrees = 180.0
-        
-        // Calculate scale to fit data with padding
-        val scaleX = worldWidthDegrees / dataWidthDegrees
-        val worldHeightScaled = worldHeightDegrees * (width.toDouble() / worldWidthDegrees)
-        val scaleY = worldHeightDegrees / dataHeightDegrees
-        
-        // Use the smaller scale to fit both dimensions, then adjust for aspect ratio
-        val scale = minOf(scaleX, scaleY) * 0.8  // 80% to add padding
-
-        // Create projection centered on data
-        val projection = ProjectionFactory.equirectangular(
-            width = width.toDouble(),
-            height = height.toDouble(),
-            center = center,
-            scale = scale
-        )
+        val projection = ProjectionFactory.fitBounds(geojson.boundingBox(), width.toDouble(), height.toDouble())
 
         // Collect features for rendering
         val features = geojson.listFeatures()
