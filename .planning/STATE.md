@@ -106,6 +106,10 @@ Progress: [████████████] 90%
 | 04-02 | Native Screenshots extension preferred | OpenRNDR's extend(Screenshots()) over manual renderTarget |
 | 04-02 | macOS Metal issue is library issue | Document as orx-fx issue, not openrndr-geo issue |
 
+### Roadmap Evolution
+
+- Phase 04.1 inserted after Phase 4: Design Fix: CRS-Aware GeoSource with Auto-Reprojection (URGENT)
+
 ### Pending Todos
 
 1 pending todo(s):
