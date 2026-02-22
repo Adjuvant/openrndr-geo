@@ -1,4 +1,22 @@
-# OPENRNDR template project
+# openrndr-geo
+
+An expressive Kotlin library for creative geospatial visualization.
+
+## Documentation
+
+- **[API Reference](docs/API.md)** - Complete v1.0.0 API documentation with code examples
+- **[Rendering Guide](docs/rendering.md)** - Detailed rendering API with styling options
+
+## openrndr-geo
+
+This project includes openrndr-geo, a Kotlin library for creative geospatial visualization:
+
+- Load GeoJSON and GeoPackage data
+- Project coordinates (Mercator, BNG, custom EPSG codes)
+- Render geometries with configurable styles
+- Animate features with easing and stagger effects
+
+## OPENRNDR template project
 
 A feature rich template for creating OPENRNDR programs based on [Gradle/Kts](https://en.wikipedia.org/wiki/Gradle).
 
