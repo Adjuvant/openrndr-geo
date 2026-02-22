@@ -15,10 +15,6 @@ import geo.projection.ProjectionFactory
 import geo.projection.toScreen
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import org.openrndr.draw.RenderTarget
-import org.openrndr.draw.colorBuffer
-import org.openrndr.draw.renderTarget
-import org.openrndr.draw.isolatedWithTarget
 // Key constants can be found in org.openrndr.Key but we'll use string literal for space
 import org.openrndr.extra.compositor.compose
 import org.openrndr.extra.compositor.layer
@@ -26,40 +22,34 @@ import org.openrndr.extra.compositor.draw
 import org.openrndr.extra.compositor.blend
 import org.openrndr.extra.fx.blend.Multiply
 import org.openrndr.extra.fx.blend.Overlay
+import org.openrndr.extensions.Screenshots
 import org.openrndr.math.Vector2
-import java.io.File
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
 /**
  * Layer Output Example - Screenshot Capture
  *
- * Demonstrates screenshot capture workflow using OpenRNDR's screenshot functionality.
- * Preserves the natural creative coding workflow - users capture when needed.
+ * Demonstrates screenshot capture workflow using OpenRNDR's Screenshots extension.
+ * Uses the native Screenshots extension for clean, idiomatic screenshot handling.
  *
  * ## Screenshot Workflow
  *
- * ### Automatic Capture on Frame 100
- * This example captures a screenshot automatically at frame 100 and saves it
- * to the screenshots/ directory with a timestamped filename.
- *
  * ### Key Press Capture (Spacebar)
- * Press SPACE to capture an additional screenshot at any time.
+ * Press SPACE to capture a screenshot at any time. Screenshots are automatically
+ * saved to the `screenshots/` directory with timestamped filenames.
  *
  * ## File Naming Convention
  *
  * Screenshots are saved with descriptive names:
  * ```
- * layer-composition-2026-02-22T14-30-45.png
+ * layer-composition-00001.png
  * ```
  *
- * Format: `{description}-{timestamp}.png`
+ * Format: `{name}-{frame}.png` where name is configured in the Screenshots extension.
  *
  * ## Screenshot Location
  *
- * By default, OpenRNDR saves screenshots to the `screenshots/` directory
- * relative to the project root. This directory is created automatically if
- * it doesn't exist.
+ * Screenshots are saved to the `screenshots/` directory relative to the project root.
+ * This directory is created automatically if it doesn't exist.
  *
  * ## Usage in Creative Coding
  *
@@ -70,20 +60,7 @@ import java.time.format.DateTimeFormatter
  * 4. No separate batch infrastructure needed
  *
  * This preserves the fluid, exploratory nature of creative coding while
- * still enabling output capture for documentation or further processing.
- *
- * ## Alternative: Programmatic Capture
- *
- * For automated capture (not shown here but supported):
- * ```kotlin
- * // Render to offscreen buffer
- * val target = renderTarget(width, height) { colorBuffer() }
- * drawer.isolatedWithTarget(target) {
- *     // Draw your composition
- * }
- * // Save to file
- * target.colorBuffer(0).saveToFile(File("output.png"))
- * ```
+ * enabling output capture for documentation or further processing.
  */
 fun main() = application {
     configure {
@@ -139,16 +116,8 @@ fun main() = application {
             scale = scale
         )
 
-        // Track frame count for auto-capture
+        // Frame counter for animation
         var frameCount = 0
-        var autoCaptureDone = false
-
-        // Create screenshots directory
-        val screenshotDir = File("screenshots")
-        if (!screenshotDir.exists()) {
-            screenshotDir.mkdirs()
-            println("Created screenshots directory: ${screenshotDir.absolutePath}")
-        }
 
         // Create composite with layered data
         val composite = compose {
@@ -201,7 +170,7 @@ fun main() = application {
             layer {
                 draw {
                     // Draw a pulsing highlight circle
-                    val pulse = kotlin.math.sin(frameCount * 0.05) * 0.5 + 0.5
+                    val pulse = kotlin.math.sin(frameCount.toDouble() * 0.05) * 0.5 + 0.5
                     val radius = 100.0 + pulse * 50.0
                     drawer.fill = ColorRGBa.MAGENTA.withAlpha(0.2 * pulse)
                     drawer.stroke = ColorRGBa.MAGENTA.withAlpha(0.5 * pulse)
@@ -215,76 +184,31 @@ fun main() = application {
             layer {
                 draw {
                     drawer.fill = ColorRGBa.WHITE
-                    
+
                     // Title
                     drawer.text("Layer Output Example - Screenshot Demo", 20.0, 30.0)
-                    
-                    // Status info
+
+                    // Instructions
                     drawer.fill = ColorRGBa.WHITE.withAlpha(0.7)
-                    drawer.text("Frame: $frameCount", 20.0, 55.0)
-                    
-                    if (autoCaptureDone) {
-                        drawer.fill = ColorRGBa.GREEN
-                        drawer.text("Screenshot captured automatically!", 20.0, 80.0)
-                    } else {
-                        drawer.fill = ColorRGBa.YELLOW
-                        drawer.text("Auto-capture at frame 100...", 20.0, 80.0)
-                    }
-                    
-                    drawer.fill = ColorRGBa.WHITE.withAlpha(0.7)
-                    drawer.text("Press SPACE to capture manually", 20.0, 105.0)
-                    drawer.text("Screenshots saved to: ${screenshotDir.absolutePath}", 20.0, 130.0)
+                    drawer.text("Press SPACE to capture screenshot", 20.0, 55.0)
+                    drawer.text("Screenshots saved to: screenshots/", 20.0, 80.0)
                 }
             }
+        }
+
+        // Use native Screenshots extension for screenshot capture
+        extend(Screenshots()) {
+            // Space key triggers screenshot
+            key = " "
+            // Save to screenshots folder
+            folder = "screenshots"
+            // Custom filename with frame number
+            name = "layer-composition-{frame}"
         }
 
         extend {
             composite.draw(drawer)
-            
-            // Auto-capture at frame 100
-            if (frameCount == 100 && !autoCaptureDone) {
-                val timestamp = LocalDateTime.now().format(
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss")
-                )
-                val filename = "layer-composition-$timestamp.png"
-                val file = File(screenshotDir, filename)
-                
-                println("Capturing screenshot: ${file.absolutePath}")
-                
-                // Render to offscreen buffer and save
-                val target = renderTarget(width, height) { colorBuffer() }
-                drawer.isolatedWithTarget(target) {
-                    composite.draw(this)
-                }
-                target.colorBuffer(0).saveToFile(file)
-                
-                println("Screenshot saved: ${file.absolutePath}")
-                autoCaptureDone = true
-            }
-            
             frameCount++
-        }
-
-        // Keyboard handler for manual capture
-        keyboard.keyDown.listen { keyEvent ->
-            if (keyEvent.key == 32) {  // Space key code
-                val timestamp = LocalDateTime.now().format(
-                    DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss")
-                )
-                val filename = "layer-composition-manual-$timestamp.png"
-                val file = File(screenshotDir, filename)
-                
-                println("Manual screenshot: ${file.absolutePath}")
-                
-                // Render to offscreen buffer and save
-                val target = renderTarget(width, height) { colorBuffer() }
-                drawer.isolatedWithTarget(target) {
-                    composite.draw(this)
-                }
-                target.colorBuffer(0).saveToFile(file)
-                
-                println("Manual screenshot saved: ${file.absolutePath}")
-            }
         }
     }
 }
