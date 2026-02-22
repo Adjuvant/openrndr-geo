@@ -60,12 +60,12 @@ Plans:
   2. User can render LineString geometries with configurable color and stroke weight
   3. User can render Polygon geometries with configurable fill color and stroke
   4. User can apply a consistent styling API across all geometry types
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 03-01: RenderAdapter pattern and Point rendering
-- [ ] 03-02: LineString and Polygon rendering adapters
-- [ ] 03-03: Styling API and geometry styling
+- [ ] 03-01-PLAN.md — Create Style class with DSL syntax, Shape enum, and drawPoint function
+- [ ] 03-02-PLAN.md — Create writeLineString and writePolygon functions with configurable styling
+- [ ] 03-03-PLAN.md — Create Multi* rendering functions and complete documentation
 
 ### Phase 4: Layer System
 **Goal**: Users can composite multiple data sources as layers and capture rendered output
