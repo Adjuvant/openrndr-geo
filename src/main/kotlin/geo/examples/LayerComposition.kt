@@ -14,9 +14,10 @@ import geo.layer.generateGraticuleSource
 import geo.projection.GeoProjection
 import geo.projection.ProjectionFactory
 import geo.projection.toScreen
+import geo.projection.toWGS84
+import geo.projection.materialize
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import org.openrndr.draw.Drawer
 import org.openrndr.extra.compositor.compose
 import org.openrndr.extra.compositor.layer
 import org.openrndr.extra.compositor.draw
@@ -28,11 +29,22 @@ import org.openrndr.math.Vector2
 /**
  * Layer Composition Example
  *
- * Demonstrates basic layer stacking using orx-compositor. Shows how to:
+ * Demonstrates basic layer stacking using orx-compositor with CRS-aware data loading.
+ * Shows how to:
+ * - Load data and auto-transform to WGS84 using .toWGS84()
+ * - Materialize for render optimization using .materialize()
  * - Create layers from different data sources
  * - Use graticule as a reference layer
  * - Apply blend modes to combine layers
  * - Project and render geo data
+ *
+ * ## CRS Flow (Phase 04.1)
+ * ```kotlin
+ * // Load and transform in one chain
+ * val data = GeoPackage.load("data.gpkg")
+ *     .toWGS84()       // Auto-transform to WGS84
+ *     .materialize()   // Cache for render loop
+ * ```
  *
  * ## Key Concepts
  *
@@ -68,16 +80,23 @@ fun main() = application {
     }
 
     program {
-        // Load geo data
+        // Load geo data with CRS transformation:
+        // GeoPackage data is BNG (EPSG:27700), transform to WGS84 (EPSG:4326)
         val data = try {
             GeoPackage.load("data/geo/ness-vectors.gpkg")
+                .toWGS84()
+                .materialize()
         } catch (e: Exception) {
             println("Could not load ness-vectors.gpkg: ${e.message}")
             println("Falling back to sample.geojson")
             GeoJSON.load("data/sample.geojson")
+                .materialize()
         }
 
-        // Calculate bounds from data
+        println("Data CRS: ${data.crs}")
+        println("Features: ${data.listFeatures().size}")
+
+        // Calculate bounds from transformed WGS84 data
         var minX = Double.POSITIVE_INFINITY
         var minY = Double.POSITIVE_INFINITY
         var maxX = Double.NEGATIVE_INFINITY
@@ -101,7 +120,7 @@ fun main() = application {
         }
 
         val dataBounds = geo.Bounds(minX, minY, maxX, maxY)
-        println("Data bounds: $dataBounds")
+        println("Bounds (WGS84): $dataBounds")
         println("Features counted: $count")
 
         // Create projection (Mercator with padding)

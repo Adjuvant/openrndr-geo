@@ -14,6 +14,8 @@ import geo.render.withAlpha
 import geo.projection.GeoProjection
 import geo.projection.ProjectionFactory
 import geo.projection.toScreen
+import geo.projection.toWGS84
+import geo.projection.materialize
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
@@ -30,8 +32,15 @@ import org.openrndr.math.Vector2
 /**
  * Layer Blend Modes Example
  *
- * Demonstrates all four recommended blend modes with visual comparison.
- * Shows the same base data rendered with different blend modes applied.
+ * Demonstrates all four recommended blend modes with visual comparison
+ * and CRS-aware data loading.
+ *
+ * ## CRS Flow (Phase 04.1)
+ * ```kotlin
+ * val data = GeoPackage.load("data.gpkg")
+ *     .toWGS84()       // Transform BNG to WGS84
+ *     .materialize()   // Cache for rendering
+ * ```
  *
  * ## Blend Modes for Geo Visualization
  *
@@ -80,9 +89,9 @@ import org.openrndr.math.Vector2
 // Helper function to draw data in a specific quadrant
 private fun drawDataQuadrant(
     drawer: Drawer,
-    data: GeoSource, 
-    projection: GeoProjection, 
-    offsetX: Double, 
+    data: GeoSource,
+    projection: GeoProjection,
+    offsetX: Double,
     offsetY: Double,
     quadWidth: Double,
     quadHeight: Double
@@ -152,16 +161,22 @@ fun main() = application {
     }
 
     program {
-        // Load geo data
+        // Load geo data with CRS transformation
         val data = try {
             GeoPackage.load("data/geo/ness-vectors.gpkg")
+                .toWGS84()
+                .materialize()
         } catch (e: Exception) {
             println("Could not load ness-vectors.gpkg: ${e.message}")
             println("Falling back to sample.geojson")
             GeoJSON.load("data/sample.geojson")
+                .materialize()
         }
 
-        // Calculate bounds from data
+        println("Data CRS: ${data.crs}")
+        println("Features: ${data.listFeatures().size}")
+
+        // Calculate bounds from transformed WGS84 data
         var minX = Double.POSITIVE_INFINITY
         var minY = Double.POSITIVE_INFINITY
         var maxX = Double.NEGATIVE_INFINITY
@@ -215,7 +230,7 @@ fun main() = application {
             }
             layer {
                 draw {
-                    drawDataQuadrant(drawer, data, projection, 0.0, 0.0, 
+                    drawDataQuadrant(drawer, data, projection, 0.0, 0.0,
                         width / 2.0, height / 2.0)
                 }
                 blend(Multiply())
@@ -230,7 +245,7 @@ fun main() = application {
             }
             layer {
                 draw {
-                    drawDataQuadrant(drawer, data, projection, width / 2.0, 0.0, 
+                    drawDataQuadrant(drawer, data, projection, width / 2.0, 0.0,
                         width / 2.0, height / 2.0)
                 }
                 blend(Overlay())
@@ -245,7 +260,7 @@ fun main() = application {
             }
             layer {
                 draw {
-                    drawDataQuadrant(drawer, data, projection, 0.0, height / 2.0, 
+                    drawDataQuadrant(drawer, data, projection, 0.0, height / 2.0,
                         width / 2.0, height / 2.0)
                 }
                 blend(Screen())
@@ -260,7 +275,7 @@ fun main() = application {
             }
             layer {
                 draw {
-                    drawDataQuadrant(drawer, data, projection, width / 2.0, height / 2.0, 
+                    drawDataQuadrant(drawer, data, projection, width / 2.0, height / 2.0,
                         width / 2.0, height / 2.0)
                 }
                 blend(Add())

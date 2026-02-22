@@ -13,9 +13,10 @@ import geo.render.withAlpha
 import geo.projection.GeoProjection
 import geo.projection.ProjectionFactory
 import geo.projection.toScreen
+import geo.projection.toWGS84
+import geo.projection.materialize
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-// Key constants can be found in org.openrndr.Key but we'll use string literal for space
 import org.openrndr.extra.compositor.compose
 import org.openrndr.extra.compositor.layer
 import org.openrndr.extra.compositor.draw
@@ -28,8 +29,15 @@ import org.openrndr.math.Vector2
 /**
  * Layer Output Example - Screenshot Capture
  *
- * Demonstrates screenshot capture workflow using OpenRNDR's Screenshots extension.
- * Uses the native Screenshots extension for clean, idiomatic screenshot handling.
+ * Demonstrates screenshot capture workflow using OpenRNDR's Screenshots extension
+ * with CRS-aware data loading.
+ *
+ * ## CRS Flow (Phase 04.1)
+ * ```kotlin
+ * val data = GeoPackage.load("data.gpkg")
+ *     .toWGS84()
+ *     .materialize()
+ * ```
  *
  * ## Screenshot Workflow
  *
@@ -69,16 +77,22 @@ fun main() = application {
     }
 
     program {
-        // Load geo data
+        // Load geo data with CRS transformation
         val data = try {
             GeoPackage.load("data/geo/ness-vectors.gpkg")
+                .toWGS84()
+                .materialize()
         } catch (e: Exception) {
             println("Could not load ness-vectors.gpkg: ${e.message}")
             println("Falling back to sample.geojson")
             GeoJSON.load("data/sample.geojson")
+                .materialize()
         }
 
-        // Calculate bounds from data
+        println("Data CRS: ${data.crs}")
+        println("Features: ${data.listFeatures().size}")
+
+        // Calculate bounds from transformed WGS84 data
         var minX = Double.POSITIVE_INFINITY
         var minY = Double.POSITIVE_INFINITY
         var maxX = Double.NEGATIVE_INFINITY

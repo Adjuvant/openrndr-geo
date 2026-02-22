@@ -7,23 +7,33 @@ import geo.GeoPackage
 import geo.Point
 import geo.LineString
 import geo.Polygon
-import geo.Bounds
 import geo.render.drawPoint
 import geo.render.drawLineString
 import geo.render.drawPolygon
-import geo.render.StyleDefaults
 import geo.render.Style
 import geo.projection.ProjectionFactory
 import geo.projection.toScreen
-import geo.projection.ProjectionBNG
+import geo.projection.toWGS84
+import geo.projection.materialize
 import org.openrndr.math.Vector2
 
 /**
  * Live-coding rendering example using oliveProgram for hot reload.
  *
- * This example demonstrates how to use the TemplateLiveProgram pattern with
- * oliveProgram {} block. All code inside oliveProgram can be modified
- * while the program is running - changes reflect immediately without restart.
+ * This example demonstrates the new Phase 04.1 CRS-aware API:
+ * - Load BNG data (EPSG:27700) and auto-transform to WGS84 (EPSG:4326)
+ * - Use .materialize() to cache transformed features for render loop
+ * - Simplified code: no manual CRS conversion needed
+ *
+ * ## New CRS Flow (Phase 04.1)
+ * ```kotlin
+ * // Old way: Manual conversion
+ * val isBNG = data.crs == "EPSG:27700"
+ * fun toLatLonIfBNG(x, y) = if (isBNG) ProjectionBNG.bngToLatLng(...) else Point(x, y)
+ *
+ * // New way: Fluent API
+ * val data = GeoPackage.load("file.gpkg").toWGS84().materialize()
+ * ```
  *
  * ## Usage
  * 1. Run this program: ./gradlew run --main=geo.examples.LiveRendering
@@ -34,11 +44,7 @@ import org.openrndr.math.Vector2
  * - Change colors, sizes, stroke weights
  * - Modify projection parameters (center, scale)
  * - Add/remove styling logic
- * - Experiment with different visual approaches
  * - All without stopping and restarting the program
- *
- * **Important**: All GeoProjection implementations expect lat/lng (WGS84) coordinates.
- * If data uses BNG (EPSG:27700), convert easting/northing to lat/lng first using ProjectionBNG.bngToLatLng()
  */
 fun main() = application {
     configure {
@@ -47,13 +53,18 @@ fun main() = application {
     }
 
     oliveProgram {
-        // Load larger test dataset (GeoPackage has more features)
+        // Load dataset with NEW CRS flow:
+        // 1. Load BNG data from GeoPackage (EPSG:27700)
+        // 2. Auto-transform to WGS84 (EPSG:4326) using .toWGS84()
+        // 3. Materialize to cache features for render loop using .materialize()
         val data = GeoPackage.load("data/geo/ness-vectors.gpkg")
+            .toWGS84()
+            .materialize()
 
-        // Detect CRS and setup conversion
-        val isBNG = data.crs == "EPSG:27700"  // British National Grid
+        println("Data CRS: ${data.crs}")
+        println("Features loaded: ${data.listFeatures().size}")
 
-// Calculate bounds from data to set proper zoom
+        // Calculate bounds from transformed WGS84 data
         var minX = Double.POSITIVE_INFINITY
         var minY = Double.POSITIVE_INFINITY
         var maxX = Double.NEGATIVE_INFINITY
@@ -79,34 +90,21 @@ fun main() = application {
             maxY = 60.0
         }
 
-        println("Native bounds: min($minX, $minY), max($maxX, $maxY) ($count features)")
+        println("Bounds (WGS84): min($minX, $minY), max($maxX, $maxY) ($count features)")
 
-        // If BNG, convert bounds to lat/lon for proper scaling
-        val (minLL, maxLL) = if (isBNG) {
-            val minLL = ProjectionBNG.bngToLatLng(Vector2(minX, minY))
-            val maxLL = ProjectionBNG.bngToLatLng(Vector2(maxX, maxY))
-            Pair(minLL, maxLL)
-        } else {
-            Pair(Vector2(minX, minY), Vector2(maxX, maxY))
-        }
-
-        // Now we have bounds in lat/lon degrees - calculate center and scale
-        // minLL.x = minLongitude, minLL.y = minLatitude
-        // maxLL.x = maxLongitude, maxLL.y = maxLatitude
+        // Calculate center and scale for projection
         val centerLatLon = Vector2(
-            (minLL.x + maxLL.x) / 2,  // center longitude
-            (minLL.y + maxLL.y) / 2   // center latitude
+            (minX + maxX) / 2,  // center longitude
+            (minY + maxY) / 2   // center latitude
         )
-        val dataWidthLL = maxLL.x - minLL.x
-        val dataHeightLL = maxLL.y - minLL.y
+        val dataWidthLL = maxX - minX
+        val dataHeightLL = maxY - minY
 
         // Calculate scale to fit data with padding
-        val padding = 100.0  // Restore padding
+        val padding = 100.0
         val scaleX = (width - 2 * padding) / dataWidthLL
         val scaleY = (height - 2 * padding) / dataHeightLL
         val autoScale = kotlin.math.min(scaleX, scaleY)
-
-        // Use calculated scale directly (don't multiply)
         val finalScale = autoScale
 
         // Create projection with centered, zoomed view
@@ -114,57 +112,40 @@ fun main() = application {
             width = width.toDouble(),
             height = height.toDouble(),
             center = centerLatLon,
-            scale = finalScale*50 // Magic number!
+            scale = finalScale * 50  // Magic number for visualization
         )
 
-        println("Lat/lon center: lat=${centerLatLon.y}, lon=${centerLatLon.x}")
-        println("Data extent: ${dataWidthLL}° x ${dataHeightLL}°")
-        println("Auto scale: $autoScale, Final scale: $finalScale")
+        println("Center: lat=${centerLatLon.y}, lon=${centerLatLon.x}")
+        println("Scale: $finalScale")
 
         // Count feature types
         val pointFeatures = data.features.count { it.geometry is Point }
         val lineFeatures = data.features.count { it.geometry is LineString }
         val polyFeatures = data.features.count { it.geometry is Polygon }
-        println("Feature types: Points=$pointFeatures, Lines=$lineFeatures, Polygons=$polyFeatures")
-
-        println("GeoPackage CRS: ${data.crs}")
-        println("Is BNG data: $isBNG")
-        println("Using projection: ${projection.javaClass.simpleName}")
-
-// Helper: convert BNG coordinate to lat/lng if needed
-        fun toLatLonIfBNG(easting: Double, northing: Double): Point {
-            return if (isBNG) {
-                val latLng = ProjectionBNG.bngToLatLng(Vector2(easting, northing))
-                // latLng.x = longitude, latLng.y = latitude (from bngToLatLng return value)
-                // Point expects x=longitude, y=latitude
-                Point(latLng.x, latLng.y)
-            } else {
-                Point(easting, northing)
-            }
-        }
+        println("Features: Points=$pointFeatures, Lines=$lineFeatures, Polygons=$polyFeatures")
 
         extend {
-            // Clear background with white background
+            // Clear background with white
             drawer.clear(ColorRGBa.WHITE)
 
             // Use darker colors for lines so they're visible
             val lineColor = ColorRGBa.BLACK
-            val lineWidth = 3.0  // Thicker lines for visibility
+            val lineWidth = 3.0
 
             var renderedCount = 0
             var pointCount = 0
             var lineCount = 0
             var polyCount = 0
 
-// Render all features with default styling
+            // Render all features with default styling
+            // NOTE: Data is already in WGS84, no manual conversion needed!
             data.features.forEach { feature ->
                 val geometry = feature.geometry
 
                 when (geometry) {
                     is Point -> {
-                        // Convert BNG to lat/lng if needed, then project to screen
-                        val latLonPoint = toLatLonIfBNG(geometry.x, geometry.y)
-                        val screenPoint = latLonPoint.toScreen(projection)
+                        // Data is WGS84, project directly to screen
+                        val screenPoint = geometry.toScreen(projection)
                         drawPoint(drawer, screenPoint.x, screenPoint.y, Style {
                             fill = ColorRGBa.RED
                             stroke = ColorRGBa.BLACK
@@ -176,23 +157,10 @@ fun main() = application {
                     }
 
                     is LineString -> {
-                        // Convert BNG to lat/lng for all points, then project to screen
+                        // Data is WGS84, project all points directly
                         val screenPoints = geometry.points.map { point ->
-                            toLatLonIfBNG(point.x, point.y).toScreen(projection)
+                            Point(point.x, point.y).toScreen(projection)
                         }
-
-                        // Debug: print first line's screen coordinates
-//                        if (lineCount == 0) {
-//                            println("=== FIRST LINE DEBUG ===")
-//                            println("First line has ${screenPoints.size} points")
-//                            screenPoints.take(3).forEach { pt ->
-//                                println("  Screen: (${pt.x.toInt()}, ${pt.y.toInt()})")
-//                            }
-//                            println("First line center: (${(screenPoints.sumOf { it.x } / screenPoints.size).toInt()}, ${(screenPoints.sumOf { it.y } / screenPoints.size).toInt()})")
-//                            println("Viewport: ${width}x${height}")
-//                            println("Lines should be visible!")
-//                            println("=== END DEBUG ===")
-//                        }
 
                         drawLineString(drawer, screenPoints, Style {
                             stroke = lineColor
@@ -203,9 +171,9 @@ fun main() = application {
                     }
 
                     is Polygon -> {
-                        // Convert BNG to lat/lng for exterior ring, then project to screen
+                        // Data is WGS84, project exterior ring directly
                         val screenPoints = geometry.exterior.map { point ->
-                            toLatLonIfBNG(point.x, point.y).toScreen(projection)
+                            Point(point.x, point.y).toScreen(projection)
                         }
                         drawPolygon(drawer, screenPoints, Style {
                             fill = ColorRGBa.BLUE
@@ -222,30 +190,18 @@ fun main() = application {
                 }
             }
 
-            // Debug: print render stats once per second (every 60 frames)
-//            if (frameCount % 60 == 0) {
-//                println("Frame $frameCount: rendered $renderedCount features (points=$pointCount, lines=$lineCount, polys=$polyCount)")
-//            }
-
-            // TEST: Draw the center point as a red marker to verify projection works
+            // Draw center point marker
             val centerScreen = Point(centerLatLon.y, centerLatLon.x).toScreen(projection)
-            if (frameCount == 0) {
-                println("== DEBUG ==")
-                println("Center on screen: (${centerScreen.x.toInt()}, ${centerScreen.y.toInt()})")
-                println("Viewport: ${width}x${height}")
-                println("Is center on screen? ${centerScreen.x >= 0 && centerScreen.x <= width && centerScreen.y >= 0 && centerScreen.y <= height}")
-                println("Red circle at: (${centerScreen.x.toInt()}, ${centerScreen.y.toInt()})")
-                println("== END DEBUG ==")
-            }
             drawer.stroke = ColorRGBa.RED
             drawer.strokeWeight = 3.0
             drawer.circle(Vector2(centerScreen.x, centerScreen.y), 30.0)
 
             // TIPS FOR LIVE CODING:
-            // - Try changing ColorRGBa.GRAY.shade(0.9) to other colors
+            // - Try changing ColorRGBa.RED to other colors
             // - Modify Style { } blocks to customize appearance
             // - Add println() to debug feature properties
             // - Use feature.properties to drive visual encoding
+            // - Change the scale multiplier (currently 50) to zoom
         }
     }
 }
