@@ -79,12 +79,10 @@ Plans:
   2. User can apply blend modes (multiply, overlay, screen, etc.) to layers
   3. User can draw graticule/grid lines for lat/lng reference
   4. User can capture rendered output as image files using OpenRNDR screenshot
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 04-01: GeoLayer management and composition
-- [ ] 04-02: Layer blend modes implementation
-- [ ] 04-03: Graticule drawing and output integration
+- [ ] 04-01-PLAN.md — Integrate orx-compositor, create GeoLayer wrapper, graticule generator, and 4 examples
 
 ### Phase 5: Animation
 **Goal**: Users can create animated visualizations by animating geo structures over time
