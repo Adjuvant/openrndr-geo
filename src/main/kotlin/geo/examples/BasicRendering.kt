@@ -10,6 +10,7 @@ import geo.render.Shape
 import geo.render.drawPoint
 import geo.render.writeLineString
 import geo.projection.ProjectionFactory
+import org.openrndr.math.Vector2
 
 /**
  * Basic Rendering Example
@@ -45,7 +46,10 @@ fun main() = application {
 
         // Create a Mercator projection that fits the viewport
         // This converts geographic coordinates (latitude/longitude) to screen coordinates (pixels)
-        val projection = ProjectionFactory.mercator(width = width.toDouble(), height = height.toDouble())
+        val projection = ProjectionFactory.mercator(width = width.toDouble(), height = height.toDouble(),
+            center = Vector2(4.7, 52.1),  // Center on Netherlands (lng, lat)
+            scale = 25000.0                  // Zoom in
+        )
 
         // The extend block is called every frame (60 times per second by default)
         extend {
