@@ -24,3 +24,9 @@ class ProjectionUnrepresentableException(message: String) : Exception(message)
  * Example: Using lat/lng projection with BNG coordinates.
  */
 class CoordinateSystemException(message: String) : Exception(message)
+
+/**
+ * Thrown when CRS transformation fails due to unsupported CRS codes
+ * or missing proj4j-epsg dependency.
+ */
+class CRSTransformationException(message: String) : Exception(message)
