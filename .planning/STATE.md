@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 5 of 5 (Animation)
-Plan: 1 of 3 in current phase
-Status: In progress - 05-01 GeoAnimator infrastructure complete
-Last activity: 2026-02-22 — Completed 05-01 (GeoAnimator with Animatable lifecycle)
+Plan: 2 of 3 in current phase
+Status: In progress - 05-02 property tweening complete
+Last activity: 2026-02-22 — Completed 05-02 (Property tweening primitives with interpolators)
 
-Progress: [██████████████░░░░] 90%
+Progress: [███████████████░░░] 93%
 
 ## Performance Metrics
 
@@ -32,9 +32,10 @@ Progress: [██████████████░░░░] 90%
 | 3. Core Rendering | 4/4 ✓ | 24m | 6.0m |
 | 4. Layer System | 2/2 ✓ | 18m | 9.0m |
 | 4.1 CRS-Aware | 3/3 ✓ | 13m | 4.3m |
-| 5. Animation | 1/3 | 12m | 12m |
+| 5. Animation | 2/3 | 24m | 12m |
 
 **Recent Trend:**
+- 05-02 completed in 12 minutes (Property tweening with linear/Haversine interpolators, 7 verification tests)
 - 05-01 completed in 12 minutes (GeoAnimator infrastructure with Animatable lifecycle)
 - Created GeoAnimator singleton extending OpenRNDR Animatable
 - 15 convenience easing functions for OpenRNDR's built-in Easing enum
@@ -122,6 +123,10 @@ Progress: [██████████████░░░░] 90%
 | 05-01 | Top-level convenience functions (not Companion extensions) | Cleaner DSL: easeInOut() vs Easing.Companion.easeInOut() |
 | 05-01 | @JvmStatic singleton property to avoid JVM signature clash | lazy delegate creates getter conflicting with getInstance() method |
 | 05-01 | Mutable var properties for zero-allocation animation | Required for 60fps per CONTEXT.md, Animatable updates in-place |
+| 05-02 | Use OpenRNDR built-in ::property.animate() syntax | OpenRNDR Animatable already provides this - document rather than reimplement |
+| 05-02 | Position(lat, lng) with Vector2 conversion | Maintain OpenRNDR compatibility while providing semantic clarity for geo coordinates |
+| 05-02 | Pure function interpolators (stateless) | Enable functional composition and easier testing vs class-based |
+| 05-02 | Document per-property easing vs enforcement | Provide guidance in KDoc while allowing user flexibility |
 
 ### Roadmap Evolution
 
@@ -129,9 +134,9 @@ Progress: [██████████████░░░░] 90%
 
 ### Pending Todos
 
-Phase 5 in progress - 1/3 plans complete:
+Phase 5 in progress - 2/3 plans complete:
 - 05-01: GeoAnimator infrastructure ✓ (COMPLETED)
-- 05-02: Property tweening primitives (PENDING)
+- 05-02: Property tweening primitives ✓ (COMPLETED)
 - 05-03: Procedural motion and composition (PENDING)
 
 ### Blockers/Concerns
@@ -140,6 +145,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-22 19:07 UTC
-Stopped at: Completed 05-01-PLAN.md (GeoAnimator infrastructure)
-Resume file: .planning/phases/05-animation/05-01-SUMMARY.md
+Last session: 2026-02-22 19:27 UTC
+Stopped at: Completed 05-02-PLAN.md (Property tweening primitives with interpolators)
+Resume file: .planning/phases/05-animation/05-02-SUMMARY.md
