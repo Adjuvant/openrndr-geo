@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 3 of 5 (Core Rendering)
-Plan: 1 of 3 in current phase - In progress
-Status: Phase 3 started - Style and Point Rendering complete
-Last activity: 2026-02-22 — Completed 03-01-PLAN.md (Style class and Point Renderer)
+Plan: 2 of 3 in current phase
+Status: In progress - LineString and Polygon rendering complete
+Last activity: 2026-02-22 — Completed 03-02-PLAN.md (LineString and Polygon Renderers)
 
-Progress: [███████░░░] 40%
+Progress: [████████░░] 50%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: 9.1 min
-- Total execution time: 1.06 hours
+- Total plans completed: 8
+- Average duration: 8.2 min
+- Total execution time: 1.11 hours
 
 **By Phase:**
 
@@ -29,16 +29,17 @@ Progress: [███████░░░] 40%
 |-------|-------|-------|----------|
 | 1. Data Layer | 4/4 ✓ | 46m | 11.5m |
 | 2. Coordinate Systems | 3/3 ✓ | 16m | 5.3m |
-| 3. Core Rendering | 1/3 | 8m | 8m |
+| 3. Core Rendering | 2/3 | 11m | 5.5m |
 | 4. Layer System | 0/3 | - | - |
 | 5. Animation | 0/3 | - | - |
 
 **Recent Trend:**
-- 02-03 completed in 2 minutes (screen transformation utilities)
-- 2 tasks committed atomically
-- Dual API style: procedural functions + extension methods
-- Batch operations with Sequence/List overloads for performance
-- Screen transformation utilities complete - Phase 2 done
+- 03-02 completed in 3 minutes (LineString and Polygon renderers)
+- 3 tasks committed atomically
+- Pattern: writeX() for internal drawing, drawX() for public API with style merging
+- Used ColorRGBa.withAlpha() for polygon fill opacity
+- Avoided duplication: reused mergeStyles() from StyleDefaults, kept drawPoint() in PointRenderer
+- LineString and Polygon rendering complete - ready for Layer System
 
 ## Accumulated Context
 
@@ -79,6 +80,10 @@ Progress: [███████░░░] 40%
 | 03-01 | DSL syntax with invoke() operator | Consistent with ProjectionMercator pattern: Style { fill = RED } |
 | 03-01 | Shape enum for v1 (Circle, Square, Triangle) | Sealed enum per RESEARCH.md recommendation |
 | 03-01 | mergeStyles() helper for user override | User values override defaults on conflicts |
+| 03-02 | writeX() vs drawX() naming convention | writeX() = internal direct drawing, drawX() = public API with style merging |
+| 03-02 | Reuse functions across package vs duplication | Same package (geo.render) means functions are accessible without re-declaration |
+| 03-02 | ColorRGBa.withAlpha() for fill opacity | Native OpenRNDR method, no separate opacity property needed |
+| 03-02 | Guard clauses for minimum geometry points | LineString needs 2+, Polygon needs 3+ to render |
 
 ### Pending Todos
 
@@ -90,6 +95,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-22 14:16 UTC
-Stopped at: Completed 03-01-SUMMARY.md, Phase 3 in progress
+Last session: 2026-02-22 14:23 UTC
+Stopped at: Completed 03-02-PLAN.md, ready for 03-03
 Resume file: None
