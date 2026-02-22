@@ -85,6 +85,25 @@ Plans:
 - [x] 04-01-PLAN.md — Integrate orx-compositor, create GeoLayer wrapper, graticule generator, and 4 examples
 - [x] 04-02-PLAN.md — Fix UAT gaps: OOM protection, native Screenshots, macOS docs (gap closure)
 
+### Phase 4.1: Design Fix: CRS-Aware GeoSource with Auto-Reprojection (INSERTED)
+
+**Goal:** Automatically detect CRS metadata in loaded data and handle coordinate transformations, eliminating manual CRS management in user code. GeoSource should transform its own coordinates to match the rendering projection.
+**Depends on:** Phase 4
+**Plans:** 3 plans
+
+Plans:
+- [ ] 04.1-01-PLAN.md — Create CRSTransformer wrapper with fail-fast error handling and synthetic tests
+- [ ] 04.1-02-PLAN.md — Add Geometry.transform() extension for all 6 geometry types
+- [ ] 04.1-03-PLAN.md — Implement autoTransformTo(), materialize(), and CRSExtensions.kt
+
+**Details:**
+- CRSTransformer: Wrapper around proj4j's CoordinateTransform, validates CRS codes at construction
+- Geometry.transform(): Sealed class polymorphism for type-safe coordinate transformation
+- GeoSource.autoTransformTo(): Lazy transformation with identity optimization
+- CRSExtensions.kt: toWGS84(), toWebMercator(), materialize() convenience methods
+- Testing: Synthetic-first with Ordnance Survey control points, integration tests with real GeoPackage
+- Addresses pending todo: "Simplify CRS handling API - Make BNG coordinates and other CRS easy to use without manual conversion"
+
 ### Phase 5: Animation
 **Goal**: Users can create animated visualizations by animating geo structures over time
 **Depends on**: Phase 4
