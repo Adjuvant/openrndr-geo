@@ -1,5 +1,6 @@
 package geo
 
+import geo.projection.CRSTransformer
 import geo.projection.GeoProjection
 import org.openrndr.math.Vector2
 
@@ -163,4 +164,52 @@ data class MultiPolygon(val polygons: List<Polygon>) : Geometry() {
      */
     val size: Int
         get() = polygons.size
+}
+
+/**
+ * Transforms geometry coordinates using the given CRS transformer.
+ * Uses sealed class pattern for type-safe, exhaustive transformation of all geometry types.
+ *
+ * Always creates new Geometry instances (immutable), ensuring structural integrity
+ * for nested coordinates (e.g., Polygon holes).
+ *
+ * @param transformer The CRSTransformer to apply to all coordinates
+ * @return A new Geometry with transformed coordinates
+ */
+fun Geometry.transform(transformer: CRSTransformer): Geometry = when (this) {
+    is Point -> transformer.transform(x, y).let { Point(it.x, it.y) }
+
+    is LineString -> LineString(
+        points.map { transformer.transform(it.x, it.y) }
+    )
+
+    is Polygon -> Polygon(
+        exterior.map { transformer.transform(it.x, it.y) },
+        interiors.map { ring ->
+            ring.map { transformer.transform(it.x, it.y) }
+        }
+    )
+
+    is MultiPoint -> MultiPoint(
+        points.map { point ->
+            transformer.transform(point.x, point.y).let { Point(it.x, it.y) }
+        }
+    )
+
+    is MultiLineString -> MultiLineString(
+        lineStrings.map { line ->
+            LineString(line.points.map { transformer.transform(it.x, it.y) })
+        }
+    )
+
+    is MultiPolygon -> MultiPolygon(
+        polygons.map { poly ->
+            Polygon(
+                poly.exterior.map { transformer.transform(it.x, it.y) },
+                poly.interiors.map { ring ->
+                    ring.map { transformer.transform(it.x, it.y) }
+                }
+            )
+        }
+    )
 }

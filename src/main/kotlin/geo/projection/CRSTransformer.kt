@@ -3,6 +3,7 @@ package geo.projection
 import org.locationtech.proj4j.CRSFactory
 import org.locationtech.proj4j.CoordinateTransformFactory
 import org.locationtech.proj4j.ProjCoordinate
+import org.locationtech.proj4j.UnknownAuthorityCodeException
 import org.openrndr.math.Vector2
 import geo.exception.CRSTransformationException
 
@@ -25,17 +26,31 @@ class CRSTransformer(
     private val crsFactory = CRSFactory()
     private val transformFactory = CoordinateTransformFactory()
 
-    private val sourceCrs = crsFactory.createFromName(sourceCRS.lowercase())
-        ?: throw CRSTransformationException(
+    private val sourceCrs = try {
+        crsFactory.createFromName(sourceCRS.lowercase())
+            ?: throw CRSTransformationException(
+                "Unsupported source CRS: $sourceCRS. " +
+                "Ensure proj4j-epsg dependency is included."
+            )
+    } catch (e: UnknownAuthorityCodeException) {
+        throw CRSTransformationException(
             "Unsupported source CRS: $sourceCRS. " +
             "Ensure proj4j-epsg dependency is included."
         )
+    }
 
-    private val targetCrs = crsFactory.createFromName(targetCRS.lowercase())
-        ?: throw CRSTransformationException(
+    private val targetCrs = try {
+        crsFactory.createFromName(targetCRS.lowercase())
+            ?: throw CRSTransformationException(
+                "Unsupported target CRS: $targetCRS. " +
+                "Ensure proj4j-epsg dependency is included."
+            )
+    } catch (e: UnknownAuthorityCodeException) {
+        throw CRSTransformationException(
             "Unsupported target CRS: $targetCRS. " +
             "Ensure proj4j-epsg dependency is included."
         )
+    }
 
     private val transform = transformFactory.createTransform(sourceCrs, targetCrs)
 
