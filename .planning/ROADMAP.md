@@ -79,10 +79,11 @@ Plans:
   2. User can apply blend modes (multiply, overlay, screen, etc.) to layers
   3. User can draw graticule/grid lines for lat/lng reference
   4. User can capture rendered output as image files using OpenRNDR screenshot
-**Plans**: 1 plan
+**Plans**: 2 plans (1 core + 1 gap closure)
 
 Plans:
 - [x] 04-01-PLAN.md — Integrate orx-compositor, create GeoLayer wrapper, graticule generator, and 4 examples
+- [x] 04-02-PLAN.md — Fix UAT gaps: OOM protection, native Screenshots, macOS docs (gap closure)
 
 ### Phase 5: Animation
 **Goal**: Users can create animated visualizations by animating geo structures over time
@@ -109,7 +110,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Data Layer | 4/4 | **Complete** | 2026-02-21 |
 | 2. Coordinate Systems | 3/3 | **Complete** | 2026-02-21 |
 | 3. Core Rendering | 6/6 | **Complete** | 2026-02-22 |
-| 4. Layer System | 1/1 | **Complete** | 2026-02-22 |
+| 4. Layer System | 2/2 | **Complete** | 2026-02-22 |
 | 5. Animation | 0/3 | Not started | - |
 
 ---
