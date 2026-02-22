@@ -3,11 +3,8 @@ package geo.projection
 import geo.Bounds
 import org.openrndr.math.Vector2
 
-/**
- * Factory for creating preset map projections.
- *
- * Provides convenient access to common projections without manual configuration.
- */
+enum class ProjectionType { EQUIRECTANGULAR, MERCATOR }
+
 object ProjectionFactory {
 
     /**
@@ -89,12 +86,17 @@ object ProjectionFactory {
         bounds: geo.Bounds,
         width: Double,
         height: Double,
-        padding: Double = 0.8
-    ): ProjectionEquirectangular {
+        padding: Double = 0.8,
+        projection: ProjectionType = ProjectionType.EQUIRECTANGULAR
+    ): GeoProjection {
         val center = Vector2(bounds.center.first, bounds.center.second)
         val scaleX = 360.0 / bounds.width
         val scaleY = 180.0 / bounds.height
         val scale = minOf(scaleX, scaleY) * padding
-        return ProjectionEquirectangular(ProjectionConfig(width, height, center, scale, null))
+        val config = ProjectionConfig(width, height, center, scale, null)
+        return when (projection) {
+            ProjectionType.EQUIRECTANGULAR -> ProjectionEquirectangular(config)
+            ProjectionType.MERCATOR -> ProjectionMercator(config)
+        }
     }
 }
