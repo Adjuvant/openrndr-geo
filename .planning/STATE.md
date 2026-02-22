@@ -97,7 +97,9 @@ Progress: [██████████] 65%
 
 ### Pending Todos
 
-None - all Phase 1 items complete.
+1 pending todo(s):
+
+- Simplify CRS handling API - Make BNG coordinates and other CRS easy to use without manual conversion
 
 ### Blockers/Concerns
 
