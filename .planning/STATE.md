@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 ## Current Position
 
 Phase: 04.1 of 5+ (CRS-Aware GeoSource)
-Plan: 1 of 3 in current phase
-Status: In progress - CRSTransformer foundation complete
-Last activity: 2026-02-22 — Completed 04.1-01-PLAN.md (CRSTransformer)
+Plan: 2 of 3 in current phase
+Status: In progress - Geometry.transform() complete
+Last activity: 2026-02-22 — Completed 04.1-02-PLAN.md (Geometry transformation)
 
-Progress: [█████████████░] 92%
+Progress: [██████████████░] 94%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: 7.5 min
-- Total execution time: 1.6 hours
+- Total plans completed: 14
+- Average duration: 7.1 min
+- Total execution time: 1.7 hours
 
 **By Phase:**
 
@@ -31,18 +31,20 @@ Progress: [█████████████░] 92%
 | 2. Coordinate Systems | 3/3 ✓ | 16m | 5.3m |
 | 3. Core Rendering | 4/4 ✓ | 24m | 6.0m |
 | 4. Layer System | 2/2 ✓ | 18m | 9.0m |
-| 4.1 CRS-Aware | 1/3 | 2m | 2.0m |
+| 4.1 CRS-Aware | 2/3 | 6m | 3.0m |
 | 5. Animation | 0/2 | - | - |
 
 **Recent Trend:**
+- 04.1-02 completed in 4 minutes (Geometry.transform() implementation)
+- Added transform() extension for all 6 geometry types via sealed class pattern
+- GeometryTransformTest: 7 tests verify structural integrity and immutability
+- Polygon holes (interior rings) preserve nested structure across transformations
+- Multi* geometries properly delegate to base geometry transformations
 - 04.1-01 completed in 2 minutes (CRSTransformer foundation)
-- Created CRSTransformer wrapper around proj4j with O(1) performance
-- Added CRSTransformationException for clear CRS error messages
-- 8 synthetic tests verify Helmert transformation accuracy (~3-5m)
 - 04-01 completed in 15 minutes (Layer System - orx-compositor integration)
 - 04-02 completed in 3 minutes (UAT Gap Closure)
 - Phase 4 (Layer System) fully complete
-- Ready for 04.1-02: Geometry.transform() implementation
+- Ready for 04.1-03: CRS-aware GeoSource with Auto-Reprojection
 
 ## Accumulated Context
 
@@ -105,6 +107,10 @@ Progress: [█████████████░] 92%
 | 04.1-01 | Wrap UnknownAuthorityCodeException in CRSTransformationException | Cleaner API with domain-specific exception |
 | 04.1-01 | Case-insensitive CRS codes via .lowercase() | Consistent behavior for EPSG/EPSG |
 | 04.1-01 | Helmert transformation accuracy ~3-5m in tests | Creative coding acceptable, no need for OSTN15 sub-meter |
+| 04.1-02 | Geometry.transform() returns immutable new instances | Preserves original geometry, enables safe chaining |
+| 04.1-02 | Sealed class exhaustive when for all geometry types | Compile-time safety ensures all types handled |
+| 04.1-02 | Polygon holes transformed with structure preservation | Nested interior rings mapped recursively |
+| 04.1-02 | Multi* geometries delegate to base transformations | Reuses Point, LineString, Polygon transform logic |
 
 ### Roadmap Evolution
 
@@ -120,6 +126,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-22 17:33 UTC
-Stopped at: Completed 04.1-01-PLAN.md (CRSTransformer with tests)
-Resume file: .planning/phases/04.1-design-fix-crs-aware-geosource-with-auto-reprojection/04.1-01-SUMMARY.md
+Last session: 2026-02-22 18:39 UTC
+Stopped at: Completed 04.1-02-PLAN.md (Geometry.transform() with tests)
+Resume file: .planning/phases/04.1-design-fix-crs-aware-geosource-with-auto-reprojection/04.1-02-SUMMARY.md
