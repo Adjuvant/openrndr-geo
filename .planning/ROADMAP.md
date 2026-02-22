@@ -112,12 +112,12 @@ Plans:
   1. User can animate geo structures along defined paths
   2. User can smoothly tween geometry properties (position, color, size) over time
   3. User can apply procedural motion effects to geo primitives
-**Plans**: TBD
+**Plans**: 3 plans in 2 waves
 
 Plans:
-- [ ] 05-01: GeoAnimator interface and path animations
-- [ ] 05-02: Property tweening system
-- [ ] 05-03: Procedural motion primitives
+- [ ] 05-01-PLAN.md — GeoAnimator infrastructure with Animatable lifecycle
+- [ ] 05-02-PLAN.md — Property tweening primitives and interpolators
+- [ ] 05-03-PLAN.md — Procedural motion and animation composition
 
 ## Progress
 
