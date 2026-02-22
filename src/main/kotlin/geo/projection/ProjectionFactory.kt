@@ -1,5 +1,6 @@
 package geo.projection
 
+import geo.Bounds
 import org.openrndr.math.Vector2
 
 /**
@@ -82,5 +83,18 @@ object ProjectionFactory {
     ): GeoProjection {
         val config = ProjectionConfig(width, height, Vector2(0.0, 0.0), 1.0, null)
         return ProjectionEquirectangular(config)
+    }
+
+    fun fitBounds(
+        bounds: geo.Bounds,
+        width: Double,
+        height: Double,
+        padding: Double = 0.8
+    ): ProjectionEquirectangular {
+        val center = Vector2(bounds.center.first, bounds.center.second)
+        val scaleX = 360.0 / bounds.width
+        val scaleY = 180.0 / bounds.height
+        val scale = minOf(scaleX, scaleY) * padding
+        return ProjectionEquirectangular(ProjectionConfig(width, height, center, scale, null))
     }
 }

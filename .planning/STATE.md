@@ -168,5 +168,6 @@ None - All 18 plans complete across 6 phases
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 001 | Write v1.0.0 API docs | 2026-02-22 | a6db87 | [001-write-v1-api-docs](./quick/001-write-v1-api-docs/) |
+| 002 | Extract bbox from GeoJSON, add fitBounds | 2026-02-22 | 85e365 | [002-extract-bbox-fitbounds](./quick/002-extract-bbox-fitbounds/) |
 
-Last activity: 2026-02-22 — Completed quick task 001: Write v1.0.0 API docs
+Last activity: 2026-02-22 — Completed quick task 002: Extract bbox from GeoJSON, add fitBounds
