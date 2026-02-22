@@ -30,12 +30,6 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. User can access feature properties (key-value pairs) for data-driven operations
 **Plans**: 4 plans
 
-Plans:
-- [x] 01-01: Data model and GeoPrimitive hierarchy
-- [x] 01-02: GeoJSON reader implementation
-- [x] 01-03: GeoPackage reader with spatial indexing
-- [x] 01-04: Convenience functions for direct feature access (gap closure)
-
 ### Phase 2: Coordinate Systems
 **Goal**: Users can transform coordinates between geographic systems and render in basic projections
 **Depends on**: Phase 1
@@ -45,11 +39,6 @@ Plans:
   2. User can render data in Mercator and Equirectangular projections
   3. User can transform British National Grid (BNG) coordinates with CRS accuracy (~3-5m using Helmert transformation)
 **Plans**: 3 plans
-
-Plans:
-- [x] 02-01: Projection infrastructure (interface, config, exceptions, internal implementations)
-- [x] 02-02: Public projection implementations (Mercator, Equirectangular, BNG) with DSL configuration
-- [x] 02-03: Screen transformation utilities (procedural + extension) and helper functions
 
 ### Phase 3: Core Rendering
 **Goal**: Users can visualize geo primitives with configurable styling
@@ -62,14 +51,6 @@ Plans:
   4. User can apply a consistent styling API across all geometry types
 **Plans**: 6 plans (3 core + 3 gap closure)
 
-Plans:
-- [x] 03-01-PLAN.md — Create Style class with DSL syntax, Shape enum, and drawPoint function
-- [x] 03-02-PLAN.md — Create writeLineString and writePolygon functions with configurable styling
-- [x] 03-03-PLAN.md — Create Multi* rendering functions and complete documentation
-- [x] 03-04-PLAN.md — Create JUnit tests for rendering features (gap closure)
-- [x] 03-05-PLAN.md — Create BasicRendering.kt example (gap closure)
-- [x] 03-06-PLAN.md — Create LiveRendering.kt example (gap closure)
-
 ### Phase 4: Layer System
 **Goal**: Users can composite multiple data sources as layers and capture rendered output
 **Depends on**: Phase 3
@@ -81,20 +62,11 @@ Plans:
   4. User can capture rendered output as image files using OpenRNDR screenshot
 **Plans**: 2 plans (1 core + 1 gap closure)
 
-Plans:
-- [x] 04-01-PLAN.md — Integrate orx-compositor, create GeoLayer wrapper, graticule generator, and 4 examples
-- [x] 04-02-PLAN.md — Fix UAT gaps: OOM protection, native Screenshots, macOS docs (gap closure)
-
 ### Phase 4.1: Design Fix: CRS-Aware GeoSource with Auto-Reprojection (INSERTED)
 
 **Goal:** Automatically detect CRS metadata in loaded data and handle coordinate transformations, eliminating manual CRS management in user code. GeoSource should transform its own coordinates to match the rendering projection.
 **Depends on:** Phase 4
-**Plans:** 3 plans
-
-Plans:
-- [x] 04.1-01-PLAN.md — Create CRSTransformer wrapper with fail-fast error handling and synthetic tests
-- [x] 04.1-02-PLAN.md — Add Geometry.transform() extension for all 6 geometry types
-- [x] 04.1-03-PLAN.md — Implement autoTransformTo(), materialize(), and CRSExtensions.kt
+**Plans: 3/3 **Complete** **COMPLETE**** 3 plans
 
 **Details:**
 - CRSTransformer: Wrapper around proj4j's CoordinateTransform, validates CRS codes at construction
@@ -113,11 +85,6 @@ Plans:
   2. User can smoothly tween geometry properties (position, color, size) over time
   3. User can apply procedural motion effects to geo primitives
 **Plans**: 3 plans in 2 waves
-
-Plans:
-- [x] 05-01-PLAN.md — GeoAnimator infrastructure with Animatable lifecycle
-- [x] 05-02-PLAN.md — Property tweening primitives and interpolators
-- [x] 05-03-PLAN.md — Procedural motion and animation composition
 
 ## Progress
 
