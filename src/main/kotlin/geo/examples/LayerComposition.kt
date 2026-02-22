@@ -48,6 +48,18 @@ import org.openrndr.math.Vector2
  *
  * **Graticule Layer**: A lat/lng grid provides visual reference for orientation.
  * Use [generateGraticuleSource] to create a GeoSource from grid points.
+ *
+ * ## Platform Compatibility
+ *
+ * **macOS Note:** This example uses orx-fx blend modes (Multiply, Overlay) which may
+ * encounter shader compilation issues on macOS with the Metal backend. If you experience
+ * freezing or shader warnings (textureSize0/textureSize1 uniforms), this is a known
+ * orx-fx library issue, not a problem with this library.
+ *
+ * **Workaround:** On macOS, consider using simple alpha blending instead of orx-fx blend
+ * modes, or test on Windows/Linux platforms where the Metal backend is not used.
+ *
+ * **Tracking:** See OpenRNDR/orx issues for Metal backend compatibility updates.
  */
 fun main() = application {
     configure {

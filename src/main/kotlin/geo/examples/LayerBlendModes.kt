@@ -64,6 +64,17 @@ import org.openrndr.math.Vector2
  *
  * **For highlighting:** Use Add with low-opacity layers to create
  * subtle emphasis without overwhelming the base layer.
+ *
+ * ## Platform Compatibility
+ *
+ * **macOS Note:** This example demonstrates all four blend modes using orx-fx. The Metal
+ * backend on macOS may have shader compilation issues with these blend modes. This is
+ * a known orx-fx library issue, not specific to openrndr-geo.
+ *
+ * - **Affected:** macOS with Metal backend
+ * - **Not affected:** Windows, Linux, macOS with OpenGL (if available)
+ *
+ * **Workaround:** Test blend mode examples on non-macOS platforms for full compatibility.
  */
 
 // Helper function to draw data in a specific quadrant
