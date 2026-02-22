@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-21)
 
 ## Current Position
 
-Phase: 5 of 5 (Animation)
-Plan: 0 of 3 in current phase
-Status: Phase 4 complete - Layer System finished, all requirements verified
-Last activity: 2026-02-22 — Completed 04-01-PLAN.md (Layer System), Verification passed (4/4)
+Phase: 4 of 5 (Layer System)
+Plan: 2 of 2 in current phase
+Status: Phase 4 complete - UAT gaps fixed, ready for Phase 5
+Last activity: 2026-02-22 — Completed 04-02-PLAN.md (UAT Gap Closure)
 
-Progress: [████████████] 85%
+Progress: [████████████] 90%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 11
-- Average duration: 8.2 min
-- Total execution time: 1.5 hours
+- Total plans completed: 12
+- Average duration: 8.0 min
+- Total execution time: 1.6 hours
 
 **By Phase:**
 
@@ -30,18 +30,21 @@ Progress: [████████████] 85%
 | 1. Data Layer | 4/4 ✓ | 46m | 11.5m |
 | 2. Coordinate Systems | 3/3 ✓ | 16m | 5.3m |
 | 3. Core Rendering | 4/4 ✓ | 24m | 6.0m |
-| 4. Layer System | 1/1 ✓ | 15m | 15.0m |
-| 5. Animation | 0/3 | - | - |
+| 4. Layer System | 2/2 ✓ | 18m | 9.0m |
+| 5. Animation | 0/2 | - | - |
 
 **Recent Trend:**
 - 04-01 completed in 15 minutes (Layer System - orx-compositor integration)
+- 04-02 completed in 3 minutes (UAT Gap Closure)
 - Created GeoLayer wrapper with DSL syntax for compositional layers
 - Created graticule generator (1°, 5°, 10° spacing) for lat/lng reference
 - Created 4 examples: LayerComposition, LayerBlendModes, LayerGraticule, LayerOutput
 - Demonstrates orx-compositor DSL: compose { layer { draw { } blend() } }
 - Shows all 4 blend modes: Multiply, Overlay, Screen, Add
-- Screenshot capture via renderTarget() and colorBuffer.saveToFile()
-- Phase 4 (Layer System) complete
+- Screenshot capture now uses native Screenshots extension
+- Graticule generation now has OOM protection
+- macOS Metal backend compatibility documented in examples
+- Phase 4 (Layer System) fully complete
 - Ready for Phase 5: Animation
 
 ## Accumulated Context
@@ -99,6 +102,9 @@ Progress: [████████████] 85%
 | 04-01 | Graticule as Point features at grid intersections | Simplest approach that works with existing rendering pipeline |
 | 04-01 | Screenshot via renderTarget() offscreen rendering | Native OpenRNDR approach with colorBuffer.saveToFile() |
 | 04-01 | No custom layer management infrastructure | Reuses orx-compositor entirely - no new APIs needed |
+| 04-02 | Input validation via require() for safety | Graticule OOM prevented with require(spacing >= 1.0) |
+| 04-02 | Native Screenshots extension preferred | OpenRNDR's extend(Screenshots()) over manual renderTarget |
+| 04-02 | macOS Metal issue is library issue | Document as orx-fx issue, not openrndr-geo issue |
 
 ### Pending Todos
 
@@ -112,6 +118,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-22 16:38 UTC
-Stopped at: Completed 04-01-PLAN.md (Layer System - orx-compositor integration)
+Last session: 2026-02-22 17:33 UTC
+Stopped at: Completed 04-02-PLAN.md (UAT Gap Closure - all 3 issues resolved)
 Resume file: None
