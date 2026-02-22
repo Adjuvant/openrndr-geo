@@ -136,10 +136,15 @@ class GeoSourceTest {
         assertEquals(2, accessCount)
     }
 
-    @Test(expected = UnsupportedOperationException::class)
-    fun testAutoTransformToThrowsForDifferentCRS() {
+    @Test
+    fun testAutoTransformToCreatesNewSourceForDifferentCRS() {
         val source = TestGeoSource("EPSG:4326")
-        source.autoTransformTo("EPSG:3857")
+        val transformed = source.autoTransformTo("EPSG:3857")
+
+        // Should create a new GeoSource, not throw
+        assertNotNull(transformed)
+        assertNotSame("Should be a different instance", source, transformed)
+        assertEquals("Should have target CRS", "EPSG:3857", transformed.crs)
     }
 
     @Test
