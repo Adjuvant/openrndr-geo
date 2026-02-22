@@ -33,12 +33,26 @@ fun main() = application {
         
         // Get bounding box for auto-framing
         val bbox = geojson.totalBoundingBox()
+        
+        // For equirectangular, we need to set center and scale appropriately
+        // The center is the geographic center, scale controls zoom level
         val center = Vector2(bbox.center.first, bbox.center.second)
         
-        // Calculate scale to fit data in view
-        val scaleX = width / bbox.width
-        val scaleY = height / bbox.height
-        val scale = minOf(scaleX, scaleY) * 0.9  // 90% to add padding
+        // Calculate a reasonable scale based on the data extent
+        // At scale=1, the full world (-180 to 180 lng, -90 to 90 lat) fills the smallest dimension
+        // We want our data extent to fill about 80% of the screen
+        val dataWidthDegrees = bbox.width
+        val dataHeightDegrees = bbox.height
+        val worldWidthDegrees = 360.0
+        val worldHeightDegrees = 180.0
+        
+        // Calculate scale to fit data with padding
+        val scaleX = worldWidthDegrees / dataWidthDegrees
+        val worldHeightScaled = worldHeightDegrees * (width.toDouble() / worldWidthDegrees)
+        val scaleY = worldHeightDegrees / dataHeightDegrees
+        
+        // Use the smaller scale to fit both dimensions, then adjust for aspect ratio
+        val scale = minOf(scaleX, scaleY) * 0.8  // 80% to add padding
 
         // Create projection centered on data
         val projection = ProjectionFactory.equirectangular(
