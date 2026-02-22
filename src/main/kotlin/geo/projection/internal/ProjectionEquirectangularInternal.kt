@@ -4,10 +4,6 @@ import geo.projection.GeoProjection
 import geo.projection.ProjectionConfig
 import org.openrndr.math.Vector2
 
-/**
- * Internal Equirectangular projection implementation.
- * Simple linear mapping: lon [-180, 180] → [0, width], lat [-90, 90] → [height, 0].
- */
 class ProjectionEquirectangularInternal(
     private val config: ProjectionConfig
 ) : GeoProjection {
@@ -16,19 +12,24 @@ class ProjectionEquirectangularInternal(
         val lat = latLng.y
         val lon = latLng.x
 
-        // Normalize longitude to [-180, 180]
         val normalizedLon = normalizeLongitude(lon)
+        val centerLon = config.center?.x ?: 0.0
+        val centerLat = config.center?.y ?: 0.0
+        val scale = config.scale
 
-        // Linear mapping
-        val x = (normalizedLon + 180.0) / 360.0 * config.width
-        val y = config.height - ((lat + 90.0) / 180.0 * config.height)
+        val x = config.width / 2.0 + (normalizedLon - centerLon) * (config.width / 360.0) * scale
+        val y = config.height / 2.0 - (lat - centerLat) * (config.height / 180.0) * scale
 
         return Vector2(x, y)
     }
 
     override fun unproject(screen: Vector2): Vector2 {
-        val lon = (screen.x / config.width) * 360.0 - 180.0
-        val lat = 90.0 - (screen.y / config.height) * 180.0
+        val centerLon = config.center?.x ?: 0.0
+        val centerLat = config.center?.y ?: 0.0
+        val scale = config.scale
+
+        val lon = centerLon + (screen.x - config.width / 2.0) / (config.width / 360.0) / scale
+        val lat = centerLat - (screen.y - config.height / 2.0) / (config.height / 180.0) / scale
         return Vector2(lon, lat)
     }
 
@@ -37,11 +38,10 @@ class ProjectionEquirectangularInternal(
     }
 
     override fun fitWorld(config: ProjectionConfig): GeoProjection {
-        return ProjectionEquirectangularInternal(config)
+        return ProjectionEquirectangularInternal(config.copy(center = Vector2(0.0, 0.0), scale = 1.0))
     }
 
     private fun normalizeLongitude(longitude: Double): Double {
-        // Map to [-180, 180] (CONTEXT.md decision: normalize automatically)
         var normalized = ((longitude % 360.0) + 360.0) % 360.0
         if (normalized > 180.0) normalized -= 360.0
         return normalized
