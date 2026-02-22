@@ -21,10 +21,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Rendering
 
-- [ ] **REND-01**: User can render Point geometries with configurable styling (color, size, shape)
-- [ ] **REND-02**: User can render LineString geometries with configurable styling (color, stroke weight)
-- [ ] **REND-03**: User can render Polygon geometries with configurable fill and stroke
-- [ ] **REND-04**: User can apply styling API (color, stroke, fill, opacity) to geometries
+- [x] **REND-01**: User can render Point geometries with configurable styling (color, size, shape)
+- [x] **REND-02**: User can render LineString geometries with configurable styling (color, stroke weight)
+- [x] **REND-03**: User can render Polygon geometries with configurable fill and stroke
+- [x] **REND-04**: User can apply styling API (color, stroke, fill, opacity) to geometries
 - [ ] **REND-05**: User can stack multiple data sources as layers
 - [ ] **REND-06**: User can apply blend modes to layers (multiply, overlay, screen, etc.)
 
@@ -86,10 +86,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | COORD-01 | 2 | Complete |
 | COORD-02 | 2 | Complete |
 | COORD-03 | 2 | Complete |
-| REND-01 | 3 | Pending |
-| REND-02 | 3 | Pending |
-| REND-03 | 3 | Pending |
-| REND-04 | 3 | Pending |
+| REND-01 | 3 | Complete |
+| REND-02 | 3 | Complete |
+| REND-03 | 3 | Complete |
+| REND-04 | 3 | Complete |
 | REND-05 | 4 | Pending |
 | REND-06 | 4 | Pending |
 | OUTP-01 | 4 | Pending |
