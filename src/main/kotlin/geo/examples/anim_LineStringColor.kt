@@ -10,6 +10,7 @@ import geo.projection.ProjectionFactory
 import geo.render.Style
 import geo.render.drawLineString
 import geo.animation.animator
+import geo.projection.ProjectionType
 
 fun main() = application {
     configure {
@@ -19,11 +20,19 @@ fun main() = application {
 
     program {
         val geojson = GeoJSON.load("data/geo/catchment-topo.geojson")
-        val projection = ProjectionFactory.fitBounds(geojson.boundingBox(), width.toDouble(), height.toDouble())
+        val projection = ProjectionFactory.fitBounds(geojson.boundingBox(),
+            width.toDouble(), height.toDouble(), padding = 1.0,
+            projection = ProjectionType.MERCATOR)
 
         // Collect features for rendering
         val features = geojson.listFeatures()
 
+        // Extract min/max of property_value for linear mapping
+        val propertyValues = features.mapNotNull { it.doubleProperty("property_value") }
+        val minValue = propertyValues.minOrNull() ?: 0.0
+        val maxValue = propertyValues.maxOrNull() ?: 1.0
+        val valueRange = maxValue - minValue
+        println("Value range: $minValue to $maxValue")
         // Get animator for color animation
         val animator = animator()
 
@@ -47,15 +56,20 @@ fun main() = application {
 
             // Draw all LineString features with animated color
             features.forEach { feature ->
+                // Grab the height from line and use for stroke later
+                val propertyValue = feature.doubleProperty("property_value") ?: minValue
+                val t = if (valueRange > 0.0) (propertyValue - minValue) / valueRange else 0.0
+                var weight = 0.05 + t * (.5 - 0.05) // linear map to 0.05–0.5
+
                 when (val geom = feature.geometry) {
                     is LineString -> {
                         val screenCoords = geom.points.map { pt: Vector2 -> projection.project(pt) }
-                        drawLineString(drawer, screenCoords, Style(stroke = currentColor, strokeWeight = 1.5))
+                        drawLineString(drawer, screenCoords, Style(stroke = currentColor, strokeWeight = weight))
                     }
                     is MultiLineString -> {
                         geom.lineStrings.forEach { line ->
                             val screenCoords = line.points.map { pt: Vector2 -> projection.project(pt) }
-                            drawLineString(drawer, screenCoords, Style(stroke = currentColor, strokeWeight = 1.5))
+                            drawLineString(drawer, screenCoords, Style(stroke = currentColor, strokeWeight = weight))
                         }
                     }
                     else -> { /* Skip non-line geometries */ }
