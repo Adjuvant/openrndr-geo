@@ -2,10 +2,15 @@ package geo.projection
 
 import geo.Bounds
 import org.openrndr.math.Vector2
+import kotlin.math.PI
+import kotlin.math.ln
+import kotlin.math.tan
 
 enum class ProjectionType { EQUIRECTANGULAR, MERCATOR }
 
 object ProjectionFactory {
+
+    private const val MAX_LATITUDE = 85.05112878
 
     /**
      * Create a Mercator projection for the given viewport.
@@ -90,10 +95,34 @@ object ProjectionFactory {
         projection: ProjectionType = ProjectionType.EQUIRECTANGULAR
     ): GeoProjection {
         val center = Vector2(bounds.center.first, bounds.center.second)
-        val scaleX = 360.0 / bounds.width
-        val scaleY = 180.0 / bounds.height
-        val scale = minOf(scaleX, scaleY) * padding
-        val config = ProjectionConfig(width, height, center, scale, null)
+
+        val config = when (projection) {
+            ProjectionType.EQUIRECTANGULAR -> {
+                val scaleX = 360.0 / bounds.width
+                val scaleY = 180.0 / bounds.height
+                val scale = minOf(scaleX, scaleY) * padding
+                ProjectionConfig(width, height, center, scale, null)
+            }
+            ProjectionType.MERCATOR -> {
+                val clampedMinY = bounds.minY.coerceIn(-MAX_LATITUDE, MAX_LATITUDE)
+                val clampedMaxY = bounds.maxY.coerceIn(-MAX_LATITUDE, MAX_LATITUDE)
+
+                val projMinX = Math.toRadians(bounds.minX)
+                val projMaxX = Math.toRadians(bounds.maxX)
+                val projMinY = ln(tan(PI / 4 + Math.toRadians(clampedMinY) / 2))
+                val projMaxY = ln(tan(PI / 4 + Math.toRadians(clampedMaxY) / 2))
+
+                val projWidth = projMaxX - projMinX
+                val projHeight = kotlin.math.abs(projMaxY - projMinY)
+
+                val scaleX = width / projWidth
+                val scaleY = height / projHeight
+                val scale = minOf(scaleX, scaleY) * padding
+
+                ProjectionConfig(width, height, center, scale, null)
+            }
+        }
+
         return when (projection) {
             ProjectionType.EQUIRECTANGULAR -> ProjectionEquirectangular(config)
             ProjectionType.MERCATOR -> ProjectionMercator(config)
