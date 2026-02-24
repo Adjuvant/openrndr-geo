@@ -308,7 +308,8 @@ class GeoJSONSource(
     crs: String = "EPSG:4326",
     private val bbox: Bounds? = null
 ) : GeoSource(crs) {
-    
+
+    // TODO confusing for this to be boundingBox, but when using geopackage it is totalBoundingBox, should be common entry point.
     fun boundingBox(): Bounds = bbox ?: totalBoundingBox()
     companion object {
         /**
