@@ -13,6 +13,7 @@ import geo.render.withAlpha
 import geo.layer.generateGraticuleSource
 import geo.projection.GeoProjection
 import geo.projection.ProjectionFactory
+import geo.projection.ProjectionType
 import geo.projection.toScreen
 import geo.projection.toWGS84
 import geo.projection.materialize
@@ -120,7 +121,8 @@ fun main() = application {
         }
 
         val dataBounds = geo.Bounds(minX, minY, maxX, maxY)
-        println("Bounds (WGS84): $dataBounds")
+        println("Bounds (WGS84): $dataBounds (calculated)")
+        println("Bounds (EPSG:27700): ${data.totalBoundingBox()} (from data)")
         println("Features counted: $count")
 
         // Create projection (Mercator with padding)
@@ -132,15 +134,18 @@ fun main() = application {
         val scale = kotlin.math.min(scaleX, scaleY)
         val center = Vector2((minX + maxX) / 2, (minY + maxY) / 2)
 
-        val projection: GeoProjection = ProjectionFactory.mercator(
-            width = width.toDouble(),
-            height = height.toDouble(),
-            center = center,
-            scale = scale
-        )
+//        val projection: GeoProjection = ProjectionFactory.mercator(
+//            width = width.toDouble(),
+//            height = height.toDouble(),
+//            center = center,
+//            scale = scale
+//        )
+        val projection = ProjectionFactory.fitBounds(data.totalBoundingBox(),
+            width.toDouble(), height.toDouble(), padding = .80,
+            projection = ProjectionType.MERCATOR)
 
         // Create graticule source (5-degree spacing)
-        val graticuleSource = generateGraticuleSource(5.0, dataBounds)
+        val graticuleSource = generateGraticuleSource(5.0, data.totalBoundingBox())
 
         // Create compositor with layers
         // Layer order: background -> graticule -> data (top)
@@ -153,7 +158,7 @@ fun main() = application {
             // Graticule layer (middle) - just draw points as grid intersections
             layer {
                 draw {
-                    drawer.fill = ColorRGBa.WHITE.withAlpha(0.3)
+                    drawer.fill = ColorRGBa.WHITE.withAlpha(0.5)
                     drawer.stroke = null
                     graticuleSource.features.forEach { feature ->
                         if (feature.geometry is Point) {

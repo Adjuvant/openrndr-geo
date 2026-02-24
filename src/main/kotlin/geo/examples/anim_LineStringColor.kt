@@ -11,6 +11,7 @@ import geo.render.Style
 import geo.render.drawLineString
 import geo.animation.animator
 import geo.projection.ProjectionType
+import org.openrndr.draw.loadFont
 
 fun main() = application {
     configure {
@@ -19,6 +20,8 @@ fun main() = application {
     }
 
     program {
+        val font = loadFont("data/fonts/default.otf", 22.0)
+
         val geojson = GeoJSON.load("data/geo/catchment-topo.geojson")
         val projection = ProjectionFactory.fitBounds(geojson.boundingBox(),
             width.toDouble(), height.toDouble(), padding = 1.0,
@@ -77,6 +80,7 @@ fun main() = application {
             }
 
             // Info overlay
+            drawer.fontMap = font
             drawer.fill = ColorRGBa.WHITE
             drawer.text("LineString Color Animation", 20.0, 30.0)
             drawer.text("Progress: ${(animator.progress * 100).toInt()}%", 20.0, 55.0)

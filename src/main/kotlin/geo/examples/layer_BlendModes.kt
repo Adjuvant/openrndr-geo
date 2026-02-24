@@ -13,12 +13,14 @@ import geo.render.drawPolygon
 import geo.render.withAlpha
 import geo.projection.GeoProjection
 import geo.projection.ProjectionFactory
+import geo.projection.ProjectionType
 import geo.projection.toScreen
 import geo.projection.toWGS84
 import geo.projection.materialize
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
+import org.openrndr.draw.loadFont
 import org.openrndr.extra.compositor.compose
 import org.openrndr.extra.compositor.layer
 import org.openrndr.extra.compositor.draw
@@ -86,6 +88,7 @@ import org.openrndr.math.Vector2
  * **Workaround:** Test blend mode examples on non-macOS platforms for full compatibility.
  */
 
+// TODO promote helper function to API feature, quite reusable.
 // Helper function to draw data in a specific quadrant
 private fun drawDataQuadrant(
     drawer: Drawer,
@@ -161,6 +164,7 @@ fun main() = application {
     }
 
     program {
+        val font = loadFont("data/fonts/default.otf", 64.0)
         // Load geo data with CRS transformation
         val data = try {
             GeoPackage.load("data/geo/ness-vectors.gpkg")
@@ -199,20 +203,9 @@ fun main() = application {
         }
 
         // Create projection
-        val padding = 50.0
-        val dataWidth = maxX - minX
-        val dataHeight = maxY - minY
-        val scaleX = (width - 2 * padding) / dataWidth
-        val scaleY = (height - 2 * padding) / dataHeight
-        val scale = kotlin.math.min(scaleX, scaleY) * 0.5  // Smaller scale for 4-quadrant view
-        val center = Vector2((minX + maxX) / 2, (minY + maxY) / 2)
-
-        val projection: GeoProjection = ProjectionFactory.mercator(
-            width = width.toDouble(),
-            height = height.toDouble(),
-            center = center,
-            scale = scale
-        )
+        val projection = ProjectionFactory.fitBounds(data.totalBoundingBox(),
+            width.toDouble(), height.toDouble(), padding = .80,
+            projection = ProjectionType.MERCATOR)
 
         // Create 4-quadrant blend mode comparison
         val composite = compose {
@@ -230,7 +223,8 @@ fun main() = application {
             }
             layer {
                 draw {
-                    drawDataQuadrant(drawer, data, projection, 0.0, 0.0,
+                    val sineShift = kotlin.math.sin(seconds / 180.0 * kotlin.math.PI) * (width / 2.0) * 0.5
+                    drawDataQuadrant(drawer, data, projection, 0.0 + sineShift, 0.0,
                         width / 2.0, height / 2.0)
                 }
                 blend(Multiply())
@@ -245,7 +239,8 @@ fun main() = application {
             }
             layer {
                 draw {
-                    drawDataQuadrant(drawer, data, projection, width / 2.0, 0.0,
+                    val sineShift = kotlin.math.sin(seconds / 180.0 * kotlin.math.PI) * (width / 2.0) * 0.5
+                    drawDataQuadrant(drawer, data, projection, width / 2.0 - sineShift, 0.0,
                         width / 2.0, height / 2.0)
                 }
                 blend(Overlay())
@@ -260,7 +255,8 @@ fun main() = application {
             }
             layer {
                 draw {
-                    drawDataQuadrant(drawer, data, projection, 0.0, height / 2.0,
+                    val sineShift = kotlin.math.sin(seconds / 180.0 * kotlin.math.PI) * (width / 2.0) * 0.5
+                    drawDataQuadrant(drawer, data, projection, 0.0 + sineShift, height / 2.0,
                         width / 2.0, height / 2.0)
                 }
                 blend(Screen())
@@ -275,7 +271,8 @@ fun main() = application {
             }
             layer {
                 draw {
-                    drawDataQuadrant(drawer, data, projection, width / 2.0, height / 2.0,
+                    val sineShift = kotlin.math.sin(seconds / 180.0 * kotlin.math.PI) * (width / 2.0) * 0.5
+                    drawDataQuadrant(drawer, data, projection, width / 2.0 - sineShift, height / 2.0,
                         width / 2.0, height / 2.0)
                 }
                 blend(Add())
@@ -283,6 +280,7 @@ fun main() = application {
         }
 
         extend {
+            drawer.fontMap = font
             composite.draw(drawer)
         }
     }
