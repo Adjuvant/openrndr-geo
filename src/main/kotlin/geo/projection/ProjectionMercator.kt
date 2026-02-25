@@ -33,7 +33,8 @@ class ProjectionMercator(
     override fun fitWorld(config: ProjectionConfig): GeoProjection {
         val worldWidth = 2 * PI
         val worldHeight = 2 * ln(tan(PI / 4 + Math.toRadians(MAX_LATITUDE) / 2))
-        
+
+        // TODO This does not make sense
         val scaleX = config.width / worldWidth
         val scaleY = config.height / worldHeight
         val scale = minOf(scaleX, scaleY)

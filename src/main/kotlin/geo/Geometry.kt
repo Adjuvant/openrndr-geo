@@ -2,6 +2,7 @@ package geo
 
 import geo.projection.CRSTransformer
 import geo.projection.GeoProjection
+import geo.projection.ProjectionMercator
 import org.openrndr.math.Vector2
 
 /**
@@ -54,6 +55,13 @@ data class Point(val x: Double, val y: Double) : Geometry() {
  * @property points The list of points defining the line string
  */
 data class LineString(val points: List<Vector2>) : Geometry() {
+    fun toScreen(projection: GeoProjection): List<Vector2> {
+        return points.map { pt ->
+            // Convert each Vector2 geographic point to screen space
+            Point(pt.x, pt.y).toScreen(projection)
+        }
+    }
+
     init {
         require(points.size >= 2) { "LineString must have at least 2 points" }
     }
@@ -95,6 +103,16 @@ data class Polygon(
      * Returns true if this polygon has interior rings (holes).
      */
     fun hasHoles(): Boolean = interiors.isNotEmpty()
+
+    fun exteriorToScreen(projection: GeoProjection): List<Vector2> {
+        return exterior.map { point ->
+            Point(point.x, point.y).toScreen(projection)
+        }
+    }
+
+    fun interiorsToScreen(projection: GeoProjection): List<List<Vector2>>{
+        TODO("Not yet implemented")
+    }
 }
 
 /**

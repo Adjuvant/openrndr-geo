@@ -11,6 +11,7 @@ import geo.render.Style
 import geo.render.drawLineString
 import geo.animation.animator
 import geo.projection.ProjectionType
+import org.openrndr.color.mix
 import org.openrndr.draw.loadFont
 
 fun main() = application {
@@ -55,7 +56,7 @@ fun main() = application {
             drawer.clear(ColorRGBa.fromHex("#1a1a2e"))
 
             // Interpolate color based on animation progress
-            val currentColor = mixColors(startColor, endColor, animator.progress)
+            val currentColor = mix(startColor, endColor, animator.progress)
 
             // Draw all LineString features with animated color
             features.forEach { feature ->
@@ -87,16 +88,4 @@ fun main() = application {
             drawer.text("Features: ${features.size}", 20.0, 80.0)
         }
     }
-}
-
-/**
- * Linear color interpolation between two colors
- */
-private fun mixColors(c1: ColorRGBa, c2: ColorRGBa, t: Double): ColorRGBa {
-    return ColorRGBa(
-        r = c1.r + (c2.r - c1.r) * t,
-        g = c1.g + (c2.g - c1.g) * t,
-        b = c1.b + (c2.b - c1.b) * t,
-        alpha = c1.a + (c2.a - c1.a) * t
-    )
 }

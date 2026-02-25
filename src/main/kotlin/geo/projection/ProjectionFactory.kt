@@ -2,6 +2,7 @@ package geo.projection
 
 import geo.Bounds
 import org.openrndr.math.Vector2
+import org.openrndr.shape.IntRectangle
 import kotlin.math.PI
 import kotlin.math.ln
 import kotlin.math.tan
@@ -24,9 +25,19 @@ object ProjectionFactory {
         width: Double = 800.0,
         height: Double = 600.0,
         center: Vector2? = null,
-        scale: Double = 1.0
+        scale: Double = 1.0,
+        bounds: Bounds? = null
     ): ProjectionMercator {
         return ProjectionMercator(ProjectionConfig(width, height, center, scale, null))
+    }
+
+    /**
+     * Create a Mercator projection for the provided projection configuration.
+     * @param config Complete projection configuration
+     * @return Configured Mercator projection
+     */
+    fun mercator(config: ProjectionConfig) : ProjectionMercator {
+        return ProjectionMercator(config)
     }
 
     /**
@@ -65,6 +76,7 @@ object ProjectionFactory {
      * @param height Screen height in pixels
      * @return Mercator projection with world bounds
      */
+    // TODO 24th Feb: his didn't work natively, seeing if bounds does trick, 25th Feb: it's fucked
     fun fitWorldMercator(
         width: Double = 800.0,
         height: Double = 600.0
