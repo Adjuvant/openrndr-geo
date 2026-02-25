@@ -5,13 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** An expressive, well-architected API that makes exploring intersections of geo datasets feel fluid and creative — decoupling data operations from rendering so new visual ideas can be prototyped quickly.
-**Current focus:** v1.0.0 shipped — Ready for next milestone
+**Current focus:** Post-v1.0.0 bug fixes and API improvements — Addressing friction discovered during real-world usage
 
 ## Current Position
 
 Phase: v1.0.0 milestone — **SHIPPED**
-Status: Complete - All phases verified and archived
-Last activity: 2026-02-22 — Milestone v1.0.0 completed
+Status: Post-release bug fixes and API improvements in progress
+Last activity: 2026-02-25 — Identified 6 critical issues during manual testing:
+- Projection scaling/fitBounds broken
+- Rendering inefficient (projects on every frame)
+- MultiPolygon fails on ocean data
+- API has too much boilerplate for common workflows
 
 Progress: [██████████████████] 100%
 
@@ -139,9 +143,21 @@ Progress: [██████████████████] 100%
 
 ## Session Continuity
 
-Last session: 2026-02-22 20:54 UTC
-Stopped at: Completed 05-03-PLAN.md (Procedural motion and animation composition) - **PHASE 5 COMPLETE**
-Resume file: .planning/phases/05-animation/05-03-SUMMARY.md
+Last session: 2026-02-25 22:15 UTC
+Stopped at: Captured 6 post-v1.0.0 todos from manual testing and code review
+Resume file: .planning/todos/pending/
+
+**Recent Discovery:** User has been manually fixing bugs since v1.0.0:
+- Fixed projection fitting/scaling issues
+- Added batch screen space projection ideas
+- Identified MultiPolygon rendering failures
+- Reduced API boilerplate in examples
+
+**Key commits since v1.0.0:**
+- 19bbdfd: "bugs: Found a bunch! Fixing and marking out todos as I go"
+- 877f7ba: fitBounds() Mercator fixes
+- a999a4c: GeoJSON bbox extraction and fitBounds
+- f68f3c3: Example organization by category
 
 ## Phase 5 Summary
 
@@ -155,13 +171,16 @@ Resume file: .planning/phases/05-animation/05-03-SUMMARY.md
 
 ### Pending Todos
 
-None - All 18 plans complete across 6 phases
-- Phase 1: Data Layer (4/4) ✓
-- Phase 2: Coordinate Systems (3/3) ✓
-- Phase 3: Core Rendering (6/6) ✓
-- Phase 4: Layer System (2/2) ✓
-- Phase 4.1: CRS-Aware GeoSource (3/3) ✓
-- Phase 5: Animation (3/3) ✓
+**6 active todos** — Post-v1.0.0 improvements identified during manual usage
+
+| # | Todo | Area | Priority |
+|---|------|------|----------|
+| 1 | [Fix projection scaling and fitBounds API](./todos/pending/2026-02-25-fix-projection-scaling.md) | api | HIGH |
+| 2 | [Batch screen space projection for rendering efficiency](./todos/pending/2026-02-25-batch-screen-space-projection.md) | performance | HIGH |
+| 3 | [Fix MultiPolygon rendering for ocean/whole-world data](./todos/pending/2026-02-25-fix-multipolygon-ocean-data.md) | rendering | HIGH |
+| 4 | [Reduce API boilerplate for common rendering workflows](./todos/pending/2026-02-25-reduce-rendering-boilerplate.md) | api | MEDIUM |
+| 5 | [Simplify CRS handling API](./todos/pending/2026-02-22-simplify-crs-handling-api.md) | api | MEDIUM |
+| 6 | [Create comprehensive GeoPackage test file](./todos/pending/2026-02-21-comprehensive-test-geopackage.md) | testing | LOW |
 
 ### Quick Tasks Completed
 
