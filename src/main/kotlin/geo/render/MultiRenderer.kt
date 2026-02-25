@@ -1,7 +1,10 @@
 package geo.render
 
+import geo.MultiLineString
+import geo.MultiPoint
+import geo.projection.GeoProjection
+import geo.projection.ProjectionMercator
 import org.openrndr.draw.Drawer
-import org.openrndr.math.Vector2
 
 /**
  * Draw a MultiPoint geometry as a collection of points with consistent styling.
@@ -40,6 +43,7 @@ import org.openrndr.math.Vector2
  *
  * @param drawer OpenRNDR Drawer context for rendering
  * @param multiPoint MultiPoint geometry containing points to render
+ * @param projection Geographic projection to use for rendering
  * @param userStyle Style configuration (null = use defaultPointStyle)
  *
  * @see drawPoint Individual point rendering
@@ -47,11 +51,12 @@ import org.openrndr.math.Vector2
  */
 fun drawMultiPoint(
     drawer: Drawer,
-    multiPoint: geo.MultiPoint,
+    multiPoint: MultiPoint,
+    projection: GeoProjection,
     userStyle: Style? = null
 ) {
     multiPoint.points.forEach { point ->
-        drawPoint(drawer, point.x, point.y, userStyle)
+        drawPoint(drawer, point.toScreen(projection), userStyle)
     }
 }
 
@@ -78,6 +83,7 @@ fun drawMultiPoint(
  *
  * @param drawer OpenRNDR Drawer context for rendering
  * @param multiLineString MultiLineString geometry containing line strings to render
+ * @param projection Geographic projection to use for rendering
  * @param userStyle Style configuration (null = use defaultLineStyle)
  *
  * @see drawLineString Individual line string rendering
@@ -85,11 +91,12 @@ fun drawMultiPoint(
  */
 fun drawMultiLineString(
     drawer: Drawer,
-    multiLineString: geo.MultiLineString,
+    multiLineString: MultiLineString,
+    projection: GeoProjection,
     userStyle: Style? = null
 ) {
     multiLineString.lineStrings.forEach { lineString ->
-        drawLineString(drawer, lineString.points, userStyle)
+        drawLineString(drawer, lineString.toScreen(projection), userStyle)
     }
 }
 
@@ -116,6 +123,7 @@ fun drawMultiLineString(
  *
  * @param drawer OpenRNDR Drawer context for rendering
  * @param multiPolygon MultiPolygon geometry containing polygons to render
+ * @param projection Geographic projection to use for rendering to screen space
  * @param userStyle Style configuration (null = use defaultPolygonStyle)
  *
  * @see drawPolygon Individual polygon rendering
@@ -124,9 +132,10 @@ fun drawMultiLineString(
 fun drawMultiPolygon(
     drawer: Drawer,
     multiPolygon: geo.MultiPolygon,
+    projection: GeoProjection,
     userStyle: Style? = null
 ) {
     multiPolygon.polygons.forEach { polygon ->
-        drawPolygon(drawer, polygon.exterior, userStyle)
+        drawPolygon(drawer, polygon.exteriorToScreen(projection), userStyle)
     }
 }

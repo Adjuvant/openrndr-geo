@@ -44,7 +44,7 @@ fun main() = application {
             width = width.toDouble(),
             height = height.toDouble(),
             center = Vector2(42.0, 60.0),
-            scale = 100.0
+            scale = 150.0
         )
 
         // Calculate world map bounds to center viewport

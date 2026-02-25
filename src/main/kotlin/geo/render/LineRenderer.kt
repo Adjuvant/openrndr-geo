@@ -45,7 +45,7 @@ import org.openrndr.math.Vector3
  * ```
  *
  * @param drawer OpenRNDR Drawer context for rendering
- * @param points List of Vector2 points defining the line string
+ * @param points List of Vector2 points defining the line string in screen space
  * @param style Style configuration with stroke, strokeWeight, lineCap, lineJoin
  */
 fun writeLineString(

@@ -1,5 +1,3 @@
-import geo.Bounds
-import geo.GeoPackage
 import geo.LineString
 import geo.MultiLineString
 import geo.MultiPoint
@@ -54,19 +52,19 @@ fun main() = application {
             )
 
             // Draw all line strings with same style
-            drawMultiLineString(drawer, multiLineString, Style {
-                stroke = ColorRGBa.BLUE
-                strokeWeight = 2.0
-                lineCap = LineCap.ROUND
-            })
+//            drawMultiLineString(drawer, multiLineString, projection, Style {
+//                stroke = ColorRGBa.BLUE
+//                strokeWeight = 2.0
+//                lineCap = LineCap.ROUND
+//            })
 
             // Draw all points with same style
-            drawMultiPoint(drawer, multiPoint, Style {
-                size = 8.0
-                shape = Shape.Square
-                stroke = ColorRGBa.BLACK
-                fill = ColorRGBa.RED
-            })
+//            drawMultiPoint(drawer, multiPoint, projection, Style {
+//                size = 8.0
+//                shape = Shape.Square
+//                stroke = ColorRGBa.BLACK
+//                fill = ColorRGBa.RED
+//            })
 
             drawer.fontMap = font
             drawer.fill = ColorRGBa.WHITE

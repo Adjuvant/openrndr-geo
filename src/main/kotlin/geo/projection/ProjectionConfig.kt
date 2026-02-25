@@ -1,5 +1,6 @@
 package geo.projection
 
+import geo.Bounds
 import org.openrndr.math.Vector2
 import org.openrndr.shape.IntRectangle
 
@@ -12,7 +13,7 @@ import org.openrndr.shape.IntRectangle
  * @param width Viewport width in pixels
  * @param height Viewport height in pixels
  * @param center Geographic center point in degrees (x=longitude, y=latitude), null means (0, 0)
- * @param scale Zoom scale factor, 1.0 = default world view
+ * @param scale Zoom scale factor, 1.0 = default world view TODO I think this is actually a percentage?
  * @param bounds Optional bounding box for clipping/visibility checks
  */
 data class ProjectionConfig(
@@ -20,5 +21,5 @@ data class ProjectionConfig(
     val height: Double,
     val center: Vector2? = null,
     val scale: Double = 1.0,
-    val bounds: IntRectangle? = null
+    val bounds: Bounds? = null
 )
