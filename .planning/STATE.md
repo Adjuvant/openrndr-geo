@@ -50,7 +50,7 @@ Resume file: None
 
 ### Pending Todos
 
-8 todos pending (see `.planning/todos/pending/`)
+9 todos pending (see `.planning/todos/pending/`)
 
 See `.planning/milestones/v1.1.0-ROADMAP.md` for full v1.1.0 details.
 
