@@ -10,8 +10,8 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 6 — Fix projection errors and API design
-Status: Phase complete
-Last activity: 2026-02-26 — Completed all 5 Phase 6 plans
+Status: Phase complete (6/6 plans)
+Last activity: 2026-02-26 — Completed 06-06 fix zoom level semantics
 
 **Phase 6 Plans (Research Integrated):**
 | Plan | Focus | Wave | Status |
@@ -20,7 +20,8 @@ Last activity: 2026-02-26 — Completed all 5 Phase 6 plans
 | 6-02 | Fix MultiPolygon rendering for ocean/whole-world data | 1 | ✓ Complete |
 | 6-03 | Reduce API boilerplate for common rendering workflows | 2 | ✓ Complete |
 | 6-04 | Simplify CRS handling API | 3 | ✓ Complete |
-| 6-05 | Integration and regression testing | 4 | ✓ Complete | |
+| 6-05 | Integration and regression testing | 4 | ✓ Complete |
+| 6-06 | Fix zoom level semantics (gap closure from UAT) | 1 | ✓ Complete |
 
 **Research Documentation:**
 - File: `.planning/phases/06-fix-projection-api/06-RESEARCH.md` (834 lines)
@@ -152,6 +153,8 @@ Progress: [██████████████████] 100%
 | 05-03 | Sequence extensions for lazy evaluation | Memory-efficient for large feature sets, deferred computation until consumed |
 | 05-03 | Timeline DSL with explicit add() method | Clear, explicit API for offset-based composition per CONTEXT.md discretion |
 | 05-03 | Chain API with then() method | Fluent sequential composition, automatic step advancement on completion |
+| 06-06 | Viewport-relative zoom with inverted formula | scale = baseScale * 2^(-zoom), zoom=0 fits world regardless of viewport size |
+| 06-06 | Removed 256px tile constant from scale | Tile pyramid semantics wrong for creative coding - use viewport dimensions instead |
 
 ### Roadmap Evolution
 
@@ -160,9 +163,13 @@ Progress: [██████████████████] 100%
 
 ## Session Continuity
 
-Last session: 2026-02-25 22:15 UTC
-Stopped at: Captured 6 post-v1.0.0 todos from manual testing and code review
-Resume file: .planning/todos/pending/
+Last session: 2026-02-26 16:36 UTC
+Stopped at: Completed 06-06 fix zoom level semantics (gap closure from UAT)
+Resume file: None
+
+**Phase 6 completed:** All 6 plans executed successfully
+- 06-01 through 06-05: Original phase 6 plans
+- 06-06: Gap closure - fixed viewport-relative zoom semantics
 
 **Recent Discovery:** User has been manually fixing bugs since v1.0.0:
 - Fixed projection fitting/scaling issues
