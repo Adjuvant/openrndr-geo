@@ -1,327 +1,457 @@
-# Technology Stack
+# Technology Stack — v1.2.0 API Improvements
 
-**Project:** openrndr-geo - Kotlin/OpenRNDR Geospatial Visualization Library  
-**Researched:** 2025-02-21  
-**Confidence:** HIGH (verified via official docs, GitHub releases, Context7)
+**Project:** openrndr-geo
+**Milestone:** v1.2.0 - API improvements and examples
+**Researched:** 2026-02-26
+**Confidence:** HIGH (verified via OpenRNDR API docs, existing codebase, openrndr-examples)
+
+---
 
 ## Executive Summary
 
-The standard 2025 stack for Kotlin geospatial processing with OpenRNDR visualization uses **JTS as the geometry core**, **GeoTools for I/O and projections**, and **custom adapters to OpenRNDR primitives**. This leverages mature, battle-tested Java libraries while maintaining clean Kotlin idioms and OpenRNDR's creative coding ergonomics.
+For v1.2.0, **no new dependencies are required**. The existing stack (OpenRNDR 0.4.5, proj4j, kotlinx-serialization) already supports all planned features. The focus is on leveraging **OpenRNDR's `Shape` API** for proper polygon hole rendering and establishing **consistent example patterns**.
 
 ---
 
-## Recommended Stack
+## Feature-Specific Stack Recommendations
 
-### Core Geometry Engine
+### 1. GeoSource `summary()` Function
 
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **JTS Topology Suite** | 1.20.0 | Geometry model, spatial operations | Industry standard, OGC-compliant, robust algorithms. Pure geometry without I/O baggage. |
-| **JTS I/O Module** | 1.20.0 | WKT/WKB parsing | Lightweight format support for testing/debugging |
+**No new dependencies needed.** Implement as an extension function using existing Kotlin stdlib.
 
-**Rationale:** JTS is the de facto standard for Java geometry. GeoTools, PostGIS, and virtually every Java GIS tool builds on it. Using JTS as your intermediate representation means you inherit:
-- Complete spatial predicates (intersects, contains, within, etc.)
-- Overlay operations (union, intersection, difference)
-- Buffer, simplification, and transformation algorithms
-- Robust computational geometry (no topology errors)
-
-**Maven:**
+**Recommended implementation pattern:**
 ```kotlin
-implementation("org.locationtech.jts:jts-core:1.20.0")
-implementation("org.locationtech.jts:jts-io-common:1.20.0")
+fun GeoSource.summary(): GeoSourceSummary {
+    val featureList = features.toList()  // Materialize for analysis
+    val geometryTypes = featureList.map { it.geometry::class.simpleName }.distinct()
+    val propertyKeys = featureList.flatMap { it.properties.keys }.distinct()
+    
+    return GeoSourceSummary(
+        featureCount = featureList.size,
+        geometryTypes = geometryTypes,
+        propertyKeys = propertyKeys,
+        crs = crs,
+        bounds = totalBoundingBox()
+    )
+}
+
+data class GeoSourceSummary(
+    val featureCount: Int,
+    val geometryTypes: List<String?>,
+    val propertyKeys: List<String>,
+    val crs: String,
+    val bounds: Bounds
+) {
+    override fun toString(): String = buildString {
+        appendLine("GeoSource Summary")
+        appendLine("═".repeat(40))
+        appendLine("Features:    $featureCount")
+        appendLine("CRS:         $crs")
+        appendLine("Bounds:      $bounds")
+        appendLine("Geometry:    ${geometryTypes.joinToString()}")
+        appendLine("Properties:  ${propertyKeys.take(5).joinToString()}${if (propertyKeys.size > 5) "..." else ""}")
+    }
+}
+```
+
+**Integration points:**
+- Add to `GeoSource.kt` or create new `GeoSourceSummary.kt`
+- Print-friendly `toString()` for console debugging
+
+---
+
+### 2. Polygon Interior/Exterior Ring Handling
+
+**Key OpenRNDR APIs to use:**
+
+| API | Purpose | Source |
+|-----|---------|--------|
+| `Shape(contours: List<ShapeContour>)` | Compound shape with multiple contours (holes) | `org.openrndr.shape.Shape` |
+| `ShapeContour.fromPoints(points, closed, polarity)` | Create contour from point list | `org.openrndr.shape.ShapeContour.Companion` |
+| `ShapeContour.clockwise` | Get contour with clockwise winding | `org.openrndr.shape.ShapeContour` |
+| `ShapeContour.counterClockwise` | Get contour with counter-clockwise winding | `org.openrndr.shape.ShapeContour` |
+| `ShapeContour.winding` | Inspect winding order | `org.openrndr.shape.Winding` |
+| `drawer.shape(shape)` | Render compound shape with holes | `org.openrndr.draw.Drawer` |
+
+**Winding order convention (OpenRNDR uses Y-down screen coordinates):**
+- **CLOCKWISE** = Exterior ring (filled)
+- **COUNTER_CLOCKWISE** = Interior ring (hole)
+
+**Recommended implementation:**
+```kotlin
+// In PolygonRenderer.kt or new CompoundShapeRenderer.kt
+
+import org.openrndr.shape.Shape
+import org.openrndr.shape.ShapeContour
+
+/**
+ * Convert a Polygon (with holes) to an OpenRNDR Shape.
+ * 
+ * Uses winding order convention:
+ * - Exterior ring: CLOCKWISE
+ * - Interior rings: COUNTER_CLOCKWISE
+ */
+fun Polygon.toShape(projection: GeoProjection): Shape {
+    // Project exterior ring to screen space, ensure clockwise
+    val exteriorContour = ShapeContour.fromPoints(
+        points = exterior.map { projection.project(it) },
+        closed = true
+    ).clockwise
+    
+    // Project interior rings (holes), ensure counter-clockwise
+    val holeContours = interiors.map { hole ->
+        ShapeContour.fromPoints(
+            points = hole.map { projection.project(it) },
+            closed = true
+        ).counterClockwise
+    }
+    
+    return Shape(listOf(exteriorContour) + holeContours)
+}
+
+/**
+ * Draw a Polygon with proper hole handling.
+ */
+fun drawPolygonWithHoles(
+    drawer: Drawer,
+    polygon: Polygon,
+    projection: GeoProjection,
+    style: Style? = null
+) {
+    val mergedStyle = mergeStyles(StyleDefaults.defaultPolygonStyle, style)
+    applyStyle(drawer, mergedStyle)
+    
+    val shape = polygon.toShape(projection)
+    drawer.shape(shape)
+}
+```
+
+**Files to modify:**
+- `src/main/kotlin/geo/render/PolygonRenderer.kt` — Add `writePolygonWithHoles()`
+- `src/main/kotlin/geo/Geometry.kt` — Implement `interiorsToScreen()` (currently `TODO`)
+- `src/main/kotlin/geo/render/MultiRenderer.kt` — Update `drawMultiPolygon()` to use holes
+
+---
+
+### 3. Reducing Rendering Boilerplate
+
+**Current state:** `DrawerGeoExtensions.kt` already provides:
+- `drawer.geoJSON(path)` — One-line render
+- `drawer.geoSource(source)` — Load-once, draw-many
+- `source.render(drawer, projection)` — GeoSource render method
+
+**Recommended additions:**
+
+```kotlin
+// In GeoSourceConvenience.kt or new GeoSourceShortcuts.kt
+
+/**
+ * Load and render in one call with auto-fit.
+ */
+fun Drawer.drawGeo(path: String, style: Style? = null) {
+    geoJSON(path, style = style)
+}
+
+/**
+ * Create projection from data bounds, then render.
+ */
+fun GeoSource.drawFitted(drawer: Drawer, style: Style? = null, padding: Double = 0.9) {
+    val bounds = totalBoundingBox()
+    val projection = ProjectionFactory.fitBounds(
+        bounds = bounds,
+        width = drawer.width.toDouble(),
+        height = drawer.height.toDouble(),
+        padding = padding,
+        projection = ProjectionType.MERCATOR
+    )
+    render(drawer, projection, style)
+}
+```
+
+**Import consolidation:** Create `geo/api.kt` with star exports:
+```kotlin
+// src/main/kotlin/geo/api.kt
+package geo
+
+// Single import gets everything needed
+// import geo.*
+
+// Data types
+typealias GeoPoint = Point
+typealias GeoLineString = LineString
+typealias GeoPolygon = Polygon
+
+// Re-export commonly used functions
+fun loadGeo(path: String) = geoSource(path)
 ```
 
 ---
 
-### Data I/O Layer
+### 4. MultiPolygon Outside Projection Bounds
 
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **GeoTools gt-main** | 34.2 | DataStore API, feature model | Unified API for all geo formats |
-| **GeoTools gt-geopkg** | 34.2 | GeoPackage read/write | QGIS-native format, spatial indexing |
-| **GeoTools gt-geojson-core** | 34.2 | GeoJSON parsing | Streaming parser, Feature collections |
-| **GeoTools gt-referencing** | 34.2 | CRS transformations | Full EPSG database, OSTN15 support |
-| **GeoTools gt-epsg-hsql** | 34.2 | EPSG database (embedded HSQL) | Offline EPSG code lookup |
-
-**Rationale:** GeoTools handles the messy reality of geospatial data:
-- **GeoPackage**: Spatial index support, multi-layer files, QGIS compatibility
-- **GeoJSON**: Streaming reader for large files, Feature/FeatureCollection model
-- **CRS**: British National Grid (EPSG:27700) ↔ WGS84 (EPSG:4326) with OSTN15 accuracy
-
-**Maven:**
+**Current approach in `MultiRenderer.kt`:**
 ```kotlin
-val geotoolsVersion = "34.2"
-
-implementation("org.geotools:gt-main:$geotoolsVersion")
-implementation("org.geotools:gt-geopkg:$geotoolsVersion")
-implementation("org.geotools:gt-geojson-core:$geotoolsVersion")
-implementation("org.geotools:gt-referencing:$geotoolsVersion")
-implementation("org.geotools:gt-epsg-hsql:$geotoolsVersion")
+// Already clamps to MAX_MERCATOR_LAT
+val polygonsToRender = if (clampToMercatorBounds && projection is ProjectionMercator) {
+    multiPolygon.polygons.map { polygon ->
+        polygon.exterior.map { coord ->
+            Vector2(coord.x, coord.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT))
+        }
+    }
+} else { ... }
 ```
 
-**Repository required** (GeoTools isn't on Maven Central):
+**Issues with current approach:**
+1. Only handles exterior rings (ignores holes)
+2. Doesn't handle longitude wrapping (dateline crossing)
+3. Doesn't split geometries at projection boundaries
+
+**Recommended improvements:**
+
 ```kotlin
-repositories {
-    mavenCentral()
-    maven { url = uri("https://repo.osgeo.org/repository/release") }
+// In Geometry.kt - already exists, ensure it's used consistently
+fun Geometry.clampAndNormalize(): Geometry { ... }
+
+// In MultiRenderer.kt
+fun drawMultiPolygon(
+    drawer: Drawer,
+    multiPolygon: MultiPolygon,
+    projection: GeoProjection,
+    userStyle: Style? = null,
+    boundsHandling: BoundsHandling = BoundsHandling.CLAMP
+) {
+    val processedMultiPolygon = when (boundsHandling) {
+        BoundsHandling.CLAMP -> multiPolygon.clampToMercator() as MultiPolygon
+        BoundsHandling.NORMALIZE -> multiPolygon.clampAndNormalize() as MultiPolygon
+        BoundsHandling.SKIP -> {
+            // Filter out polygons with out-of-bounds coordinates
+            MultiPolygon(multiPolygon.polygons.filter { it.validateMercatorBounds() })
+        }
+    }
+    
+    processedMultiPolygon.polygons.forEach { poly ->
+        drawPolygonWithHoles(drawer, poly, projection, userStyle)
+    }
+}
+
+enum class BoundsHandling {
+    CLAMP,      // Clamp coordinates to valid range
+    NORMALIZE,  // Clamp + normalize longitude
+    SKIP        // Skip polygons outside bounds
 }
 ```
 
 ---
 
-### Kotlin GeoJSON Alternative (Optional)
+### 5. Batch Screen Space Projection
 
-| Technology | Version | Purpose | When to Use |
-|------------|---------|---------|-------------|
-| **Spatial-K (geojson)** | 0.6.1 | Pure Kotlin GeoJSON | If you prefer kotlinx.serialization idioms, want multiplatform, or need Turf.js functions |
+**Problem:** Current API re-projects every frame. For static data, this is wasteful.
 
-**Why you might choose this over GeoTools GeoJSON:**
-- Kotlin-idiomatic DSL for building GeoJSON
-- kotlinx.serialization integration (matches your existing stack)
-- Includes Turf.js port for geospatial calculations
-- Kotlin Multiplatform (future-proof for non-JVM targets)
+**Recommended approach: Cached projection**
 
-**Why GeoTools is still recommended for I/O:**
-- Handles malformed GeoJSON gracefully
-- Streaming for massive files
-- Direct conversion to JTS geometries
-- QGIS/GeoServer compatibility (same parser)
-
-**If using Spatial-K:**
 ```kotlin
-implementation("org.maplibre.spatialk:geojson:0.6.1")
-implementation("org.maplibre.spatialk:turf:0.6.1")
-```
+// In Geometry.kt or new ScreenSpace.kt
 
----
+/**
+ * Projected geometry ready for rendering (no further projection needed).
+ */
+sealed class ScreenGeometry {
+    abstract val screenPoints: List<Vector2>
+}
 
-### OpenRNDR Integration
+data class ScreenPoint(val screen: Vector2) : ScreenGeometry() {
+    override val screenPoints = listOf(screen)
+}
 
-| Technology | Version | Purpose | Why |
-|------------|---------|---------|-----|
-| **OPENRNDR** | 0.4.5 | Creative coding framework | Your existing base |
-| **orx-shapes** | 0.4.5 | Shape utilities | hobbyCurve, rectified contours, shape operations |
-| **orx-composition** | 0.4.5 | SVG-style composition | Layer-based rendering, masking |
-| **orx-fx** | 0.4.5 | Post-processing effects | Blur, bloom, etc. for geo visualization |
+data class ScreenLineString(override val screenPoints: List<Vector2>) : ScreenGeometry()
 
-**Key OpenRNDR types for geo:**
-| OpenRNDR Type | Geo Equivalent | Notes |
-|---------------|----------------|-------|
-| `Vector2` | JTS `Coordinate` | XY position |
-| `ShapeContour` | JTS `LineString` | Open/closed paths |
-| `Shape` | JTS `Polygon` | Filled regions with holes |
-| `Segment2D` | — | Bézier curves (JTS is linear only) |
+data class ScreenPolygon(
+    val exterior: List<Vector2>,
+    val interiors: List<List<Vector2>> = emptyList()
+) : ScreenGeometry() {
+    override val screenPoints = exterior
+    
+    fun toShape(): Shape {
+        val exteriorContour = ShapeContour.fromPoints(exterior, true).clockwise
+        val holeContours = interiors.map { 
+            ShapeContour.fromPoints(it, true).counterClockwise 
+        }
+        return Shape(listOf(exteriorContour) + holeContours)
+    }
+}
 
-**Maven:**
-```kotlin
-implementation("org.openrndr:openrndr-core:0.4.5")
-implementation("org.openrndr.extra:orx-shapes:0.4.5")
-implementation("org.openrndr.extra:orx-composition:0.4.5")
-```
+/**
+ * Project geometry to screen space once, cache for repeated rendering.
+ */
+fun Geometry.projectToScreen(projection: GeoProjection): ScreenGeometry = when (this) {
+    is Point -> ScreenPoint(projection.project(Vector2(x, y)))
+    is LineString -> ScreenLineString(points.map { projection.project(it) })
+    is Polygon -> ScreenPolygon(
+        exterior = exterior.map { projection.project(it) },
+        interiors = interiors.map { ring -> ring.map { projection.project(it) } }
+    )
+    is MultiPoint -> TODO("MultiPoint batch projection")
+    is MultiLineString -> TODO("MultiLineString batch projection")
+    is MultiPolygon -> TODO("MultiPolygon batch projection")
+}
 
----
-
-### Supporting Libraries
-
-| Library | Version | Purpose | Why |
-|---------|---------|---------|-----|
-| **kotlinx-coroutines** | (existing) | Async data loading | Non-blocking file reads, chunked processing |
-| **kotlinx-serialization-json** | (existing) | JSON for properties | Feature attributes, config files |
-| **kotlinx-datetime** | (latest) | Temporal data | Time-series geo data |
-
----
-
-## Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                        DATA LAYER                                │
-├─────────────────────────────────────────────────────────────────┤
-│  GeoTools DataStore API                                         │
-│  ├── GeoPackage (gt-geopkg)     ──┐                             │
-│  ├── GeoJSON (gt-geojson-core)  ──┼──► JTS Geometry             │
-│  └── Shapefile (gt-shapefile)   ──┘    (Point, LineString,      │
-│                                          Polygon, Multi*)       │
-├─────────────────────────────────────────────────────────────────┤
-│  GeoTools CRS (gt-referencing)                                  │
-│  EPSG:27700 (British National Grid) ◄────────► EPSG:4326 (WGS84)│
-│  with OSTN15 grid shift for sub-meter accuracy                  │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    INTERMEDIATE LAYER                            │
-├─────────────────────────────────────────────────────────────────┤
-│  Your GeoPrimitives (data classes)                              │
-│  ├── GeoPoint(center: Vector2, crs: CRS)                        │
-│  ├── GeoLine(vertices: List<Vector2>, crs: CRS)                 │
-│  └── GeoPolygon(shell: List<Vector2>, holes: List<...>, crs)    │
-│                                                                  │
-│  Cached in-memory representation, CRS-aware, animatable         │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     RENDERING LAYER                              │
-├─────────────────────────────────────────────────────────────────┤
-│  JTS → OpenRNDR Adapters                                        │
-│  ├── LineString → ShapeContour (linear segments)                │
-│  ├── Polygon → Shape (shell + holes as contours)                │
-│  └── Multi* → List<ShapeContour> or Shape                       │
-│                                                                  │
-│  OpenRNDR Drawer                                                 │
-│  ├── drawer.contour(shapeContour)                               │
-│  ├── drawer.shape(shape)                                        │
-│  └── drawer.points(listOf(Vector2))                             │
-└─────────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Large Dataset Strategy
-
-For 12GB+ files, you **cannot** load everything into memory. Use this approach:
-
-### 1. Spatial Indexing (GeoPackage)
-```kotlin
-// GeoPackage has built-in R-Tree spatial index
-val params = mapOf(
-    "dbtype" to "geopkg",
-    "database" to file,
-    "read_only" to true
+/**
+ * Pre-projected feature for efficient render loops.
+ */
+data class ScreenFeature(
+    val geometry: ScreenGeometry,
+    val properties: Map<String, Any?>
 )
-val dataStore = DataStoreFinder.getDataStore(params)
-val featureSource = dataStore.getFeatureSource(layerName)
 
-// Query by bounding box (uses spatial index)
-val bbox = ReferencedEnvelope(minX, maxX, minY, maxY, CRS.decode("EPSG:27700"))
-val filter = ECQL.toFilter("BBOX(the_geom, ${bbox.minX}, ${bbox.minY}, ${bbox.maxX}, ${bbox.maxY})")
-val features = featureSource.getFeatures(filter)
-```
-
-### 2. Streaming with FeatureIterator
-```kotlin
-// Don't collect to List - stream through
-val features = featureSource.getFeatures(filter)
-features.features().use { iterator ->
-    while (iterator.hasNext()) {
-        val feature = iterator.next()
-        val geometry = feature.getAttribute("the_geom") as Geometry
-        // Process one feature at a time
-    }
-}
-// Or use Kotlin sequences
-val sequence = sequence {
-    features.features().use { iter ->
-        while (iter.hasNext()) yield(iter.next())
+/**
+ * Pre-project entire source for render loop efficiency.
+ */
+fun GeoSource.projectToScreen(projection: GeoProjection): Sequence<ScreenFeature> {
+    return features.map { feature ->
+        ScreenFeature(
+            geometry = feature.geometry.projectToScreen(projection),
+            properties = feature.properties
+        )
     }
 }
 ```
 
-### 3. Tile-based Loading
-For interactive visualization, load only what's visible:
-- Store GeoPackage file path + layer name
-- On pan/zoom: query new bounding box
-- Cache rendered tiles, evict old ones
-- Use coroutines for background loading
-
-### 4. SQLite Direct Access (Advanced)
-For maximum control, query GeoPackage's SQLite directly:
+**Usage in render loop:**
 ```kotlin
-// GeoPackage is just SQLite with geo extensions
-// Can use SQLite JDBC with spatialite functions for custom queries
+// In program setup
+val data = geoSource("world.json")
+val projection = ProjectionFactory.fitWorldMercator(width, height)
+val screenData = data.projectToScreen(projection).toList()  // Project once
+
+extend {
+    // No per-frame projection cost
+    screenData.forEach { feature ->
+        when (val geom = feature.geometry) {
+            is ScreenPoint -> drawPoint(drawer, geom.screen, style)
+            is ScreenLineString -> drawLineString(drawer, geom.screenPoints, style)
+            is ScreenPolygon -> {
+                drawer.shape(geom.toShape())  // Uses pre-projected points
+            }
+        }
+    }
+}
 ```
 
 ---
 
-## Projection Support
+### 6. Example File Structure
 
-### British National Grid ↔ WGS84
+**Pattern from openrndr-examples:**
+- Location: `src/main/kotlin/examples/`
+- Naming: `{category}_{description}.kt` (e.g., `render_BasicRendering.kt`)
+- Run command: `./gradlew run -Popenrndr.application=geo.examples.BasicRenderingKt`
 
-GeoTools handles this with full OSTN15 accuracy (~1m vs ~3m with simple 7-parameter):
+**Recommended structure for openrndr-geo:**
 
-```kotlin
-import org.geotools.referencing.CRS
-import org.opengis.referencing.operation.MathTransform
-
-// Decode CRS by EPSG code
-val bng = CRS.decode("EPSG:27700")  // British National Grid
-val wgs84 = CRS.decode("EPSG:4326") // WGS84
-
-// Create transformation (GeoTools selects best available: OSTN15)
-val transform = CRS.findMathTransform(bng, wgs84, true)
-
-// Transform geometry
-val transformed = JTS.transform(geometry, transform)
+```
+src/main/kotlin/geo/examples/
+├── core/                          # Core functionality
+│   ├── DataLoading.kt             # GeoJSON/GeoPackage loading
+│   ├── CRSHandling.kt             # CRS detection and transformation
+│   └── GeometryTypes.kt           # All geometry types demo
+│
+├── render/                        # Rendering examples
+│   ├── BasicRendering.kt          # Simple load-and-render
+│   ├── PolygonWithHoles.kt        # Compound shape rendering
+│   ├── MultiGeometries.kt         # MultiPoint, MultiLineString, MultiPolygon
+│   ├── Styling.kt                 # Fill, stroke, styles
+│   └── OceanData.kt               # Large MultiPolygon handling
+│
+├── proj/                          # Projection examples
+│   ├── Projections.kt             # Mercator, Equirectangular
+│   ├── FitBounds.kt               # Auto-fit to data
+│   └── Haversine.kt               # Distance calculations
+│
+├── layer/                         # Layer system examples
+│   ├── Layers.kt                  # Basic layer usage
+│   ├── BlendModes.kt              # Layer compositing
+│   └── Graticule.kt               # Grid overlay
+│
+└── anim/                          # Animation examples
+    ├── BasicAnimation.kt          # Simple property animation
+    ├── Timeline.kt                # Keyframe sequences
+    └── GeoAnimation.kt            # Animating geo properties
 ```
 
-### OSTN15 Grid Shift
-For sub-meter accuracy between OSGB36 and WGS84, GeoTools uses the OSTN15 grid:
-- Included in `gt-epsg-hsql` automatically
-- ~1m accuracy vs ~3m with 7-parameter Helmert
-- Required for UK Ordnance Survey data
+**Example file template:**
+```kotlin
+package geo.examples.render
 
----
+import org.openrndr.application
+import org.openrndr.color.ColorRGBa
+import geo.geoSource
+import geo.projection.ProjectionFactory
+import geo.render.Style
 
-## QGIS Export Formats
-
-QGIS exports to all supported formats:
-
-| Format | GeoTools Module | Notes |
-|--------|-----------------|-------|
-| GeoPackage | `gt-geopkg` | **Recommended** - Single file, multiple layers, spatial index |
-| GeoJSON | `gt-geojson-core` | Good for web, no spatial index, large files slow |
-| Shapefile | `gt-shapefile` | Legacy, 2GB limit, DBF field name limits |
-
-**Recommendation:** Encourage users to export as GeoPackage from QGIS for best performance.
-
----
-
-## Alternatives Considered
-
-| Category | Chosen | Rejected | Why Rejected |
-|----------|--------|----------|--------------|
-| Geometry Core | **JTS** | GeoTools Geometry | JTS is cleaner, GeoTools just wraps JTS anyway |
-| GeoJSON Parsing | **GeoTools** | geojson-kotlin | GeoTools handles malformed JSON, streams large files |
-| GeoJSON Parsing | **GeoTools** | Spatial-K | Spatial-K is great but GeoTools → JTS is direct path |
-| GeoPackage | **GeoTools** | mil.nga.geopackage | GeoTools integrates with JTS/CRS; mil.nga is lower-level |
-| CRS | **GeoTools** | Proj4J | GeoTools has EPSG database built-in; Proj4J is manual |
-| CRS | **GeoTools** | OS transforms (JS) | That's JavaScript; GeoTools has OSTN15 built-in |
+/**
+ * Polygon with Holes Example
+ * 
+ * Demonstrates rendering polygons with interior rings (holes) using
+ * OpenRNDR's compound Shape API.
+ * 
+ * Run: ./gradlew run -Popenrndr.application=geo.examples.render.PolygonWithHolesKt
+ */
+fun main() = application {
+    configure {
+        width = 800
+        height = 600
+        title = "openrndr-geo: Polygon with Holes"
+    }
+    
+    program {
+        val data = geoSource("data/polygons-with-holes.geojson")
+        val projection = ProjectionFactory.fitBounds(
+            bounds = data.totalBoundingBox(),
+            width = width.toDouble(),
+            height = height.toDouble()
+        )
+        
+        extend {
+            drawer.clear(ColorRGBa.WHITE)
+            data.render(drawer, projection, Style {
+                fill = ColorRGBa.BLUE.withAlpha(0.3)
+                stroke = ColorRGBa.BLACK
+                strokeWeight = 1.0
+            })
+        }
+    }
+}
+```
 
 ---
 
 ## Dependency Summary
 
+**No new dependencies for v1.2.0.** Existing stack is sufficient:
+
 ```kotlin
-// build.gradle.kts
+// build.gradle.kts - no changes needed
 
-repositories {
-    mavenCentral()
-    maven { url = uri("https://repo.osgeo.org/repository/release") }
-}
-
-dependencies {
-    // === Geometry Core ===
-    implementation("org.locationtech.jts:jts-core:1.20.0")
-    implementation("org.locationtech.jts:jts-io-common:1.20.0")
-    
-    // === GeoTools I/O ===
-    val gt = "34.2"
-    implementation("org.geotools:gt-main:$gt")
-    implementation("org.geotools:gt-geopkg:$gt")
-    implementation("org.geotools:gt-geojson-core:$gt")
-    implementation("org.geotools:gt-referencing:$gt")
-    implementation("org.geotools:gt-epsg-hsql:$gt")
-    
-    // === OpenRNDR ===
-    implementation("org.openrndr:openrndr-core:0.4.5")
-    implementation("org.openrndr.extra:orx-shapes:0.4.5")
-    
-    // === Existing Stack ===
-    // implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:...")
-    // implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:...")
-}
+// Already have:
+// - OpenRNDR 0.4.5 (includes Shape, ShapeContour APIs)
+// - orx-shapes (for advanced shape utilities if needed)
+// - kotlinx-serialization (for GeoJSON parsing)
+// - proj4j (for CRS transformations)
+// - mil.nga.geopackage (for GeoPackage reading)
 ```
+
+---
+
+## Integration Points
+
+| New Feature | File(s) to Modify | New File(s) |
+|-------------|-------------------|-------------|
+| `summary()` | `GeoSource.kt` | `GeoSourceSummary.kt` |
+| Polygon holes | `PolygonRenderer.kt`, `Geometry.kt` | — |
+| Boilerplate reduction | `GeoSourceConvenience.kt` | `geo/api.kt` |
+| Bounds handling | `MultiRenderer.kt`, `Geometry.kt` | — |
+| Batch projection | `Geometry.kt` | `ScreenSpace.kt` |
+| Examples | — | `geo/examples/**/*.kt` |
 
 ---
 
@@ -329,22 +459,19 @@ dependencies {
 
 | Area | Confidence | Source |
 |------|------------|--------|
-| JTS version | HIGH | Eclipse LocationTech releases, Sept 2024 |
-| GeoTools version | HIGH | OSGeo releases, Jan 2025 |
-| OpenRNDR version | HIGH | GitHub releases, matches your existing |
-| Projection support | HIGH | GeoTools docs, OSTN15 included |
-| GeoPackage spatial index | HIGH | GeoTools docs, GPKG spec |
-| OpenRNDR ShapeContour API | HIGH | Context7, official guide |
-| Large file strategy | MEDIUM | Based on GeoTools patterns, needs testing at scale |
+| OpenRNDR Shape API | HIGH | api.openrndr.org documentation |
+| Winding order for holes | HIGH | OpenRNDR ShapeContour.winding docs |
+| Example structure | HIGH | openrndr-examples repository |
+| No new deps needed | HIGH | Existing build.gradle.kts review |
+| Batch projection approach | MEDIUM | Standard pattern, needs performance testing |
 
 ---
 
 ## Sources
 
-- **JTS 1.20.0 Release:** https://github.com/locationtech/jts/releases/tag/1.20.0 (Sept 2024)
-- **GeoTools 34.2:** https://github.com/geotools/geotools/releases (Jan 2025)
-- **OpenRNDR Guide:** https://guide.openrndr.org/drawing/curvesAndShapes.html
-- **ORX 0.4.5:** https://github.com/openrndr/orx/releases
-- **GeoTools GeoPackage Plugin:** https://docs.geotools.org/latest/userguide/library/data/geopackage.html
-- **GeoTools CRS:** https://docs.geotools.org/latest/userguide/library/referencing/crs.html
-- **Spatial-K:** https://github.com/maplibre/spatial-k (v0.6.1, Nov 2025)
+- **OpenRNDR Shape API:** https://api.openrndr.org/openrndr-shape/org.openrndr.shape/-shape/index.html
+- **OpenRNDR ShapeContour:** https://api.openrndr.org/openrndr-shape/org.openrndr.shape/-shape-contour/index.html
+- **OpenRNDR Winding:** https://api.openrndr.org/openrndr-shape/org.openrndr.shape/-winding/index.html
+- **Drawer.shape():** https://api.openrndr.org/openrndr-draw/org.openrndr.draw/-drawer/shape.html
+- **openrndr-examples:** https://github.com/openrndr/openrndr-examples
+- **Existing codebase:** src/main/kotlin/geo/**/*.kt
