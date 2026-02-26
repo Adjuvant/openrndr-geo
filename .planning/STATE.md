@@ -10,18 +10,17 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 6 — Fix projection errors and API design
-Status: In progress (Wave 1 complete)
-Last activity: 2026-02-26 — Completed Plans 6-01 and 6-02
-Next Phase: Execute Phase 6 Wave 2 (Plan 3)
+Status: Phase complete
+Last activity: 2026-02-26 — Completed all 5 Phase 6 plans
 
 **Phase 6 Plans (Research Integrated):**
 | Plan | Focus | Wave | Status |
 |------|-------|------|--------|
 | 6-01 | Fix projection scaling and fitBounds API | 1 | ✓ Complete |
 | 6-02 | Fix MultiPolygon rendering for ocean/whole-world data | 1 | ✓ Complete |
-| 6-03 | Reduce API boilerplate for common rendering workflows | 2 | In progress |
-| 6-04 | Simplify CRS handling API | 3 | Pending |
-| 6-05 | Integration and regression testing | 4 | Pending |
+| 6-03 | Reduce API boilerplate for common rendering workflows | 2 | ✓ Complete |
+| 6-04 | Simplify CRS handling API | 3 | ✓ Complete |
+| 6-05 | Integration and regression testing | 4 | ✓ Complete | |
 
 **Research Documentation:**
 - File: `.planning/phases/06-fix-projection-api/06-RESEARCH.md` (834 lines)
