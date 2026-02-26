@@ -187,6 +187,77 @@ abstract class GeoSource(
         )
         render(drawer, projection, style)
     }
+
+    /**
+     * Print a summary of this GeoSource to the console.
+     * Shows feature count, bounds, CRS, geometry types, memory estimate, and property keys.
+     * Uses a single pass through the features Sequence for efficiency.
+     */
+    fun printSummary() {
+        if (isEmpty()) {
+            println("GeoSource: Empty (no features)")
+            return
+        }
+
+        // Single-pass statistics collection
+        var featureCount = 0L
+        var bounds = Bounds.empty()
+        val geometryCounts = mutableMapOf<String, Int>()
+        val propertyTypes = mutableMapOf<String, String>()
+        var coordCount = 0
+
+        features.forEach { feature ->
+            featureCount++
+            bounds = bounds.expandToInclude(feature.boundingBox)
+
+            // Geometry type detection using exhaustive when on sealed class
+            val geomType = when (feature.geometry) {
+                is Point -> "Point"
+                is LineString -> "LineString"
+                is Polygon -> "Polygon"
+                is MultiPoint -> "MultiPoint"
+                is MultiLineString -> "MultiLineString"
+                is MultiPolygon -> "MultiPolygon"
+            }
+            geometryCounts[geomType] = (geometryCounts[geomType] ?: 0) + 1
+
+            // Coordinate counting for memory estimation
+            coordCount += countCoordinates(feature.geometry)
+
+            // Property type inference
+            feature.properties.forEach { (key, value) ->
+                if (key !in propertyTypes) {
+                    propertyTypes[key] = inferTypeName(value)
+                }
+            }
+        }
+
+        // Format and print output
+        val separator = "─".repeat(52)
+        println("┌$separator┐")
+        println("│ ${"GeoSource Summary".center(50)} │")
+        println("├$separator┤")
+        println("│ Features:    ${featureCount.toString().padEnd(36)} │")
+        println("│ CRS:         ${crs.padEnd(36)} │")
+        println("│ Bounds:      ${formatBounds(bounds).padEnd(36)} │")
+        println("├$separator┤")
+        println("│ ${"Geometry Types:".padEnd(50)} │")
+        geometryCounts.toSortedMap().forEach { (type, count) ->
+            val percentage = (count.toDouble() / featureCount * 100).toInt()
+            println("│   ${"$type: $count ($percentage%)".padEnd(48)} │")
+        }
+        println("├$separator┤")
+        println("│ Memory:      ${formatMemory(coordCount).padEnd(36)} │")
+        println("├$separator┤")
+        println("│ ${"Properties (${propertyTypes.size} keys):".padEnd(50)} │")
+        propertyTypes.toSortedMap().entries.take(10).forEach { (key, type) ->
+            println("│   ${"$key: $type".padEnd(48)} │")
+        }
+        if (propertyTypes.size > 10) {
+            println("│   ${"... and ${propertyTypes.size - 10} more".padEnd(48)} │")
+        }
+        println("└$separator┘")
+    }
 }
 
 /**
@@ -226,3 +297,69 @@ private fun Geometry.renderToDrawer(drawer: Drawer, projection: GeoProjection, s
         }
     }
 }
+
+// ============================================================================
+// printSummary() Helper Functions
+// ============================================================================
+
+/**
+ * Count the number of coordinates in a geometry for memory estimation.
+ */
+private fun countCoordinates(geom: Geometry): Int = when (geom) {
+    is Point -> 1
+    is LineString -> geom.points.size
+    is Polygon -> geom.exterior.size + geom.interiors.sumOf { it.size }
+    is MultiPoint -> geom.points.size
+    is MultiLineString -> geom.lineStrings.sumOf { it.points.size }
+    is MultiPolygon -> geom.polygons.sumOf { p ->
+        p.exterior.size + p.interiors.sumOf { it.size }
+    }
+}
+
+/**
+ * Infer a readable type name from a property value.
+ */
+private fun inferTypeName(value: Any?): String = when (value) {
+    null -> "null"
+    is String -> "String"
+    is Int -> "Int"
+    is Long -> "Long"
+    is Double -> "Double"
+    is Float -> "Float"
+    is Boolean -> "Boolean"
+    is Number -> "Number"
+    is List<*> -> "List"
+    is Map<*, *> -> "Map"
+    else -> value::class.simpleName ?: "Any"
+}
+
+/**
+ * Format bounds for display.
+ */
+private fun formatBounds(bounds: Bounds): String {
+    if (bounds.isEmpty()) return "N/A"
+    return "[${bounds.minX.format(2)}, ${bounds.minY.format(2)}] → [${bounds.maxX.format(2)}, ${bounds.maxY.format(2)}]"
+}
+
+/**
+ * Format memory estimate for display.
+ * Uses ~24 bytes per coordinate as a rough estimate.
+ */
+private fun formatMemory(coordCount: Int): String {
+    val bytes = coordCount * 24L + 100L // ~24 bytes per coord + overhead
+    return when {
+        bytes < 1024 -> "~$bytes B"
+        bytes < 1024 * 1024 -> "~${bytes / 1024} KB"
+        else -> "~${bytes / (1024 * 1024)} MB"
+    }
+}
+
+/**
+ * Format a Double with the specified number of decimal places.
+ */
+private fun Double.format(decimals: Int) = "%.${decimals}f".format(this)
+
+/**
+ * Center a string within a given width.
+ */
+private fun String.center(width: Int): String = padStart((width + length) / 2).padEnd(width)
