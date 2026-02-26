@@ -20,11 +20,20 @@ const val MAX_MERCATOR_LAT = 85.0511287798066
  * Provides camera-like control over projections including viewport dimensions,
  * center point, zoom level, and optional bounding box.
  *
+ * ## Zoom Semantics (Viewport-Relative)
+ *
+ * Zoom is relative to "data bounds fills viewport":
+ * - zoom = 0: data bounds fills viewport (with optional padding)
+ * - zoom = 1: 2x zoomed in (shows half the extent)
+ * - zoom = -1: 2x zoomed out (shows double the extent)
+ *
+ * Scale formula: `scale = baseScale * 2^(-zoom)`
+ * Where baseScale = pixels per radian at zoom=0 (fits world in viewport)
+ *
  * @param width Viewport width in pixels
  * @param height Viewport height in pixels
  * @param center Geographic center point in degrees (x=longitude, y=latitude), null means (0, 0)
- * @param zoomLevel Zoom level where 0 = whole world, 1 = 2x zoomed in, etc.
- *                  Standard tile pyramid: scale = 256 * 2^zoom
+ * @param zoomLevel Zoom level where 0 = viewport fills world, 1 = 2x zoomed in, -1 = 2x zoomed out
  * @param bounds Optional bounding box for clipping/visibility checks
  */
 data class ProjectionConfig(
@@ -35,13 +44,32 @@ data class ProjectionConfig(
     val bounds: Bounds? = null
 ) {
     /**
+     * Base scale: scale factor at zoom=0 where world bounds fit in viewport.
+     * Calculated as: min(width / worldWidth, height / worldHeight)
+     * This gives pixels per radian for Mercator.
+     */
+    val baseScale: Double
+        get() {
+            // World bounds in Mercator coordinates
+            val worldWidth = 2 * PI
+            val worldHeight = 2 * ln(tan(PI / 4 + Math.toRadians(MAX_MERCATOR_LAT) / 2))
+            val scaleX = width / worldWidth
+            val scaleY = height / worldHeight
+            return minOf(scaleX, scaleY)
+        }
+
+    /**
      * Converts zoom level to scale factor.
-     * Standard tile pyramid math: scale = 256 * 2^zoom
+     * Scale = baseScale * 2^(-zoom)
+     *
+     * At zoom=0: scale = baseScale (world fits viewport)
+     * At zoom=1: scale = baseScale / 2 (2x zoomed in - half the world)
+     * At zoom=-1: scale = baseScale * 2 (2x zoomed out - double the world)
      *
      * @return Scale factor for projection calculations
      */
     val scale: Double
-        get() = 256.0 * Math.pow(2.0, zoomLevel)
+        get() = baseScale * Math.pow(2.0, -zoomLevel)
 
     companion object {
         /**
@@ -85,9 +113,10 @@ class ProjectionConfigBuilder {
             val worldHeight = 2 * ln(tan(PI / 4 + Math.toRadians(MAX_MERCATOR_LAT) / 2))
             val scaleX = width / worldWidth
             val scaleY = height / worldHeight
-            val scale = minOf(scaleX, scaleY)
-            // Reverse: scale = 256 * 2^zoom -> zoom = log2(scale / 256)
-            val zoom = kotlin.math.log2(scale / 256.0)
+            val baseScale = minOf(scaleX, scaleY)
+            // Reverse: scale = baseScale * 2^zoom -> zoom = log2(scale / baseScale)
+            // At zoom=0, world fits viewport so scale = baseScale
+            val zoom = 0.0  // zoom=0 now means world fits in viewport
             ProjectionConfig(width, height, Vector2(0.0, 0.0), zoom, null)
         } else {
             ProjectionConfig(width, height, center, zoomLevel ?: 0.0, null)

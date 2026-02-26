@@ -55,19 +55,10 @@ class ProjectionMercatorInternal(
     }
 
     override fun fitWorld(config: ProjectionConfig): GeoProjection {
-        val worldWidth = 2 * PI
-        val worldHeight = 2 * ln(tan(PI / 4 + Math.toRadians(MAX_MERCATOR_LAT) / 2))
-
-        val scaleX = config.width / worldWidth
-        val scaleY = config.height / worldHeight
-        val scale = min(scaleX, scaleY)
-
-        // Convert scale to zoom: zoom = log2(scale / 256)
-        val zoom = log2(scale / 256.0)
-
+        // zoom=0 now means world fits viewport - no calculation needed
         return ProjectionMercatorInternal(config.copy(
             center = Vector2(0.0, 0.0),
-            zoomLevel = zoom
+            zoomLevel = 0.0
         ))
     }
 
