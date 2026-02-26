@@ -28,16 +28,14 @@
 **Depends on**: Phase 6 (v1.1.0 shipped)
 **Requirements**: INSP-01, INSP-02, INSP-03
 **Success Criteria** (what must be TRUE):
-  1. User can call `summary()` on any GeoSource and see feature count, bounds, and CRS
+  1. User can call `printSummary()` on any GeoSource and see feature count, bounds, and CRS
   2. User can see memory footprint estimate to understand dataset scale
-  3. User can inspect property keys and sample values to understand feature attributes
-  4. User can decide whether to use lazy or eager evaluation based on documented performance notes
-**Plans**: TBD
+  3. User can see property keys and types (not values) to understand feature attributes
+  4. User sees clean, pandas-style formatted output in console
+**Plans**: 1 plan
 
 Plans:
-- [ ] 07-01: Implement GeoSourceSummary data class with feature count, bounds, CRS
-- [ ] 07-02: Add memory footprint estimation and property inspection
-- [ ] 07-03: Document lazy vs eager performance tradeoffs
+- [ ] 07-01-PLAN.md — Implement printSummary() with test scaffold (covers INSP-01, INSP-02, INSP-03)
 
 ### Phase 8: Rendering Improvements
 **Goal**: Users can render complex polygons (with holes) correctly
@@ -96,7 +94,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 7. Data Inspection | 0/3 | Not started | - |
+| 7. Data Inspection | 0/1 | Not started | - |
 | 8. Rendering Improvements | 0/3 | Not started | - |
 | 9. API Design | 0/3 | Not started | - |
 | 10. Documentation & Examples | 0/4 | Not started | - |
