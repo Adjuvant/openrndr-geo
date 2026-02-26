@@ -37,6 +37,15 @@ An expressive, well-architected API that makes exploring intersections of geo da
 
 ### Active
 
+**v1.2.0 Focus:**
+- [ ] GeoSource summary() function — runtime inspection for debugging
+- [ ] Polygon interior/exterior ring handling — proper compound shape rendering
+- [ ] Reduce rendering boilerplate — streamline load → render workflow
+- [ ] Fix MultiPolygon ocean data — handle coordinates outside projection bounds
+- [ ] Batch screen space projection — performance optimization
+- [ ] Example files — well-structured, one feature at a time (following openrndr-examples pattern)
+
+**Deferred:**
 - [ ] Documentation — guide for exploring available functions, organized by visual intent (deferred from v1.0)
 - [ ] Real-time pan/zoom — defer to v2
 - [ ] Custom aesthetic primitives (hatching, stippling) — defer to v2
@@ -99,4 +108,4 @@ An expressive, well-architected API that makes exploring intersections of geo da
 | CRS auto-detection | Manual EPSG handling painful | ✓ Shipped in v1.1.0 — transparent transforms |
 
 ---
-*Last updated: 2026-02-26 after v1.1.0 milestone*
+*Last updated: 2026-02-26 after v1.1.0 milestone, starting v1.2.0*
