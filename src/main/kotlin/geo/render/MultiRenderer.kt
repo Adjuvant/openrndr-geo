@@ -2,9 +2,13 @@ package geo.render
 
 import geo.MultiLineString
 import geo.MultiPoint
+import geo.MultiPolygon
+import geo.Polygon
 import geo.projection.GeoProjection
+import geo.projection.MAX_MERCATOR_LAT
 import geo.projection.ProjectionMercator
 import org.openrndr.draw.Drawer
+import org.openrndr.math.Vector2
 
 /**
  * Draw a MultiPoint geometry as a collection of points with consistent styling.
@@ -103,6 +107,9 @@ fun drawMultiLineString(
 /**
  * Draw a MultiPolygon geometry as a collection of polygons with consistent styling.
  *
+ * Handles geometries that may span beyond valid Mercator bounds (e.g., ocean data
+ * covering the whole world) by automatically clamping coordinates to valid range.
+ *
  * ## Usage
  * ```kotlin
  * extend {
@@ -121,21 +128,42 @@ fun drawMultiLineString(
  * }
  * ```
  *
+ * ## Ocean/Whole-World Data
+ * When rendering data that includes coordinates beyond ±85.05112878° latitude
+ * (e.g., ocean polygons covering the poles), coordinates are automatically clamped
+ * to prevent projection overflow artifacts.
+ *
  * @param drawer OpenRNDR Drawer context for rendering
  * @param multiPolygon MultiPolygon geometry containing polygons to render
  * @param projection Geographic projection to use for rendering to screen space
  * @param userStyle Style configuration (null = use defaultPolygonStyle)
+ * @param clampToMercatorBounds If true (default), automatically clamp coordinates
+ *                              to valid Mercator range to prevent artifacts
  *
  * @see drawPolygon Individual polygon rendering
  * @see MultiPolygon Geometry class for polygon collections
  */
 fun drawMultiPolygon(
     drawer: Drawer,
-    multiPolygon: geo.MultiPolygon,
+    multiPolygon: MultiPolygon,
     projection: GeoProjection,
-    userStyle: Style? = null
+    userStyle: Style? = null,
+    clampToMercatorBounds: Boolean = true
 ) {
-    multiPolygon.polygons.forEach { polygon ->
-        drawPolygon(drawer, polygon.exteriorToScreen(projection), userStyle)
+    // For Mercator projections, optionally clamp coordinates to valid range
+    // This prevents artifacts when rendering ocean/whole-world data
+    val polygonsToRender = if (clampToMercatorBounds && projection is ProjectionMercator) {
+        multiPolygon.polygons.map { polygon ->
+            // Clamp coordinates to valid Mercator range
+            polygon.exterior.map { coord ->
+                Vector2(coord.x, coord.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT))
+            }
+        }
+    } else {
+        multiPolygon.polygons.map { it.exterior }
+    }
+    
+    polygonsToRender.forEach { exteriorCoords ->
+        drawPolygon(drawer, exteriorCoords, userStyle)
     }
 }

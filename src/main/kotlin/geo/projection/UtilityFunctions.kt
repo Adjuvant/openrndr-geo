@@ -59,12 +59,13 @@ fun isOnScreen(point: Vector2, bounds: Rectangle): Boolean {
 
 /**
  * Check if coordinate is within valid geographic range.
+ * Uses MAX_MERCATOR_LAT (85.05112878°) for latitude validation.
  *
  * @param latLng Geographic coordinates as Vector2 (x=longitude, y=latitude)
- * @return true if coordinates are valid (lat in [-90, 90], lon in [-180, 180])
+ * @return true if coordinates are valid for Mercator (lat in [-85.05, 85.05], lon in [-180, 180])
  */
 fun isValidCoordinate(latLng: Vector2): Boolean {
-    return latLng.y in -90.0..90.0 && latLng.x in -180.0..180.0
+    return latLng.y in -MAX_MERCATOR_LAT..MAX_MERCATOR_LAT && latLng.x in -180.0..180.0
 }
 
 /**
