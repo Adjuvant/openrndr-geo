@@ -16,8 +16,8 @@ import kotlin.math.log2
  * and bounding box fitting functionality.
  *
  * ## Key Formulas
- * - Scale to zoom: `zoom = log2(scale / 256)`
- * - Zoom to scale: `scale = 256 * 2^zoom`
+ * - Scale to zoom: `zoom = -log2(scale / baseScale)`
+ * - Zoom to scale: `scale = baseScale * 2^(-zoom)`
  * - Mercator y: `ln(tan(π/4 + φ/2))` where φ is latitude
  *
  * ## Three-Variant API
@@ -64,19 +64,11 @@ class ProjectionMercator(
     }
 
     override fun fitWorld(config: ProjectionConfig): GeoProjection {
-        val worldWidth = 2 * PI
-        val worldHeight = 2 * ln(tan(PI / 4 + Math.toRadians(MAX_MERCATOR_LAT) / 2))
-
-        val scaleX = config.width / worldWidth
-        val scaleY = config.height / worldHeight
-        val scale = min(scaleX, scaleY)
-
-        // Convert scale to zoom: zoom = log2(scale / 256)
-        val zoom = log2(scale / 256.0)
-
+        // zoom=0 now means world fits viewport - no calculation needed
+        // baseScale is automatically calculated from dimensions in ProjectionConfig
         return ProjectionMercator(config.copy(
             center = Vector2(0.0, 0.0),
-            zoomLevel = zoom
+            zoomLevel = 0.0  // world fits in viewport at zoom=0
         ))
     }
 
@@ -171,8 +163,12 @@ class ProjectionMercator(
         // Step 4: Use minimum scale (contain strategy - never crop)
         val projectionScale = min(scaleX, scaleY)
 
-        // Convert scale to zoom: scale = 256 * 2^zoom -> zoom = log2(scale / 256)
-        val zoom = log2(projectionScale / 256.0).coerceAtLeast(0.0)
+        // Convert scale to zoom: zoom = -log2(scale / baseScale) where baseScale fits world
+        // Higher scale = more zoomed out, so we invert the formula
+        val worldWidth = 2 * PI
+        val worldHeight = 2 * ln(tan(PI / 4 + Math.toRadians(MAX_MERCATOR_LAT) / 2))
+        val baseScale = minOf(_config.width / worldWidth, _config.height / worldHeight)
+        val zoom = -log2(projectionScale / baseScale)
 
         // Step 5 & 6 & 7: Calculate center for projection
         val centerLng = (swLng + neLng) / 2
