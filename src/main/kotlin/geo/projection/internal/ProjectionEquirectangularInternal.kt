@@ -38,7 +38,8 @@ class ProjectionEquirectangularInternal(
     }
 
     override fun fitWorld(config: ProjectionConfig): GeoProjection {
-        return ProjectionEquirectangularInternal(config.copy(center = Vector2(0.0, 0.0), scale = 1.0))
+        // For equirectangular, zoomLevel 0 = full world view
+        return ProjectionEquirectangularInternal(config.copy(center = Vector2(0.0, 0.0), zoomLevel = 0.0))
     }
 
     private fun normalizeLongitude(longitude: Double): Double {

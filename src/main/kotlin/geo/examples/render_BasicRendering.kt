@@ -55,11 +55,13 @@ fun main() = application {
         // TODO Nice to have: join multiple imports into a single data monolith, then use features crawl as it.
         // Create a Mercator projection that fits the viewport
         // This converts geographic coordinates (latitude/longitude) to screen coordinates (pixels)
+        // Using zoomLevel: 0 = whole world, higher values = more zoomed in
+        // scale = 256 * 2^zoom (standard tile pyramid math)
         val config = ProjectionConfig(
             width = width.toDouble(),
             height = height.toDouble(),
             center = null,
-            scale = 10.0, // TODO Seems to act like 100% rather than intended 0-1 scale
+            zoomLevel = 0.0, // 0 = whole world view
             bounds = data.boundingBox()
         )
         // TODO scale fucked.

@@ -45,6 +45,7 @@ class ProjectionEquirectangular(
     }
 
     override fun fitWorld(config: ProjectionConfig): GeoProjection {
-        return ProjectionEquirectangular(config.copy(center = Vector2(0.0, 0.0), scale = 1.0))
+        // For equirectangular, zoomLevel 0 = full world view
+        return ProjectionEquirectangular(config.copy(center = Vector2(0.0, 0.0), zoomLevel = 0.0))
     }
 }

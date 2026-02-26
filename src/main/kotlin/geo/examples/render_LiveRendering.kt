@@ -109,11 +109,13 @@ fun main() = application {
         val finalScale = autoScale
 
         // Create projection with centered, zoomed view
+        // Using zoomLevel: 0 = world, higher values = more zoomed
+        // To convert from the old scale approach: zoomLevel = log2(scale / 256)
         val projection = ProjectionFactory.mercator(
             width = width.toDouble(),
             height = height.toDouble(),
             center = centerLatLon,
-            scale = finalScale * 50  // Magic number for visualization
+            zoomLevel = 2.0  // Starting zoom level for visualization
         )
 
         println("Center: lat=${centerLatLon.y}, lon=${centerLatLon.x}")
