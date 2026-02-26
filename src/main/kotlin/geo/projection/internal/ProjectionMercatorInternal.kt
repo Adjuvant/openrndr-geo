@@ -2,14 +2,16 @@ package geo.projection.internal
 
 import geo.exception.ProjectionOverflowException
 import geo.projection.GeoProjection
+import geo.projection.MAX_MERCATOR_LAT
 import geo.projection.ProjectionConfig
 import org.openrndr.math.Vector2
 import kotlin.math.PI
 import kotlin.math.ln
 import kotlin.math.tan
+import kotlin.math.log2
+import kotlin.math.min
 
 private const val EARTH_RADIUS = 6378137.0
-private const val MAX_LATITUDE = 85.05112878 // 180/π * atan(e^π)
 
 /**
  * Internal Mercator projection implementation.
@@ -31,7 +33,7 @@ class ProjectionMercatorInternal(
             )
         }
 
-        val clampedLat = lat.coerceIn(-MAX_LATITUDE, MAX_LATITUDE)
+        val clampedLat = lat.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
 
         val x = Math.toRadians(lon)
         val y = ln(tan(PI / 4 + Math.toRadians(clampedLat) / 2))
@@ -54,15 +56,18 @@ class ProjectionMercatorInternal(
 
     override fun fitWorld(config: ProjectionConfig): GeoProjection {
         val worldWidth = 2 * PI
-        val worldHeight = 2 * ln(tan(PI / 4 + Math.toRadians(MAX_LATITUDE) / 2))
-        
+        val worldHeight = 2 * ln(tan(PI / 4 + Math.toRadians(MAX_MERCATOR_LAT) / 2))
+
         val scaleX = config.width / worldWidth
         val scaleY = config.height / worldHeight
-        val scale = minOf(scaleX, scaleY)
-        
+        val scale = min(scaleX, scaleY)
+
+        // Convert scale to zoom: zoom = log2(scale / 256)
+        val zoom = log2(scale / 256.0)
+
         return ProjectionMercatorInternal(config.copy(
             center = Vector2(0.0, 0.0),
-            scale = scale
+            zoomLevel = zoom
         ))
     }
 
@@ -70,6 +75,7 @@ class ProjectionMercatorInternal(
         val centerX = config.center?.x?.let { Math.toRadians(it) } ?: 0.0
         val centerY = config.center?.y?.let { ln(tan(PI / 4 + Math.toRadians(it) / 2)) } ?: 0.0
 
+        // Use config.scale which is now a computed property from zoomLevel
         val scaledX = (x - centerX) * config.scale
         val scaledY = (y - centerY) * config.scale
 

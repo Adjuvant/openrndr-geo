@@ -122,12 +122,15 @@ fun main() = application {
         val scaleY = (height - 2 * padding) / dataHeight
         val scale = kotlin.math.min(scaleX, scaleY)
         val center = Vector2((minX + maxX) / 2, (minY + maxY) / 2)
+        
+        // Convert scale to zoomLevel: zoom = log2(scale / 256)
+        val zoomLevel = kotlin.math.log2(scale / 256.0)
 
         val projection: GeoProjection = ProjectionFactory.mercator(
             width = width.toDouble(),
             height = height.toDouble(),
             center = center,
-            scale = scale
+            zoomLevel = zoomLevel
         )
 
         // Frame counter for animation

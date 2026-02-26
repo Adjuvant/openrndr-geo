@@ -40,11 +40,13 @@ fun main() = application {
         val tokyo = Position(35.6762, 139.6503)
 
         // Create world map projection
+        // Using zoomLevel: 0 = whole world, higher = more zoomed
+        // scale = 256 * 2^zoom, so zoomLevel 2 gives scale ~1024
         val projection = ProjectionFactory.mercator(
             width = width.toDouble(),
             height = height.toDouble(),
             center = Vector2(42.0, 60.0),
-            scale = 150.0
+            zoomLevel = 2.0
         )
 
         // Calculate world map bounds to center viewport

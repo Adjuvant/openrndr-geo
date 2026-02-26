@@ -6,29 +6,29 @@ import org.openrndr.shape.IntRectangle
 import kotlin.math.PI
 import kotlin.math.ln
 import kotlin.math.tan
+import kotlin.math.min
+import kotlin.math.log2
 
 enum class ProjectionType { EQUIRECTANGULAR, MERCATOR }
 
 object ProjectionFactory {
-
-    private const val MAX_LATITUDE = 85.05112878
 
     /**
      * Create a Mercator projection for the given viewport.
      * @param width Screen width in pixels
      * @param height Screen height in pixels
      * @param center Center coordinates (lat/lng), defaults to (0, 0)
-     * @param scale Zoom scale factor, defaults to 1.0
+     * @param zoomLevel Zoom level (0 = whole world, higher = more zoomed in)
      * @return Configured Mercator projection
      */
     fun mercator(
         width: Double = 800.0,
         height: Double = 600.0,
         center: Vector2? = null,
-        scale: Double = 1.0,
+        zoomLevel: Double = 0.0,
         bounds: Bounds? = null
     ): ProjectionMercator {
-        return ProjectionMercator(ProjectionConfig(width, height, center, scale, null))
+        return ProjectionMercator(ProjectionConfig(width, height, center, zoomLevel, null))
     }
 
     /**
@@ -45,16 +45,16 @@ object ProjectionFactory {
      * @param width Screen width in pixels
      * @param height Screen height in pixels
      * @param center Center coordinates (lat/lng), defaults to (0, 0)
-     * @param scale Zoom scale factor, defaults to 1.0
+     * @param zoomLevel Zoom level (0 = whole world, higher = more zoomed in)
      * @return Configured Equirectangular projection
      */
     fun equirectangular(
         width: Double = 800.0,
         height: Double = 600.0,
         center: Vector2? = null,
-        scale: Double = 1.0
+        zoomLevel: Double = 0.0
     ): ProjectionEquirectangular {
-        return ProjectionEquirectangular(ProjectionConfig(width, height, center, scale, null))
+        return ProjectionEquirectangular(ProjectionConfig(width, height, center, zoomLevel, null))
     }
 
     /**
@@ -67,7 +67,7 @@ object ProjectionFactory {
         width: Double = 800.0,
         height: Double = 600.0
     ): ProjectionBNG {
-        return ProjectionBNG(ProjectionConfig(width, height, null, 1.0, null))
+        return ProjectionBNG(ProjectionConfig(width, height, null, 0.0, null))
     }
 
     /**
@@ -76,12 +76,11 @@ object ProjectionFactory {
      * @param height Screen height in pixels
      * @return Mercator projection with world bounds
      */
-    // TODO 24th Feb: his didn't work natively, seeing if bounds does trick, 25th Feb: it's fucked
     fun fitWorldMercator(
         width: Double = 800.0,
         height: Double = 600.0
     ): GeoProjection {
-        val config = ProjectionConfig(width, height, Vector2(0.0, 0.0), 1.0, null)
+        val config = ProjectionConfig(width, height, Vector2(0.0, 0.0), 0.0, null)
         return ProjectionMercator(config)
     }
 
@@ -95,7 +94,7 @@ object ProjectionFactory {
         width: Double = 800.0,
         height: Double = 600.0
     ): GeoProjection {
-        val config = ProjectionConfig(width, height, Vector2(0.0, 0.0), 1.0, null)
+        val config = ProjectionConfig(width, height, Vector2(0.0, 0.0), 0.0, null)
         return ProjectionEquirectangular(config)
     }
 
@@ -112,12 +111,14 @@ object ProjectionFactory {
             ProjectionType.EQUIRECTANGULAR -> {
                 val scaleX = 360.0 / bounds.width
                 val scaleY = 180.0 / bounds.height
-                val scale = minOf(scaleX, scaleY) * padding
-                ProjectionConfig(width, height, center, scale, null)
+                val scale = min(scaleX, scaleY) * padding
+                // Convert scale to zoomLevel: zoom = log2(scale / 256)
+                val zoomLevel = log2(scale / 256.0)
+                ProjectionConfig(width, height, center, zoomLevel, null)
             }
             ProjectionType.MERCATOR -> {
-                val clampedMinY = bounds.minY.coerceIn(-MAX_LATITUDE, MAX_LATITUDE)
-                val clampedMaxY = bounds.maxY.coerceIn(-MAX_LATITUDE, MAX_LATITUDE)
+                val clampedMinY = bounds.minY.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
+                val clampedMaxY = bounds.maxY.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
 
                 val projMinX = Math.toRadians(bounds.minX)
                 val projMaxX = Math.toRadians(bounds.maxX)
@@ -129,9 +130,12 @@ object ProjectionFactory {
 
                 val scaleX = width / projWidth
                 val scaleY = height / projHeight
-                val scale = minOf(scaleX, scaleY) * padding
+                val scale = min(scaleX, scaleY) * padding
 
-                ProjectionConfig(width, height, center, scale, null)
+                // Convert scale to zoomLevel: zoom = log2(scale / 256)
+                val zoomLevel = log2(scale / 256.0)
+
+                ProjectionConfig(width, height, center, zoomLevel, null)
             }
         }
 
