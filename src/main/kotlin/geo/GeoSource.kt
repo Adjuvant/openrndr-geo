@@ -1,5 +1,6 @@
 package geo
 
+import geo.crs.CRS
 import geo.projection.CRSTransformer
 import geo.projection.GeoProjection
 import geo.projection.ProjectionFactory
@@ -93,6 +94,26 @@ abstract class GeoSource(
                     )
                 }
         }
+    }
+
+    /**
+     * Transforms this GeoSource to a different CRS using the strongly-typed CRS enum.
+     *
+     * ## Usage
+     * ```kotlin
+     * val source = geoSource("data.json")
+     * val webMercator = source.transform(to = CRS.WebMercator)
+     * ```
+     *
+     * @param to The target CRS
+     * @return A GeoSource in the target CRS (same instance if CRS matches)
+     */
+    open fun transform(to: CRS): GeoSource {
+        if (to.isUnknown()) {
+            println("Warning: Cannot transform to unknown CRS. Keeping original CRS.")
+            return this
+        }
+        return autoTransformTo(to.code)
     }
 
     /**
