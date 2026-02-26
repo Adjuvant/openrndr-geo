@@ -83,7 +83,6 @@ import kotlin.math.sin
  * Graticule provides essential lat/lng reference for orientation,
  * helping users understand the geographic context of the data.
  */
-// TODO Needs data that will let points and lines make sense. Map needs to span 1 degree longitudes so map of europe would make sense. But something else is wrong too.
 fun main() = application {
     configure {
         width = 1200
@@ -116,10 +115,9 @@ fun main() = application {
 
         // Create projection
         val projection = ProjectionFactory.fitBounds(data.totalBoundingBox(),
-            width.toDouble(), height.toDouble(), padding = 1.0,
+            width.toDouble(), height.toDouble(), padding = 50.0,
             projection = ProjectionType.MERCATOR)
 
-        // TODO think this is broken.
         // Create graticule sources with different spacing
         val graticule1deg = generateGraticuleSource(1.0, data.totalBoundingBox())
         val graticule5deg = generateGraticuleSource(5.0, data.totalBoundingBox())
