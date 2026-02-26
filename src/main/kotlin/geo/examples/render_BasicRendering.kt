@@ -9,7 +9,6 @@ import geo.MultiLineString
 import geo.MultiPoint
 import geo.MultiPolygon
 import geo.Polygon
-import geo.projection.ProjectionConfig
 import geo.render.Style
 import geo.render.Shape
 import geo.render.drawPoint
@@ -52,25 +51,10 @@ fun main() = application {
         // Load geo data from the sample GeoJSON file
         // GeoJSON.load() returns a GeoJSONSource which contains a sequence of features
         val data = GeoJSON.load("data/geo/coastline.geojson")
-        // TODO Nice to have: join multiple imports into a single data monolith, then use features crawl as it.
-        // Create a Mercator projection that fits the viewport
-        // This converts geographic coordinates (latitude/longitude) to screen coordinates (pixels)
-        // Using zoomLevel: 0 = whole world, higher values = more zoomed in
-        // scale = 256 * 2^zoom (standard tile pyramid math)
-        val config = ProjectionConfig(
-            width = width.toDouble(),
-            height = height.toDouble(),
-            center = null,
-            zoomLevel = 0.0, // 0 = whole world view
-            bounds = data.boundingBox()
-        )
-        // TODO scale fucked.
-        // val projection = ProjectionFactory.mercator(config)
-        // TODO Broken
-//        val projection = ProjectionFactory.fitWorldMercator(width.toDouble(), height.toDouble())
-        // TODO 50% broken, stuff in right scale but lines fuck up at poles
-        val projection =
-            ProjectionFactory.fitBounds(data.totalBoundingBox(), width.toDouble(), height.toDouble(), padding = 1.0)
+
+        // Use fitWorldMercator for a projection that shows the whole world at zoom=0
+        // zoom=0 means world fits in viewport, zoom=1 means 2x zoomed in, etc.
+        val projection = ProjectionFactory.fitWorldMercator(width.toDouble(), height.toDouble())
 
         val pointStyle = Style {
             fill = ColorRGBa.RED
@@ -91,7 +75,6 @@ fun main() = application {
             stroke = ColorRGBa.ORANGE
             strokeWeight = 1.0
         }
-        // TODO shouldn't we move everything to screen space by this stage? Or would that cause issues (data triangulation)?
         // The extend block is called every frame (60 times per second by default)
         extend {
             // Clear the screen with white background
@@ -130,7 +113,6 @@ fun main() = application {
                     is MultiLineString -> { /* Draw multiple lines */
                         drawMultiLineString(drawer, geometry, projection, lineStyle)
                     }
-                    // TODO fails on ocean as it covers beyond min max lat longs
                     is MultiPolygon -> { /* Draw multiple polygons */
                         drawMultiPolygon(drawer, geometry, projection, polygonStyle)
                     }
