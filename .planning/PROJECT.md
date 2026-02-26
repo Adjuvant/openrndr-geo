@@ -12,17 +12,28 @@ An expressive, well-architected API that makes exploring intersections of geo da
 
 ### Validated
 
-- ✓ OPENRNDR application structure — existing template with `application { configure { } program { } }` pattern
-- ✓ Live-coding support via oliveProgram — existing for hot-reloading
-- ✓ ORX extensions available — shapes, noise, color, composition, envelopes, etc.
+**v1.0.0 Foundation:**
+- ✓ OPENRNDR application structure — existing template with `application { configure { } program { } }` pattern — v1.0
+- ✓ Live-coding support via oliveProgram — existing for hot-reloading — v1.0
+- ✓ ORX extensions available — shapes, noise, color, composition, envelopes, etc. — v1.0
 - ✓ Geo data ingestion — GeoJSON, GeoPackage loading with spatial indexing (DATA-01, DATA-02, DATA-03) — v1.0
 - ✓ Efficient handling of large datasets — lazy Sequence-based access, Quadtree spatial index (DATA-02) — v1.0
 - ✓ Intermediate representation — normalized geo primitives (Point, LineString, Polygon, Multi*) — v1.0
 - ✓ Projection support — Mercator, Equirectangular, BNG ↔ WGS84 transforms (COORD-01, COORD-02, COORD-03) — v1.0
 - ✓ Drawing adapters — map geo primitives to OpenRNDR `Contour`, `Vector2`, shapes (REND-01, REND-02, REND-03, REND-04) — v1.0
-- ✓ Animation layer — GeoAnimator with easing, tweening, procedural motion (ANIM-01, ANIM-02, ANIM-03) — v1.0
 - ✓ Clean architecture — separation of data layer and rendering layer — v1.0
 - ✓ Swappable components — GeoSource abstraction, GeoJSON/GeoPackage implementations — v1.0
+- ✓ Multi-layer composition — Layer system with blend modes (REND-05, REND-06) — v1.0
+- ✓ Screenshot capture — Native OpenRNDR output (OUTP-01) — v1.0
+- ✓ Graticule generation — Lat/lng grid reference (REF-01) — v1.0
+
+**v1.1.0 API Improvements:**
+- ✓ Animation layer — GeoAnimator with easing, tweening, procedural motion (ANIM-01, ANIM-02, ANIM-03) — v1.1.0
+- ✓ CRS auto-detection — Automatic CRS handling with autoTransformTo() — v1.1.0
+- ✓ Three-tier API — Simplified workflows: drawer.geoJSON() → geoSource() → full control — v1.1.0
+- ✓ Viewport-relative zoom — zoom=0 fits world, not tile-based (256px) — v1.1.0
+- ✓ fitBounds API — Reliable bounding box fitting with contain strategy — v1.1.0
+- ✓ Multi-dataset overlays — GeoStack with CRS unification — v1.1.0
 
 ### Active
 
@@ -41,12 +52,12 @@ An expressive, well-architected API that makes exploring intersections of geo da
 
 ## Context
 
-**Current State (v1.0 shipped):**
-- ~7,893 lines of Kotlin production code
-- 38 files created/modified
-- 21 plans completed across 7 phases
+**Current State (v1.1.0 shipped):**
+- ~12,713 lines of Kotlin production code
+- 304 files created/modified
+- 27 plans completed across 7 phases
 - Build: OPENRNDR 0.4.5, Kotlin 1.9.22, JVM 17
-- Test coverage: 150+ tests passing
+- Test coverage: 193 tests passing
 
 - Built on OPENRNDR 0.4.5 with Kotlin 2.2.10, JVM 17
 - Existing template project with ORX extensions (shapes, noise, color, composition, envelopes, etc.)
@@ -55,6 +66,14 @@ An expressive, well-architected API that makes exploring intersections of geo da
 - Data sources: UK Ordnance Survey (Zoomstack GeoPackage ~12GB), lithography, weather, public planning, traditional maps
 - QGIS used for preprocessing; exports expected in standard geo formats
 - Java libraries acceptable for geo heavy lifting (parsing, spatial ops)
+
+**v1.1.0 Improvements:**
+- Fixed critical projection API friction discovered in v1.0 real-world usage
+- Added animation layer (GeoAnimator, easing, tweening, procedural motion)
+- Simplified multi-dataset workflows with CRS auto-detection
+- Reduced "load → visualize" boilerplate from 10+ lines to 1-2 lines
+- Viewport-relative zoom semantics (zoom=0 fits world)
+- Three-tier API: drawer.geoJSON() → geoSource() → full control
 
 ## Constraints
 
@@ -75,6 +94,9 @@ An expressive, well-architected API that makes exploring intersections of geo da
 | Use OpenRNDR built-in Easing (not orx-easing) | Fewer dependencies, simpler API | ✓ Shipped in v1.0 — works well |
 | Sealed class hierarchy for Geometry | Enables exhaustive when expressions | ✓ Shipped in v1.0 — type-safe rendering |
 | Sequence-based lazy iteration | Memory-efficient large dataset processing | ✓ Shipped in v1.0 — handles multi-GB GeoPackages |
+| Viewport-relative zoom (not tile-based) | Tile pyramid math wrong for creative coding | ✓ Shipped in v1.1.0 — zoom=0 fits world |
+| Three-tier API design | Common case too verbose | ✓ Shipped in v1.1.0 — 1-2 line workflows |
+| CRS auto-detection | Manual EPSG handling painful | ✓ Shipped in v1.1.0 — transparent transforms |
 
 ---
-*Last updated: 2026-02-22 after v1.0.0 milestone*
+*Last updated: 2026-02-26 after v1.1.0 milestone*

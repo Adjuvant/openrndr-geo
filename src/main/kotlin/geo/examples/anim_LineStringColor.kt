@@ -25,7 +25,7 @@ fun main() = application {
 
         val geojson = GeoJSON.load("data/geo/catchment-topo.geojson")
         val projection = ProjectionFactory.fitBounds(geojson.boundingBox(),
-            width.toDouble(), height.toDouble(), padding = 1.0,
+            width.toDouble(), height.toDouble(), padding = 50.0,
             projection = ProjectionType.MERCATOR)
 
         // Collect features for rendering

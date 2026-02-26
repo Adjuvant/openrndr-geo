@@ -43,8 +43,8 @@ import org.openrndr.extra.color.presets.ORANGE
 fun main() = application {
     // Configure the application window
     configure {
-        width = 800
-        height = 400
+        width = 600
+        height = 600
     }
 
     program {
@@ -81,6 +81,7 @@ fun main() = application {
             drawer.clear(ColorRGBa.WHITE)
 
             // Iterate through all features in the dataset
+            // TODO this isn't basic now, this is feature rendering, intermediate. Replace with dump geojson to screen.
             // Each feature has a geometry (Point, LineString, Polygon, etc.) and properties
             data.features.forEach { feature ->
                 val geometry = feature.geometry

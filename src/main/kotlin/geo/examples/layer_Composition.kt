@@ -141,7 +141,7 @@ fun main() = application {
 //            scale = scale
 //        )
         val projection = ProjectionFactory.fitBounds(data.totalBoundingBox(),
-            width.toDouble(), height.toDouble(), padding = .80,
+            width.toDouble(), height.toDouble(), padding = 50.0,
             projection = ProjectionType.MERCATOR)
 
         // Create graticule source (5-degree spacing)

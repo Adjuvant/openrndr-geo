@@ -204,7 +204,7 @@ fun main() = application {
 
         // Create projection
         val projection = ProjectionFactory.fitBounds(data.totalBoundingBox(),
-            width.toDouble(), height.toDouble(), padding = .80,
+            width.toDouble(), height.toDouble(), padding = 50.0,
             projection = ProjectionType.MERCATOR)
 
         // Create 4-quadrant blend mode comparison
