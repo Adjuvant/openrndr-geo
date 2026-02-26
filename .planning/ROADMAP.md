@@ -9,19 +9,20 @@
 
 ## Current Milestone: v1.1.0
 
-### Phase 6: Fix projection errors and API design ✓ COMPLETE
+### Phase 6: Fix projection errors and API design
 
 **Goal:** Fix projection scaling/fitBounds API and simplify data overlay workflows for confidence in multi-dataset alignment
 **Depends on:** v1.0.0 foundation
-**Plans:** 5/5 complete
-**Completed:** 2026-02-26
+**Plans:** 6 plans (5 complete, 1 gap closure pending)
+**Status:** Gap closure required
 
 Plans:
-- [x] Fix projection scaling and fitBounds API
-- [x] Fix MultiPolygon rendering for ocean/whole-world data
-- [x] Reduce API boilerplate for common rendering workflows
-- [x] Simplify CRS handling API
-- [x] Integration and regression testing
+- [x] 06-01 — Fix projection scaling and fitBounds API
+- [x] 06-02 — Fix MultiPolygon rendering for ocean/whole-world data
+- [x] 06-03 — Reduce API boilerplate for common rendering workflows
+- [x] 06-04 — Simplify CRS handling API
+- [x] 06-05 — Integration and regression testing
+- [ ] 06-06 — Fix zoom semantics (gap closure from UAT)
 
 **Details:**
 Addresses critical friction discovered during real-world usage:
@@ -30,6 +31,7 @@ Addresses critical friction discovered during real-world usage:
 - ✓ MultiPolygon handles ocean data via Mercator clamping
 - ✓ "Load → visualize" reduced to 1-2 lines with three-tier API
 - ✓ CRS auto-detection eliminates manual EPSG handling
+- ⚠️ Zoom semantics still use tile-based math (256px) - needs viewport-relative fix
 
 **Deliverables:**
 - 191 tests passing (including 20+ new Phase 6 tests)
@@ -37,6 +39,7 @@ Addresses critical friction discovered during real-world usage:
 - Three-tier API: drawer.geoJSON() → geoSource() → full control
 - GeoStack for multi-dataset overlays
 - Verification: 06-VERIFICATION.md
+- UAT: 06-UAT.md (identified zoom semantics gap)
 
 ---
 
