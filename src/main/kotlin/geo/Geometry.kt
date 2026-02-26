@@ -2,8 +2,16 @@ package geo
 
 import geo.projection.CRSTransformer
 import geo.projection.GeoProjection
+import geo.projection.MAX_MERCATOR_LAT
 import geo.projection.ProjectionMercator
 import org.openrndr.math.Vector2
+
+/**
+ * Maximum valid latitude for Web Mercator projection.
+ * Coordinates beyond this will be clamped to prevent projection overflow.
+ */
+val MAX_MERCATOR_COORD: Double
+    get() = MAX_MERCATOR_LAT
 
 /**
  * Sealed class hierarchy for all geometry types.
@@ -230,4 +238,201 @@ fun Geometry.transform(transformer: CRSTransformer): Geometry = when (this) {
             )
         }
     )
+}
+
+// ============================================================================
+// Mercator Bounds Validation and Clamping
+// ============================================================================
+
+/**
+ * Validates that all coordinates in this geometry are within valid Mercator bounds.
+ * Returns true if all latitudes are within [-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT]
+ * and all longitudes are within [-180, 180].
+ *
+ * @return true if geometry is valid for Mercator projection
+ */
+fun Geometry.validateMercatorBounds(): Boolean {
+    return when (this) {
+        is Point -> isValidCoordinate(Vector2(x, y))
+        is LineString -> points.all { isValidCoordinate(it) }
+        is Polygon -> exterior.all { isValidCoordinate(it) } && interiors.flatten().all { isValidCoordinate(it) }
+        is MultiPoint -> points.all { isValidCoordinate(Vector2(it.x, it.y)) }
+        is MultiLineString -> lineStrings.all { ls -> ls.points.all { isValidCoordinate(it) } }
+        is MultiPolygon -> polygons.all { poly ->
+            poly.exterior.all { isValidCoordinate(it) } && poly.interiors.flatten().all { isValidCoordinate(it) }
+        }
+    }
+}
+
+/**
+ * Checks if a coordinate is valid for Mercator projection.
+ * Valid range: latitude in [-85.05112878, 85.05112878], longitude in [-180, 180]
+ */
+fun isValidCoordinate(coord: Vector2): Boolean {
+    return coord.x in -180.0..180.0 && coord.y in -MAX_MERCATOR_LAT..MAX_MERCATOR_LAT
+}
+
+/**
+ * Clamps all coordinates in this geometry to valid Mercator bounds.
+ * Latitude is clamped to [-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT].
+ * Longitude remains unchanged (it wraps naturally in Mercator).
+ *
+ * This prevents projection overflow and artifacts at the poles.
+ *
+ * @return A new Geometry with all coordinates clamped to valid Mercator range
+ */
+fun Geometry.clampToMercator(): Geometry {
+    return when (this) {
+        is Point -> Point(
+            x = x,
+            y = y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
+        )
+
+        is LineString -> LineString(
+            points = points.map { pt ->
+                Vector2(pt.x, pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT))
+            }
+        )
+
+        is Polygon -> Polygon(
+            exterior = exterior.map { pt ->
+                Vector2(pt.x, pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT))
+            },
+            interiors = interiors.map { ring ->
+                ring.map { pt ->
+                    Vector2(pt.x, pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT))
+                }
+            }
+        )
+
+        is MultiPoint -> MultiPoint(
+            points = points.map { pt ->
+                Point(
+                    x = pt.x,
+                    y = pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
+                )
+            }
+        )
+
+        is MultiLineString -> MultiLineString(
+            lineStrings = lineStrings.map { ls ->
+                LineString(
+                    ls.points.map { pt ->
+                        Vector2(pt.x, pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT))
+                    }
+                )
+            }
+        )
+
+        is MultiPolygon -> MultiPolygon(
+            polygons = polygons.map { poly ->
+                Polygon(
+                    exterior = poly.exterior.map { pt ->
+                        Vector2(pt.x, pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT))
+                    },
+                    interiors = poly.interiors.map { ring ->
+                        ring.map { pt ->
+                            Vector2(pt.x, pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT))
+                        }
+                    }
+                )
+            }
+        )
+    }
+}
+
+/**
+ * Normalizes longitude to [-180, 180] range.
+ * Handles dateline crossing for geometries that span across the international date line.
+ *
+ * @return Longitude normalized to [-180, 180]
+ */
+fun normalizeLongitude(lng: Double): Double {
+    var normalized = ((lng % 360.0) + 360.0) % 360.0
+    if (normalized > 180.0) normalized -= 360.0
+    return normalized
+}
+
+/**
+ * Clamps this geometry to Mercator bounds AND normalizes longitude.
+ * Use this for geometries that may span the dateline or include polar regions.
+ *
+ * @return A new Geometry with coordinates clamped and normalized
+ */
+fun Geometry.clampAndNormalize(): Geometry {
+    return when (this) {
+        is Point -> Point(
+            x = normalizeLongitude(x),
+            y = y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
+        )
+
+        is LineString -> LineString(
+            points = points.map { pt ->
+                Vector2(
+                    normalizeLongitude(pt.x),
+                    pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
+                )
+            }
+        )
+
+        is Polygon -> Polygon(
+            exterior = exterior.map { pt ->
+                Vector2(
+                    normalizeLongitude(pt.x),
+                    pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
+                )
+            },
+            interiors = interiors.map { ring ->
+                ring.map { pt ->
+                    Vector2(
+                        normalizeLongitude(pt.x),
+                        pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
+                    )
+                }
+            }
+        )
+
+        is MultiPoint -> MultiPoint(
+            points = points.map { pt ->
+                Point(
+                    x = normalizeLongitude(pt.x),
+                    y = pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
+                )
+            }
+        )
+
+        is MultiLineString -> MultiLineString(
+            lineStrings = lineStrings.map { ls ->
+                LineString(
+                    ls.points.map { pt ->
+                        Vector2(
+                            normalizeLongitude(pt.x),
+                            pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
+                        )
+                    }
+                )
+            }
+        )
+
+        is MultiPolygon -> MultiPolygon(
+            polygons = polygons.map { poly ->
+                Polygon(
+                    exterior = poly.exterior.map { pt ->
+                        Vector2(
+                            normalizeLongitude(pt.x),
+                            pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
+                        )
+                    },
+                    interiors = poly.interiors.map { ring ->
+                        ring.map { pt ->
+                            Vector2(
+                                normalizeLongitude(pt.x),
+                                pt.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT)
+                            )
+                        }
+                    }
+                )
+            }
+        )
+    }
 }
