@@ -575,5 +575,354 @@ Based on dependencies, build in this order:
 - lazysf Lazy Loading Pattern: https://github.com/hypertidy/lazysf
 
 ---
+
+# v1.2.0 Architecture Integration
+
+**Domain:** Geospatial visualization library (OpenRNDR-based)
+**Researched:** 2026-02-26
+**Confidence:** HIGH (based on direct codebase analysis)
+
+## Executive Summary
+
+v1.2.0 adds API improvements and examples to the existing openrndr-geo library. The architecture follows a clean layered pattern:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  geo/examples/           Demo programs (end-user facing)    │
+├─────────────────────────────────────────────────────────────┤
+│  geo/render/             Rendering adapters (drawer → geom) │
+├─────────────────────────────────────────────────────────────┤
+│  geo/                    Core data layer (GeoSource, etc.)  │
+├─────────────────────────────────────────────────────────────┤
+│  geo/projection/         Projection infrastructure          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+All v1.2.0 features integrate cleanly into existing modules—no new packages required.
+
+---
+
+## Integration Points by Feature
+
+### 1. GeoSource.summary() — Data Inspection
+
+**Module:** `geo/GeoSource.kt`  
+**Integration:** Add as new method to abstract class  
+**Pattern:** Similar to existing `totalBoundingBox()` and `countFeatures()`
+
+```kotlin
+// Add to GeoSource abstract class (line ~72)
+fun summary(): GeoSourceSummary {
+    return GeoSourceSummary(
+        crs = crs,
+        featureCount = countFeatures(),
+        geometryTypes = features.map { it.geometry::class.simpleName }.toSet(),
+        propertyKeys = features.flatMap { it.properties.keys }.toSet(),
+        bounds = totalBoundingBox()
+    )
+}
+```
+
+**New component needed:** `GeoSourceSummary` data class in `geo/` package
+
+**Rationale:** Follows existing patterns (`totalBoundingBox()` computes from features). Summary is a natural extension that aggregates multiple statistics in one call.
+
+---
+
+### 2. Polygon Ring Handling — Interior/Exterior
+
+**Module:** `geo/render/PolygonRenderer.kt`  
+**Integration:** Modify existing `writePolygon()` + add new overload  
+**Pattern:** Extend to accept interiors parameter
+
+**Current signature:**
+```kotlin
+fun writePolygon(drawer: Drawer, points: List<Vector2>, style: Style)
+```
+
+**New signature:**
+```kotlin
+fun writePolygon(
+    drawer: Drawer,
+    exterior: List<Vector2>,
+    interiors: List<List<Vector2>> = emptyList(),
+    style: Style
+)
+```
+
+**Implementation approach:**
+- Use OpenRNDR's `ShapeBuilder` or `CompoundShape` for multi-ring polygons
+- Interior rings create holes in the exterior shape
+- Backward compatible via default parameter
+
+**Rationale:** Modifying existing renderer is cleaner than creating a parallel implementation. The existing `writePolygon` already handles single-ring polygons; extending it maintains API consistency.
+
+---
+
+### 3. Boilerplate Reduction — Convenience Functions
+
+**Module:** `geo/GeoSourceConvenience.kt`  
+**Integration:** Add new functions to existing file  
+**Pattern:** Follow `geoSource()` pattern for factory functions
+
+**Existing convenience layer:**
+- `geoSource(path)` → GeoJSONSource
+- `geoSourceFromString(content)` → GeoJSONSource  
+- `geoSourceFromFeatures(features)` → GeoSource
+
+**New additions:**
+```kotlin
+// Single import convenience
+fun geoAll(): List<KClass<*>> = listOf(/* all public API classes */)
+
+// Render with auto-fit (extends existing pattern)
+fun GeoSource.renderFit(drawer: Drawer, style: Style? = null) {
+    val bounds = totalBoundingBox()
+    val projection = ProjectionFactory.fitBounds(bounds, drawer.width, drawer.height)
+    render(drawer, projection, style)
+}
+```
+
+**Alternative:** Add extension methods to `Drawer` in `geo/render/DrawerGeoExtensions.kt`:
+```kotlin
+fun Drawer.geoAuto(source: GeoSource, style: Style? = null)
+```
+
+**Rationale:** `GeoSourceConvenience.kt` already owns the "easy mode" API. Keep related functions together.
+
+---
+
+### 4. MultiPolygon Bounds — Geometry Preprocessing
+
+**Module:** `geo/Geometry.kt` (NOT render/)  
+**Integration:** Add bounds computation for MultiPolygon  
+**Pattern:** Use existing `boundingBox` property pattern
+
+**Current issue:** MultiPolygon with ocean data fails on coordinates beyond Mercator limits.
+
+**Solution location:**
+- **Preprocessing:** `geo/Geometry.kt` — add `clampToMercator()` already exists
+- **Rendering:** `geo/render/MultiRenderer.kt` — already has `clampToMercatorBounds` flag
+
+**Current state (MultiRenderer.kt:155-164):**
+```kotlin
+val polygonsToRender = if (clampToMercatorBounds && projection is ProjectionMercator) {
+    multiPolygon.polygons.map { polygon ->
+        polygon.exterior.map { coord ->
+            Vector2(coord.x, coord.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT))
+        }
+    }
+} else { ... }
+```
+
+**Enhancement needed:**
+1. Extend clamp to also normalize longitude (dateline handling)
+2. Apply clamp to interiors, not just exterior
+3. Consider using existing `Geometry.clampAndNormalize()` from Geometry.kt
+
+**Rationale:** This is geometry preprocessing logic, not rendering logic. The renderer should receive valid geometry; validation/clamping happens before projection.
+
+---
+
+### 5. Batch Projection — Performance Utility
+
+**Module:** `geo/projection/` (new utility) or extend `geo/ProjectionExtensions.kt`  
+**Integration:** Add batch projection functions  
+**Pattern:** Extend existing `projectToScreen()` pattern
+
+**Current projection flow (per-frame):**
+```kotlin
+// In render loop - projects EVERY frame
+features.forEach { feature ->
+    val screenPoints = feature.geometry.projectToScreen(projection)
+    // render...
+}
+```
+
+**New batch projection:**
+```kotlin
+// In ProjectionExtensions.kt
+fun <T : Geometry> T.projectOnce(projection: GeoProjection): ProjectedGeometry<T>
+
+// Or in new file: geo/projection/BatchProjection.kt
+class ProjectedGeometry<T : Geometry>(val original: T, val screenSpace: List<Vector2>)
+fun GeoSource.projectAll(projection: GeoProjection): ProjectedGeoSource
+```
+
+**Implementation strategy:**
+1. Create `ProjectedGeometry` wrapper that caches screen coordinates
+2. Add `GeoSource.projectAll()` that returns projected copy
+3. Render functions accept `ProjectedGeometry` directly
+
+**Rationale:** Projection infrastructure already exists. Batch projection is a performance optimization layer that sits between data loading and rendering.
+
+---
+
+### 6. Examples — Structure and Placement
+
+**Module:** `geo/examples/`  
+**Integration:** Add new example files following existing naming convention  
+**Pattern:** `category_Description.kt` naming
+
+**Existing examples:**
+```
+geo/examples/
+├── render_BasicRendering.kt
+├── render_LiveRendering.kt
+├── proj_HaversineDemo.kt
+├── proj_ProjectionTest.kt
+├── anim_BasicAnimation.kt
+├── anim_ChainDemo.kt
+├── layer_Graticule.kt
+├── layer_BlendModes.kt
+├── core_CRSTransformTest.kt
+└── core_DataLoadingTest.kt
+```
+
+**New examples for v1.2.0:**
+```
+geo/examples/
+├── api_SummaryDemo.kt          # GeoSource.summary() usage
+├── render_PolygonHoles.kt      # Interior ring rendering
+├── api_BoilerplateFree.kt      # One-line rendering demo
+├── render_OceanData.kt         # MultiPolygon with clamping
+└── perf_BatchProjection.kt     # Cached projection demo
+```
+
+**Naming convention:**
+- `api_*` — API convenience features
+- `render_*` — Rendering techniques
+- `perf_*` — Performance patterns
+- `proj_*` — Projection demos
+- `anim_*` — Animation features
+- `layer_*` — Layer system
+- `core_*` — Core functionality
+
+**Rationale:** Existing convention uses category prefix + descriptive name. New examples should follow this pattern for discoverability.
+
+---
+
+## New vs Modified Components Summary
+
+| Feature | New Component | Modified Component | Rationale |
+|---------|---------------|-------------------|-----------|
+| GeoSource.summary() | `GeoSourceSummary` data class | `GeoSource.kt` | Follows existing pattern |
+| Polygon rings | None | `PolygonRenderer.kt` | Extend existing renderer |
+| Boilerplate | None | `GeoSourceConvenience.kt`, `DrawerGeoExtensions.kt` | Add convenience functions |
+| MultiPolygon bounds | None | `Geometry.kt`, `MultiRenderer.kt` | Enhance preprocessing |
+| Batch projection | `ProjectedGeometry` wrapper | `ProjectionExtensions.kt` | New caching layer |
+| Examples | 5 new demo files | None | Self-contained examples |
+
+---
+
+## Suggested Build Order
+
+Based on dependencies, implement in this order:
+
+```
+Phase 1: Data Layer (no dependencies)
+├── 1. GeoSource.summary() + GeoSourceSummary
+│   └── Enables: api_SummaryDemo example
+│
+├── 2. MultiPolygon bounds enhancement
+│   └── Fix Geometry.clampAndNormalize() for interiors
+│   └── Enables: render_OceanData example
+│
+Phase 2: Rendering Layer (depends on Phase 1)
+├── 3. Polygon ring handling
+│   └── Modify PolygonRenderer for interiors
+│   └── Enables: render_PolygonHoles example
+│
+Phase 3: Convenience Layer (depends on Phase 1-2)
+├── 4. Boilerplate reduction
+│   └── Add to GeoSourceConvenience.kt
+│   └── Add to DrawerGeoExtensions.kt
+│   └── Enables: api_BoilerplateFree example
+│
+Phase 4: Performance Layer (optional, depends on all above)
+├── 5. Batch projection
+│   └── Create ProjectedGeometry wrapper
+│   └── Extend ProjectionExtensions
+│   └── Enables: perf_BatchProjection example
+│
+Phase 5: Documentation
+└── 6. All examples
+```
+
+**Critical path:** 1 → 3 → 6 (summary → convenience → examples)
+
+**Parallelizable:** Phase 1 items (1, 2) can be done simultaneously. Phase 3 and 4 can overlap.
+
+---
+
+## Component Boundaries
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│  geo/examples/                                                       │
+│  - Self-contained demo programs                                      │
+│  - Import from geo.* and geo.render.*                                │
+│  - NO business logic, only demonstration                             │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  geo/render/                                                         │
+│  - DrawerGeoExtensions.kt  ←── Add convenience here                 │
+│  - PolygonRenderer.kt      ←── Modify for rings                     │
+│  - MultiRenderer.kt        ←── Uses clamp from Geometry             │
+│  - Style.kt, Shape.kt                                                │
+│  - NO projection logic (uses geo.projection.*)                       │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  geo/                                                                │
+│  - GeoSource.kt            ←── Add summary() here                   │
+│  - GeoSourceConvenience.kt ←── Add convenience functions            │
+│  - Geometry.kt             ←── Enhance clamp/preprocessing          │
+│  - Feature.kt, Bounds.kt, Point.kt, etc.                            │
+│  - NO rendering logic                                                │
+└─────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│  geo/projection/                                                     │
+│  - ProjectionExtensions.kt ←── Add batch projection                 │
+│  - GeoProjection.kt, ProjectionMercator.kt                          │
+│  - CRSTransformer.kt                                                 │
+│  - NO rendering, NO data loading                                    │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Anti-Patterns to Avoid (v1.2.0 Specific)
+
+### 1. Don't Put Rendering Logic in Geometry
+❌ **Bad:** Adding `render()` method to `Polygon` class
+✅ **Good:** Keep rendering in `geo/render/` package, Geometry only holds data
+
+### 2. Don't Duplicate Projection Logic
+❌ **Bad:** Re-implementing Mercator clamping in renderer
+✅ **Good:** Use existing `Geometry.clampToMercator()` before projection
+
+### 3. Don't Create Parallel Convenience APIs
+❌ **Bad:** New `EasyGeoSource` class with different API
+✅ **Good:** Extend existing `GeoSource` with new methods
+
+### 4. Don't Put Examples in Test Directory
+❌ **Bad:** `src/test/kotlin/geo/examples/`
+✅ **Good:** `src/main/kotlin/geo/examples/` (they're runnable programs)
+
+---
+
+## Sources
+
+- Direct codebase analysis of existing architecture
+- Existing patterns from `GeoSource.kt`, `Geometry.kt`, `ProjectionExtensions.kt`
+- Example naming convention from `geo/examples/` directory
+
+---
 *Architecture research for: openrndr-geo geospatial visualization library*
-*Researched: 2026-02-21*
+*Researched: 2026-02-21 (general), 2026-02-26 (v1.2.0 integration)*
