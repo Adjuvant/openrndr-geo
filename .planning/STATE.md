@@ -48,6 +48,10 @@ Resume file: None
 
 ## Accumulated Context
 
+### Pending Todos
+
+7 todos pending (see `.planning/todos/pending/`)
+
 See `.planning/milestones/v1.1.0-ROADMAP.md` for full v1.1.0 details.
 
 Key decisions and patterns are preserved in PROJECT.md Key Decisions table.
