@@ -9,13 +9,30 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: v1.0.0 milestone — **SHIPPED**
-Status: Post-release bug fixes and API improvements in progress
-Last activity: 2026-02-25 — Identified 6 critical issues during manual testing:
+Phase: 6 — Fix projection errors and API design
+Status: In progress (Wave 1 complete)
+Last activity: 2026-02-26 — Completed Plans 6-01 and 6-02
+Next Phase: Execute Phase 6 Wave 2 (Plan 3)
+
+**Phase 6 Plans (Research Integrated):**
+| Plan | Focus | Wave | Status |
+|------|-------|------|--------|
+| 6-01 | Fix projection scaling and fitBounds API | 1 | ✓ Complete |
+| 6-02 | Fix MultiPolygon rendering for ocean/whole-world data | 1 | ✓ Complete |
+| 6-03 | Reduce API boilerplate for common rendering workflows | 2 | In progress |
+| 6-04 | Simplify CRS handling API | 3 | Pending |
+| 6-05 | Integration and regression testing | 4 | Pending |
+
+**Research Documentation:**
+- File: `.planning/phases/06-fix-projection-api/06-RESEARCH.md` (834 lines)
+- Coverage: fitBounds algorithms, scale/zoom semantics, Mercator clamping, site vs data bounds
+- Confidence: HIGH - based on Leaflet, Mapbox, D3 implementations
+
+**Context:** Addressing critical friction from v1.0.0 real-world usage:
 - Projection scaling/fitBounds broken
-- Rendering inefficient (projects on every frame)
-- MultiPolygon fails on ocean data
+- MultiPolygon fails on ocean data  
 - API has too much boilerplate for common workflows
+- CRS handling too manual for multi-dataset overlays
 
 Progress: [██████████████████] 100%
 
@@ -140,6 +157,7 @@ Progress: [██████████████████] 100%
 ### Roadmap Evolution
 
 - Phase 04.1 inserted after Phase 4: Design Fix: CRS-Aware GeoSource with Auto-Reprojection (URGENT)
+- Phase 6 added: Fix projection errors and API design (post-v1.0.0 bug fixes)
 
 ## Session Continuity
 
