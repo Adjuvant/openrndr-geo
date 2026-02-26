@@ -8,19 +8,19 @@
     "active_profile": "budget",
     "presets": {
       "quality": {
-        "planning": "opencode/glm-4.7-free",
-        "execution": "opencode/glm-4.7-free",
-        "verification": "opencode/glm-4.7-free"
+        "planning": "opencode-go/glm-5",
+        "execution": "opencode-go/glm-5",
+        "verification": "opencode-go/glm-5"
       },
       "balanced": {
-        "planning": "opencode/glm-4.7",
-        "execution": "opencode/kimi-k2.5",
-        "verification": "opencode/glm-4.7"
+        "planning": "opencode-go/glm-5",
+        "execution": "opencode-go/kimi-k2.5",
+        "verification": "opencode-go/glm-5"
       },
       "budget": {
-        "planning": "opencode/glm-5-free",
-        "execution": "opencode/minimax-m2.5-free",
-        "verification": "opencode/glm-5-free"
+        "planning": "opencode-go/kimi-k2.5",
+        "execution": "opencode-go/minimax-m2.5",
+        "verification": "opencode-go/kimi-k2.5"
       }
     },
     "custom_overrides": {
