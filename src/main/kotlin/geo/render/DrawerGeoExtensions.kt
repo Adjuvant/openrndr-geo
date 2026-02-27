@@ -4,6 +4,7 @@ import geo.Bounds
 import geo.Feature
 import geo.GeoJSON
 import geo.GeoJSONSource
+import geo.GeoSource
 import geo.Geometry
 import geo.projection.GeoProjection
 import geo.projection.ProjectionFactory
@@ -153,6 +154,52 @@ fun Drawer.geoFeatures(
     )
     
     featureList.forEach { feature ->
+        feature.geometry.renderToDrawer(this, proj, style)
+    }
+}
+
+/**
+ * Draw a GeoSource with optional configuration block.
+ *
+ * ## Tier 1: Beginner - one-liner
+ * ```kotlin
+ * drawer.geo(source)  // Auto-fit projection, default style
+ * ```
+ *
+ * ## Tier 2: Professional - config block
+ * ```kotlin
+ * drawer.geo(source) {
+ *     projection = ProjectionMercator { width = 800; height = 600 }
+ *     style = Style { fill = ColorRGBa.RED }
+ *     styleByType = mapOf("Polygon" to polygonStyle)
+ *     styleByFeature = { feature -> 
+ *         if (feature.doubleProperty("pop") > 1000000) Style { stroke = ColorRGBa.RED }
+ *         else null
+ *     }
+ * }
+ * ```
+ *
+ * @param source The GeoSource to render (any implementation: GeoJSON, GeoPackage, etc.)
+ * @param block Optional configuration block
+ */
+fun Drawer.geo(source: GeoSource, block: (GeoRenderConfig.() -> Unit)? = null) {
+    val config = block?.let { GeoRenderConfig().apply(it) } ?: GeoRenderConfig()
+    
+    // Auto-fit projection if not specified (beginner-friendly default)
+    val proj = config.projection ?: ProjectionFactory.fitBounds(
+        bounds = source.totalBoundingBox(),
+        width = this.width.toDouble(),
+        height = this.height.toDouble(),
+        padding = 0.9,
+        projection = ProjectionType.MERCATOR
+    )
+    
+    // Snapshot config for safe iteration
+    val resolved = config.snapshot()
+    
+    // Render each feature with style resolution
+    source.features.forEach { feature ->
+        val style = resolveStyle(feature, resolved)
         feature.geometry.renderToDrawer(this, proj, style)
     }
 }
