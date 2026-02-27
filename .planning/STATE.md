@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-02-26)
 ## Current Position
 
 **Milestone:** v1.2.0
-Phase: 9 of 10 (API Design)
-Plan: 3 of 3 in current phase
-Status: In progress
+Phase: 10 of 10 (Documentation & Examples)
+Plan: 1 of 4 in current phase
+Status: Not started
 Last activity: 2026-02-27 — Completed plan 09-02 (two-tier API with config block)
 
-Progress: [▓▓▓▓▓▓▓▓▓▓▓] 65%
+Progress: [▓▓▓▓▓▓▓▓░░░░] 54%
 
 ## Performance Metrics
 
@@ -47,6 +47,7 @@ Progress: [▓▓▓▓▓▓▓▓▓▓▓] 65%
 - Batch projection deferred to v1.3.0 (performance benchmarking needed)
 - Examples follow openrndr-examples pattern (one concept per file)
 - Test scaffolds use @Ignore markers to defer implementation to subsequent plans
+- Two-tier API uses DSL builder pattern (Style { } style) for consistency
 
 ### Blockers/Concerns
 
