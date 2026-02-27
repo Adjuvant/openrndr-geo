@@ -66,7 +66,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 09-00-PLAN.md — Create test scaffolds for API features (Wave 0, API-01, API-02, API-03)
+- [x] 09-00-PLAN.md — Create test scaffolds for API features (Wave 0, API-01, API-02, API-03)
 - [ ] 09-01-PLAN.md — Implement feature-level iteration with projected coordinates (API-01)
 - [ ] 09-02-PLAN.md — Implement two-tier API with config block DSL (API-02, API-04)
 - [ ] 09-03-PLAN.md — Add escape hatches (RawProjection, style resolution) (API-03, API-04)
@@ -98,7 +98,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 7. Data Inspection | 1/1 | Complete    | 2026-02-26 |
 | 8. Rendering Improvements | 4/4 | Complete    | 2026-02-27 |
-| 9. API Design | 0/4 | Not started | - |
+| 9. API Design | 1/4 | In Progress | 2026-02-27 |
 | 10. Documentation & Examples | 0/4 | Not started | - |
 
 ---
