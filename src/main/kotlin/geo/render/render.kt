@@ -2,6 +2,8 @@ package geo.render
 
 import org.openrndr.draw.Drawer
 import org.openrndr.math.Vector2
+import geo.Polygon
+import geo.projection.GeoProjection
 
 /**
  * Public API for drawing LineString and Polygon geometries.
@@ -128,4 +130,54 @@ fun drawPolygon(
 ) {
     val style = mergeStyles(StyleDefaults.defaultPolygonStyle, userStyle)
     writePolygon(drawer, points, style)
+}
+
+/**
+ * Draw a Polygon geometry with automatic hole detection and rendering.
+ *
+ * If the polygon has interior rings (holes), they are rendered as transparent
+ * cutouts. If the polygon has no holes, delegates to the simple polygon renderer.
+ *
+ * ## Usage
+ * ```kotlin
+ * extend {
+ *     // Polygon with holes (holes render automatically)
+ *     val polygon = geo.Polygon(
+ *         exterior = listOf(Vector2(0.0, 0.0), Vector2(100.0, 0.0), Vector2(50.0, 100.0)),
+ *         interiors = listOf(
+ *             listOf(Vector2(20.0, 20.0), Vector2(40.0, 20.0), Vector2(30.0, 40.0))
+ *         )
+ *     )
+ *     drawPolygon(drawer, polygon, projection, Style {
+ *         fill = ColorRGBa.BLUE.withAlpha(0.5)
+ *     })
+ * }
+ * ```
+ *
+ * @param drawer OpenRNDR Drawer context for rendering
+ * @param polygon Polygon geometry (may have interior rings/holes)
+ * @param projection Geographic projection to use for coordinate transformation
+ * @param userStyle Style configuration (null = use defaultPolygonStyle)
+ *
+ * @see writePolygonWithHoles Internal implementation for polygons with holes
+ * @see geo.Polygon Geometry class with exterior and interior rings
+ */
+fun drawPolygon(
+    drawer: Drawer,
+    polygon: Polygon,
+    projection: GeoProjection,
+    userStyle: Style? = null
+) {
+    val style = mergeStyles(StyleDefaults.defaultPolygonStyle, userStyle)
+
+    if (polygon.hasHoles()) {
+        // Render with holes using Shape API
+        val exterior = polygon.exteriorToScreen(projection)
+        val interiors = polygon.interiorsToScreen(projection)
+        writePolygonWithHoles(drawer, exterior, interiors, style)
+    } else {
+        // Simple polygon without holes
+        val exterior = polygon.exteriorToScreen(projection)
+        writePolygon(drawer, exterior, style)
+    }
 }
