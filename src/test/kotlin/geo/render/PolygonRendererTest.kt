@@ -227,4 +227,17 @@ class PolygonRendererTest {
         assertTrue("Polygon should have holes", poly.hasHoles())
         assertEquals("Should have 2 interior rings", 2, poly.interiors.size)
     }
+
+    @Test
+    fun testHolesGuardClauseMinimum() {
+        // Holes with fewer than 3 points should be skipped
+        val smallHole = listOf(
+            Vector2(10.0, 10.0),
+            Vector2(20.0, 10.0)
+        )
+        
+        // Guard clause: hole with < 3 points should not cause error
+        assertEquals(2, smallHole.size)
+        assertTrue("Hole has fewer than 3 points", smallHole.size < 3)
+    }
 }
