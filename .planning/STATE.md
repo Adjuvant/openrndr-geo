@@ -13,7 +13,7 @@ See: .planning/PROJECT.md (updated 2026-02-26)
 Phase: 10 of 10 (Documentation & Examples)
 Plan: 1 of 4 in current phase
 Status: Not started
-Last activity: 2026-02-27 — Completed plan 09-02 (two-tier API with config block)
+Last activity: 2026-02-27 — Completed plan 09-03 (escape hatches: RawProjection and style precedence)
 
 Progress: [▓▓▓▓▓▓▓▓░░░░] 54%
 
@@ -56,7 +56,7 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-27
-Stopped at: Completed 09-02-PLAN.md - two-tier API with config block implemented
+Stopped at: Completed 09-03-PLAN.md - escape hatches implemented
 Resume file: None
 
 **Next action:** `/gsd-plan-phase 10` (move to documentation phase)

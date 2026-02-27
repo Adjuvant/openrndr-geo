@@ -16,7 +16,7 @@
 
 - [x] **Phase 7: Data Inspection** — GeoSource summary() for runtime debugging (completed 2026-02-26)
 - [x] **Phase 8: Rendering Improvements** — Polygon holes and bounds handling (completed 2026-02-27)
-- [x] **Phase 9: API Design** — Feature traversal and two-tier API (completed 2026-02-27)
+- [x] **Phase 9: API Design** — Feature traversal, two-tier API, and escape hatches (completed 2026-02-27)
 - [ ] **Phase 10: Documentation & Examples** — Runnable examples with data files
 
 ---
@@ -69,7 +69,7 @@ Plans:
 - [x] 09-00-PLAN.md — Create test scaffolds for API features (Wave 0, API-01, API-02, API-03)
 - [x] 09-01-PLAN.md — Implement feature-level iteration with projected coordinates (API-01)
 - [x] 09-02-PLAN.md — Implement two-tier API with config block DSL (API-02, API-04)
-- [ ] 09-03-PLAN.md — Add escape hatches (RawProjection, style resolution) (API-03, API-04)
+- [x] 09-03-PLAN.md — Add escape hatches (RawProjection, style resolution) (API-03, API-04)
 
 ### Phase 10: Documentation & Examples
 **Goal**: Users can learn the library through runnable examples
@@ -98,7 +98,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 7. Data Inspection | 1/1 | Complete    | 2026-02-26 |
 | 8. Rendering Improvements | 4/4 | Complete    | 2026-02-27 |
-| 9. API Design | 3/4 | In Progress | 2026-02-27 |
+| 9. API Design | 4/4 | Complete    | 2026-02-27 |
 | 10. Documentation & Examples | 0/4 | Not started | - |
 
 ---
