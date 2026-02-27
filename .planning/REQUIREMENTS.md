@@ -26,9 +26,9 @@
 
 ### Documentation
 
-- [ ] **DOC-01**: User can browse examples organized by category (core_, render_, proj_, anim_, layer_)
-- [ ] **DOC-02**: User can run examples with included data files (small GeoJSON/GeoPackage)
-- [ ] **DOC-03**: Each example demonstrates ONE feature/concept
+- [x] **DOC-01**: User can browse examples organized by category (core_, render_, proj_, anim_, layer_)
+- [x] **DOC-02**: User can run examples with included data files (small GeoJSON/GeoPackage)
+- [x] **DOC-03**: Each example demonstrates ONE feature/concept
 - [ ] **DOC-04**: Examples serve as UAT validation for framework features
 
 ## v2 Requirements
@@ -71,9 +71,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | API-02 | Phase 9 | Complete |
 | API-03 | Phase 9 | Complete |
 | API-04 | Phase 9 | Complete |
-| DOC-01 | Phase 10 | Pending |
-| DOC-02 | Phase 10 | Pending |
-| DOC-03 | Phase 10 | Pending |
+| DOC-01 | Phase 10 | Complete |
+| DOC-02 | Phase 10 | Complete |
+| DOC-03 | Phase 10 | Complete |
 | DOC-04 | Phase 10 | Pending |
 
 **Coverage:**
