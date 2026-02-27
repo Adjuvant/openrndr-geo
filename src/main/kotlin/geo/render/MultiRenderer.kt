@@ -9,6 +9,7 @@ import geo.projection.MAX_MERCATOR_LAT
 import geo.projection.ProjectionMercator
 import org.openrndr.draw.Drawer
 import org.openrndr.math.Vector2
+import geo.render.writePolygonWithHoles
 
 /**
  * Draw a MultiPoint geometry as a collection of points with consistent styling.
@@ -150,20 +151,37 @@ fun drawMultiPolygon(
     userStyle: Style? = null,
     clampToMercatorBounds: Boolean = true
 ) {
+    val style = mergeStyles(StyleDefaults.defaultPolygonStyle, userStyle)
+
     // For Mercator projections, optionally clamp coordinates to valid range
     // This prevents artifacts when rendering ocean/whole-world data
     val polygonsToRender = if (clampToMercatorBounds && projection is ProjectionMercator) {
         multiPolygon.polygons.map { polygon ->
-            // Clamp coordinates to valid Mercator range
-            polygon.exterior.map { coord ->
+            // Clamp both exterior and interior coordinates to valid Mercator range
+            val clampedExterior = polygon.exterior.map { coord ->
                 Vector2(coord.x, coord.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT))
             }
+            val clampedInteriors = polygon.interiors.map { ring ->
+                ring.map { coord ->
+                    Vector2(coord.x, coord.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT))
+                }
+            }
+            Polygon(clampedExterior, clampedInteriors)
         }
     } else {
-        multiPolygon.polygons.map { it.exterior }
+        multiPolygon.polygons
     }
-    
-    polygonsToRender.forEach { exteriorCoords ->
-        drawPolygon(drawer, exteriorCoords, userStyle)
+
+    polygonsToRender.forEach { polygon ->
+        if (polygon.hasHoles()) {
+            // Render polygon with holes
+            val exterior = polygon.exteriorToScreen(projection)
+            val interiors = polygon.interiorsToScreen(projection)
+            writePolygonWithHoles(drawer, exterior, interiors, style)
+        } else {
+            // Simple polygon without holes
+            val exterior = polygon.exteriorToScreen(projection)
+            writePolygon(drawer, exterior, style)
+        }
     }
 }
