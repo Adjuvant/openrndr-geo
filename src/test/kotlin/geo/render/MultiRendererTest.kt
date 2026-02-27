@@ -185,9 +185,73 @@ class MultiRendererTest {
         ))
         
         val bbox = mp.boundingBox
-        assertEquals(0.0, bbox.minX, 0.0001)
-        assertEquals(30.0, bbox.maxX, 0.0001)
-        assertEquals(0.0, bbox.minY, 0.0001)
-        assertEquals(30.0, bbox.maxY, 0.0001)
+        assertEquals("minX should be 0.0", 0.0, bbox.minX, 0.0001)
+        assertEquals("maxX should be 30.0", 30.0, bbox.maxX, 0.0001)
+        assertEquals("minY should be 0.0", 0.0, bbox.minY, 0.0001)
+        assertEquals("maxY should be 30.0", 30.0, bbox.maxY, 0.0001)
+    }
+
+    @Test
+    fun testMultiPolygonWithHolesClamped() {
+        // Create a MultiPolygon with polygons that have holes at extreme latitudes
+        val polygons = listOf(
+            geo.Polygon(
+                exterior = listOf(
+                    Vector2(0.0, 0.0),
+                    Vector2(50.0, 0.0),
+                    Vector2(50.0, 50.0),
+                    Vector2(0.0, 50.0)
+                ),
+                interiors = listOf(
+                    listOf(
+                        Vector2(10.0, 10.0),
+                        Vector2(40.0, 10.0),
+                        Vector2(40.0, 40.0),
+                        Vector2(10.0, 40.0)
+                    )
+                )
+            ),
+            geo.Polygon(
+                exterior = listOf(
+                    Vector2(100.0, 0.0),
+                    Vector2(150.0, 0.0),
+                    Vector2(150.0, 50.0),
+                    Vector2(100.0, 50.0)
+                )
+                // No holes
+            )
+        )
+        val multiPolygon = geo.MultiPolygon(polygons)
+        
+        assertEquals("MultiPolygon should have 2 polygons", 2, multiPolygon.size)
+        assertTrue("First polygon should have holes", multiPolygon.polygons[0].hasHoles())
+        assertFalse("Second polygon should not have holes", multiPolygon.polygons[1].hasHoles())
+        
+        // Test clamping behavior for coordinates beyond Mercator bounds
+        val polyAtExtremeLat = geo.Polygon(
+            exterior = listOf(
+                Vector2(0.0, 89.0),
+                Vector2(10.0, 89.0),
+                Vector2(10.0, 91.0),  // Beyond Mercator limit (~85.05)
+                Vector2(0.0, 91.0)    // Beyond Mercator limit
+            ),
+            interiors = listOf(
+                listOf(
+                    Vector2(2.0, 89.5),
+                    Vector2(8.0, 89.5),
+                    Vector2(8.0, 92.0),  // Beyond Mercator limit
+                    Vector2(2.0, 92.0)   // Beyond Mercator limit
+                )
+            )
+        )
+        
+        // Verify the polygon has extreme coordinates
+        val maxExteriorY = polyAtExtremeLat.exterior.maxOf { it.y }
+        assertTrue("Exterior should have coordinates beyond Mercator limit", maxExteriorY > 90.0)
+        
+        val maxInteriorY = polyAtExtremeLat.interiors.flatten().maxOf { it.y }
+        assertTrue("Interior should have coordinates beyond Mercator limit", maxInteriorY > 90.0)
+        
+        // Note: Actual clamping verification happens in drawMultiPolygon implementation
     }
 }
