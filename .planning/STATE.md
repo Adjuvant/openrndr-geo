@@ -56,6 +56,7 @@ None yet.
 ### Pending Todos
 
 - 2026-02-27: Graticule layer for zoomed-in maps (layer) — examples/layer/01-graticure.kt
+- 2026-02-27: Fix README run commands and data paths (docs) — examples/README.md, proj/anim/layer READMEs
 
 ## Session Continuity
 
