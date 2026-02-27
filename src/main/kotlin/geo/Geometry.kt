@@ -118,8 +118,12 @@ data class Polygon(
         }
     }
 
-    fun interiorsToScreen(projection: GeoProjection): List<List<Vector2>>{
-        TODO("Not yet implemented")
+    fun interiorsToScreen(projection: GeoProjection): List<List<Vector2>> {
+        return interiors.map { ring ->
+            ring.map { point ->
+                Point(point.x, point.y).toScreen(projection)
+            }
+        }
     }
 }
 
