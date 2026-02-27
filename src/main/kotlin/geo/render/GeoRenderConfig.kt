@@ -63,10 +63,48 @@ data class GeoRenderConfig(
 
 /**
  * Resolve style for a feature using precedence chain:
- * 1. styleByFeature(feature) returns non-null → use it
- * 2. styleByType[geometryType] exists → use it
- * 3. style global override → use it
- * 4. Geometry-type default → use StyleDefaults
+ * 
+ * 1. **Per-feature function** (`styleByFeature`) — Highest priority
+ *    - Called for each feature, returns Style? 
+ *    - Return null to fall through to next level
+ * 
+ * 2. **By-type map** (`styleByType`) — Medium priority
+ *    - Keyed by geometry type: "Point", "LineString", "Polygon", etc.
+ *    - Absent key falls through to next level
+ * 
+ * 3. **Global style** (`style`) — Low priority
+ *    - Applied to all features if specified
+ *    - null falls through to default
+ * 
+ * 4. **Geometry-type default** (`StyleDefaults.forGeometry`) — Fallback
+ *    - Provides sensible defaults per geometry type
+ *    - Always returns a valid Style
+ * 
+ * ## Example
+ * ```kotlin
+ * drawer.geo(source) {
+ *     // Global style (lowest priority)
+ *     style = Style { stroke = ColorRGBa.WHITE }
+ *     
+ *     // Type-based styling
+ *     styleByType = mapOf(
+ *         "Polygon" to Style { fill = ColorRGBa.RED }
+ *     )
+ *     
+ *     // Per-feature styling (highest priority)
+ *     styleByFeature = { feature ->
+ *         when {
+ *             feature.doubleProperty("pop") > 1_000_000 -> 
+ *                 Style { stroke = ColorRGBa.YELLOW; strokeWeight = 3.0 }
+ *             else -> null  // Fall through to styleByType/style
+ *         }
+ *     }
+ * }
+ * ```
+ *
+ * @param feature The feature to resolve style for
+ * @param config The GeoRenderConfig containing style options
+ * @return The resolved Style for the feature
  */
 fun resolveStyle(feature: Feature, config: GeoRenderConfig): Style {
     // 1. Per-feature function
