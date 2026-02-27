@@ -11,6 +11,7 @@ import org.openrndr.color.ColorRGBa
 import geo.render.Style
 import geo.render.drawLineString
 import geo.render.drawPolygon
+import geo.render.withAlpha
 import org.openrndr.extra.color.presets.CORNFLOWER_BLUE
 import org.openrndr.extra.color.presets.STEEL_BLUE
 
@@ -60,9 +61,7 @@ fun main() = application {
             coastline?.features?.forEach { feature ->
                 when (val geometry = feature.geometry) {
                     is LineString -> {
-                        val screenPoints = geometry.points.map { pt ->
-                            projection.toScreen(pt.x, pt.y)
-                        }
+                        val screenPoints = geometry.toScreen(projection)
                         drawLineString(drawer, screenPoints, Style {
                             fill = null
                             stroke = ColorRGBa.CORNFLOWER_BLUE
@@ -70,15 +69,17 @@ fun main() = application {
                         })
                     }
                     is Polygon -> {
-                        val screenPoints = geometry.exterior.map { pt ->
-                            projection.toScreen(pt.x, pt.y)
-                        }
-                        drawPolygon(drawer, screenPoints, Style {
+                        // Render polygon - handles exterior and interior rings automatically
+                        drawPolygon(drawer, geometry, projection, Style {
                             fill = ColorRGBa.STEEL_BLUE.withAlpha(0.3)
                             stroke = ColorRGBa.CORNFLOWER_BLUE
                             strokeWeight = 1.0
                         })
                     }
+                    is geo.Point -> { /* Skip points for coastline */ }
+                    is geo.MultiPoint -> { /* Skip */ }
+                    is geo.MultiLineString -> { /* Skip */ }
+                    is geo.MultiPolygon -> { /* Skip */ }
                 }
             }
 

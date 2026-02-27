@@ -175,6 +175,11 @@ kotlin {
     }
 }
 
+// Add examples directory to Kotlin source sets
+kotlin.sourceSets.getByName("main") {
+    kotlin.srcDir("examples")
+}
+
 // ------------------------------------------------------------------------------------------------------------------ //
 
 application {

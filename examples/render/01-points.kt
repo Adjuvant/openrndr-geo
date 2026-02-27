@@ -64,7 +64,7 @@ fun main() = application {
                 if (feature.geometry is Point) {
                     val point = feature.geometry as Point
                     // Project geographic coordinates to screen coordinates
-                    val screenPoint = projection.toScreen(point.x, point.y)
+                    val screenPoint = point.toScreen(projection)
                     // Render the point
                     drawPoint(drawer, screenPoint, pointStyle)
                 }

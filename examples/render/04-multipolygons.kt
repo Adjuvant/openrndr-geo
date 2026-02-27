@@ -62,17 +62,8 @@ fun main() = application {
                 if (feature.geometry is MultiPolygon) {
                     val multiPolygon = feature.geometry as MultiPolygon
 
-                    // Convert each polygon in the MultiPolygon to screen coordinates
-                    val screenPolygons = multiPolygon.polygons.map { polygon ->
-                        val exterior = polygon.exterior.map { projection.toScreen(it.x, it.y) }
-                        val interiors = polygon.interiors.map { ring ->
-                            ring.map { projection.toScreen(it.x, it.y) }
-                        }
-                        Pair(exterior, interiors)
-                    }
-
-                    // Render all polygons in the MultiPolygon
-                    drawMultiPolygon(drawer, screenPolygons, oceanStyle)
+                    // Render all polygons in the MultiPolygon - handles holes and clamping automatically
+                    drawMultiPolygon(drawer, multiPolygon, projection, oceanStyle)
                 }
             }
         }

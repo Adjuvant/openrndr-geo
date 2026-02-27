@@ -21,6 +21,9 @@ import org.openrndr.extra.compositor.draw
 import org.openrndr.extra.compositor.blend
 import org.openrndr.extra.fx.blend.Add
 import org.openrndr.extra.fx.blend.Multiply
+import org.openrndr.extra.color.presets.CORNFLOWER_BLUE
+// CYAN and ORANGE available via ColorRGBa directly
+import org.openrndr.extra.color.presets.ORANGE
 
 /**
  * ## 02 - Layer Composition
@@ -78,9 +81,6 @@ fun main() = application {
             projection = ProjectionType.EQUIRECTANGULAR
         )
 
-        // Generate graticule for reference
-        val graticule = generateGraticuleSource(30.0, geo.Bounds(-180.0, -90.0, 180.0, 90.0))
-
         // Create composite with multiple layers
         val composite = compose {
             // Layer 1: Background (dark ocean)
@@ -99,15 +99,15 @@ fun main() = application {
 
                     // Draw latitude lines
                     for (lat in -90..90 step 30) {
-                        val left = projection.toScreen(-180.0, lat.toDouble())
-                        val right = projection.toScreen(180.0, lat.toDouble())
+                        val left = toScreen(lat.toDouble(), -180.0, projection)
+                        val right = toScreen(lat.toDouble(), 180.0, projection)
                         drawer.lineSegment(left.x, left.y, right.x, right.y)
                     }
 
                     // Draw longitude lines
                     for (lng in -180..180 step 30) {
-                        val top = projection.toScreen(lng.toDouble(), 90.0)
-                        val bottom = projection.toScreen(lng.toDouble(), -90.0)
+                        val top = toScreen(90.0, lng.toDouble(), projection)
+                        val bottom = toScreen(-90.0, lng.toDouble(), projection)
                         drawer.lineSegment(top.x, top.y, bottom.x, bottom.y)
                     }
                 }
@@ -119,15 +119,18 @@ fun main() = application {
                     coastline?.features?.forEach { feature ->
                         when (val geometry = feature.geometry) {
                             is LineString -> {
-                                val screenPoints = geometry.points.map { pt ->
-                                    projection.toScreen(pt.x, pt.y)
-                                }
+                                val screenPoints = geometry.toScreen(projection)
                                 drawLineString(drawer, screenPoints, Style {
                                     fill = null
                                     stroke = ColorRGBa.CORNFLOWER_BLUE
                                     strokeWeight = 2.0
                                 })
                             }
+                            is Point -> { /* Skip points */ }
+                            is geo.Polygon -> { /* Skip */ }
+                            is geo.MultiPoint -> { /* Skip */ }
+                            is geo.MultiLineString -> { /* Skip */ }
+                            is geo.MultiPolygon -> { /* Skip */ }
                         }
                     }
                 }
@@ -140,15 +143,18 @@ fun main() = application {
                     rivers?.features?.take(200)?.forEach { feature ->
                         when (val geometry = feature.geometry) {
                             is LineString -> {
-                                val screenPoints = geometry.points.map { pt ->
-                                    projection.toScreen(pt.x, pt.y)
-                                }
+                                val screenPoints = geometry.toScreen(projection)
                                 drawLineString(drawer, screenPoints, Style {
                                     fill = null
-                                    stroke = ColorRGBa.CYAN.withAlpha(0.6)
+                                    stroke = ColorRGBa(0.0, 1.0, 1.0).withAlpha(0.6)
                                     strokeWeight = 2.5
                                 })
                             }
+                            is Point -> { /* Skip */ }
+                            is geo.Polygon -> { /* Skip */ }
+                            is geo.MultiPoint -> { /* Skip */ }
+                            is geo.MultiLineString -> { /* Skip */ }
+                            is geo.MultiPolygon -> { /* Skip */ }
                         }
                     }
                 }
@@ -160,7 +166,7 @@ fun main() = application {
                     places?.features?.take(100)?.forEach { feature ->
                         when (val geometry = feature.geometry) {
                             is Point -> {
-                                val screen = projection.toScreen(geometry.x, geometry.y)
+                                val screen = geometry.toScreen(projection)
                                 drawPoint(drawer, screen, Style {
                                     fill = ColorRGBa.ORANGE
                                     stroke = ColorRGBa.WHITE
@@ -169,6 +175,11 @@ fun main() = application {
                                     shape = Shape.Circle
                                 })
                             }
+                            is LineString -> { /* Skip */ }
+                            is geo.Polygon -> { /* Skip */ }
+                            is geo.MultiPoint -> { /* Skip */ }
+                            is geo.MultiLineString -> { /* Skip */ }
+                            is geo.MultiPolygon -> { /* Skip */ }
                         }
                     }
                 }
@@ -184,7 +195,7 @@ fun main() = application {
                     // Legend
                     drawer.fill = ColorRGBa.CORNFLOWER_BLUE
                     drawer.text("Coastline", 750.0, 30.0)
-                    drawer.fill = ColorRGBa.CYAN
+                    drawer.fill = ColorRGBa(0.0, 1.0, 1.0)  // Cyan
                     drawer.text("Rivers (Add blend)", 750.0, 50.0)
                     drawer.fill = ColorRGBa.ORANGE
                     drawer.text("Populated Places", 750.0, 70.0)

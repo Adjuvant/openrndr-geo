@@ -12,7 +12,7 @@ import geo.render.Style
 import geo.render.drawPoint
 import geo.render.Shape
 import org.openrndr.extra.color.presets.ORANGE
-import org.openrndr.extra.color.presets.CYAN
+// CYAN is available via ColorRGBa directly
 
 /**
  * ## 02 - Fit Bounds Projection
@@ -44,7 +44,7 @@ fun main() = application {
         // Get the bounding box of the data
         val dataBounds = data.boundingBox()
 
-        println("Data bounds: $dataBounds")
+        println("Data bounds: min(${dataBounds.minX}, ${dataBounds.minY}) max(${dataBounds.maxX}, ${dataBounds.maxY})")
 
         // Create a projection that fits the data to the viewport
         // Using padding to leave some margin around the edges
@@ -56,52 +56,30 @@ fun main() = application {
             projection = ProjectionType.EQUIRECTANGULAR
         )
 
-        // Also create a Mercator version for comparison
-        val mercatorProjection = ProjectionFactory.fitBounds(
-            bounds = dataBounds,
-            width = width.toDouble(),
-            height = height.toDouble(),
-            padding = 40.0,
-            projection = ProjectionType.MERCATOR
-        )
-
         // Style for points
         val pointStyle = Style {
             fill = ColorRGBa.ORANGE
-            stroke = ColorRGBa.CYAN
+            stroke = ColorRGBa(0.0, 1.0, 1.0)  // Cyan
             strokeWeight = 1.0
             size = 6.0
             shape = Shape.Circle
         }
 
-        var showMercator = false
-
-        keyboard.keyUp.listen {
-            if (it.key.name == "Space") {
-                showMercator = !showMercator
-            }
-        }
-
         extend {
-            val currentProjection = if (showMercator) mercatorProjection else projection
-
             // Clear background
             drawer.clear(ColorRGBa(0.1, 0.1, 0.15))
 
             // Draw title
             drawer.fill = ColorRGBa.WHITE
-            drawer.text(
-                if (showMercator) "Mercator Projection" else "Equirectangular Projection",
-                20.0, 30.0
-            )
+            drawer.text("Equirectangular Projection", 20.0, 30.0)
             drawer.text("Data bounds fitted to viewport (padding=40px)", 20.0, 50.0)
-            drawer.text("Press SPACE to toggle projection type", 20.0, 70.0)
+            drawer.text("Points: ${data.features.count()}", 20.0, 70.0)
 
             // Render points
             data.features.take(500).forEach { feature ->
                 if (feature.geometry is Point) {
                     val point = feature.geometry as Point
-                    val screenPoint = currentProjection.toScreen(point.x, point.y)
+                    val screenPoint = point.toScreen(projection)
                     drawPoint(drawer, screenPoint, pointStyle)
                 }
             }
