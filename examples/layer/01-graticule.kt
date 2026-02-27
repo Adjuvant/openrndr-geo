@@ -5,9 +5,9 @@ import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import geo.GeoJSON
 import geo.LineString
+import geo.Point
 import geo.Polygon
 import geo.projection.ProjectionFactory
-import geo.projection.ProjectionType
 import geo.projection.toScreen
 import geo.layer.generateGraticuleSource
 import geo.render.Style
@@ -78,9 +78,7 @@ fun main() = application {
             coastline?.features?.forEach { feature ->
                 when (val geometry = feature.geometry) {
                     is LineString -> {
-                        val screenPoints = geometry.points.map { pt ->
-                            projection.toScreen(pt.x, pt.y)
-                        }
+                        val screenPoints = geometry.toScreen(projection)
                         drawLineString(drawer, screenPoints, Style {
                             fill = null
                             stroke = ColorRGBa.CORNFLOWER_BLUE.withAlpha(0.5)
@@ -88,15 +86,17 @@ fun main() = application {
                         })
                     }
                     is Polygon -> {
-                        val screenPoints = geometry.exterior.map { pt ->
-                            projection.toScreen(pt.x, pt.y)
-                        }
-                        drawPolygon(drawer, screenPoints, Style {
+                        // Render polygon - handles exterior and interior rings automatically
+                        drawPolygon(drawer, geometry, projection, Style {
                             fill = ColorRGBa.CORNFLOWER_BLUE.withAlpha(0.2)
                             stroke = ColorRGBa.CORNFLOWER_BLUE.withAlpha(0.5)
                             strokeWeight = 1.0
                         })
                     }
+                    is Point -> { /* Skip individual points */ }
+                    is geo.MultiPoint -> { /* Skip */ }
+                    is geo.MultiLineString -> { /* Skip */ }
+                    is geo.MultiPolygon -> { /* Skip */ }
                 }
             }
 
@@ -108,7 +108,6 @@ fun main() = application {
             graticule30.features.forEach { feature ->
                 if (feature.geometry is geo.Point) {
                     val point = feature.geometry as geo.Point
-                    val screen = projection.toScreen(point.x, point.y)
 
                     // Determine if this is a major line
                     val isLatitude = point.x == 0.0 || point.x == 180.0 || point.x == -180.0
@@ -118,14 +117,14 @@ fun main() = application {
                         // Draw lines through this point
                         if (isLongitude) {
                             // Vertical line (longitude)
-                            val top = projection.toScreen(point.x, -90.0)
-                            val bottom = projection.toScreen(point.x, 90.0)
+                            val top = toScreen(-90.0, point.x, projection)
+                            val bottom = toScreen(90.0, point.x, projection)
                             drawer.lineSegment(top.x, top.y, bottom.x, bottom.y)
                         }
                         if (isLatitude) {
                             // Horizontal line (latitude)
-                            val left = projection.toScreen(-180.0, point.y)
-                            val right = projection.toScreen(180.0, point.y)
+                            val left = toScreen(point.y, -180.0, projection)
+                            val right = toScreen(point.y, 180.0, projection)
                             drawer.lineSegment(left.x, left.y, right.x, right.y)
                         }
                     }
@@ -139,7 +138,7 @@ fun main() = application {
             graticule10.features.forEach { feature ->
                 if (feature.geometry is geo.Point) {
                     val point = feature.geometry as geo.Point
-                    val screen = projection.toScreen(point.x, point.y)
+                    val screen = point.toScreen(projection)
 
                     // Only draw points at intersections
                     val isGridIntersection =
@@ -158,7 +157,7 @@ fun main() = application {
 
             // Longitude labels
             listOf(-180, -120, -60, 0, 60, 120, 180).forEach { lng ->
-                val screen = projection.toScreen(lng.toDouble(), 0.0)
+                val screen = toScreen(0.0, lng.toDouble(), projection)
                 if (screen.x > 50 && screen.x < width - 50) {
                     drawer.text("${lng}°", screen.x - 15, height - 20.0)
                 }
@@ -166,7 +165,7 @@ fun main() = application {
 
             // Latitude labels
             listOf(-90, -60, -30, 0, 30, 60, 90).forEach { lat ->
-                val screen = projection.toScreen(-175.0, lat.toDouble())
+                val screen = toScreen(lat.toDouble(), -175.0, projection)
                 if (screen.y > 30 && screen.y < height - 50) {
                     drawer.text("${lat}°", 10.0, screen.y + 5)
                 }

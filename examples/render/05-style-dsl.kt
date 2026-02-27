@@ -83,14 +83,11 @@ fun main() = application {
                 val geometry = feature.geometry
                 when {
                     geometry is geo.Polygon -> {
-                        val screenExterior = geometry.exterior.map { projection.toScreen(it.x, it.y) }
-                        val screenInteriors = geometry.interiors.map { ring ->
-                            ring.map { projection.toScreen(it.x, it.y) }
-                        }
-                        drawPolygon(drawer, screenExterior, screenInteriors, filledStyle)
+                        // Render polygon - handles holes automatically
+                        drawPolygon(drawer, geometry, projection, filledStyle)
                     }
                     geometry is geo.Point -> {
-                        val screenPoint = projection.toScreen(geometry.x, geometry.y)
+                        val screenPoint = geometry.toScreen(projection)
                         drawPoint(drawer, screenPoint, pointStyle)
                     }
                 }

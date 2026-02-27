@@ -58,7 +58,7 @@ fun main() = application {
                 if (feature.geometry is LineString) {
                     val line = feature.geometry as LineString
                     // Project all coordinates in the LineString to screen space
-                    val screenLine = line.points.map { projection.toScreen(it.x, it.y) }
+                    val screenLine = line.toScreen(projection)
                     // Render the LineString
                     drawLineString(drawer, screenLine, lineStyle)
                 }

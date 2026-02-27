@@ -60,16 +60,8 @@ fun main() = application {
                 if (feature.geometry is Polygon) {
                     val polygon = feature.geometry as Polygon
 
-                    // Project exterior ring coordinates to screen space
-                    val screenExterior = polygon.exterior.map { projection.toScreen(it.x, it.y) }
-
-                    // Project interior rings (holes) to screen space
-                    val screenInteriors = polygon.interiors.map { ring ->
-                        ring.map { projection.toScreen(it.x, it.y) }
-                    }
-
-                    // Render the polygon with exterior and any interior holes
-                    drawPolygon(drawer, screenExterior, screenInteriors, polygonStyle)
+                    // Render the polygon - handles holes automatically
+                    drawPolygon(drawer, polygon, projection, polygonStyle)
                 }
             }
         }
