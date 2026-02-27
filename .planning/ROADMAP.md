@@ -46,12 +46,12 @@ Plans:
   2. User can render MultiPolygon features with interior rings clamped to Mercator bounds
   3. User sees correct rendering of ocean/whole-world MultiPolygon data without artifacts
   4. User can verify hole rendering by comparing to QGIS output
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] 08-01: Implement Polygon interior ring rendering using OpenRNDR Shape API
-- [ ] 08-02: Add interior ring clamping to clampToMercator()
-- [ ] 08-03: Fix ocean/whole-world MultiPolygon rendering
+- [ ] 08-01-PLAN.md — Implement interiorsToScreen() and writePolygonWithHoles() (REND-07)
+- [ ] 08-02-PLAN.md — Update drawPolygon/drawMultiPolygon for hole rendering with clamping (REND-07, REND-08)
+- [ ] 08-03-PLAN.md — Add tests and verify ocean.geojson rendering (REND-09)
 
 ### Phase 9: API Design
 **Goal**: Users have intuitive API matching OpenRNDR conventions
