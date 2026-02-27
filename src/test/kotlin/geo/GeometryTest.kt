@@ -101,6 +101,45 @@ class GeometryTest {
     }
 
     @Test
+    fun testInteriorsToScreen() {
+        // Create a polygon with a hole
+        val poly = Polygon(
+            exterior = listOf(
+                Vector2(0.0, 0.0),
+                Vector2(100.0, 0.0),
+                Vector2(100.0, 100.0),
+                Vector2(0.0, 100.0)
+            ),
+            interiors = listOf(
+                listOf(
+                    Vector2(25.0, 25.0),
+                    Vector2(75.0, 25.0),
+                    Vector2(75.0, 75.0),
+                    Vector2(25.0, 75.0)
+                )
+            )
+        )
+        
+        // Use identity-like projection for predictable results
+        val projection = geo.projection.ProjectionFactory.equirectangular(
+            width = 800.0,
+            height = 600.0
+        )
+        
+        // Project interior rings - THIS WILL FAIL until implementation
+        val projectedInteriors = poly.interiorsToScreen(projection)
+        
+        // Verify structure
+        assertEquals("Should have one interior ring", 1, projectedInteriors.size)
+        assertEquals("Interior ring should have four points", 4, projectedInteriors[0].size)
+        
+        // Verify coordinates are transformed (not equal to input)
+        val firstHolePoint = projectedInteriors[0][0]
+        assertNotNull("Projected point should not be null", firstHolePoint)
+        assertNotEquals("X coordinate should be projected", 25.0, firstHolePoint.x)
+    }
+
+    @Test
     fun testMultiPointCreation() {
         val mp = MultiPoint(listOf(
             Point(0.0, 0.0),
