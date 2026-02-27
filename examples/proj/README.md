@@ -24,10 +24,10 @@ This category covers coordinate reference systems, projections, and transforming
 
 ```bash
 # Run a specific example
-./gradlew run -Popenrndr.application=examples.proj.MercatorKt
+./gradlew run -Popenrndr.application=examples.proj.Mercator
 
 # Or use the main class directly
-./gradlew run --main=examples.proj.MercatorKt
+./gradlew run --main=examples.proj.Mercator
 ```
 
 ## Package

@@ -29,10 +29,10 @@ This category demonstrates how to build complex maps by composing multiple layer
 
 ```bash
 # Run a specific example
-./gradlew run -Popenrndr.application=examples.layer.GraticuleKt
+./gradlew run -Popenrndr.application=examples.layer.Graticule
 
 # Or use the main class directly
-./gradlew run --main=examples.layer.GraticuleKt
+./gradlew run --main=examples.layer.Graticule
 ```
 
 ## Package

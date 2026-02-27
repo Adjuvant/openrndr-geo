@@ -30,10 +30,10 @@ This category shows how to create dynamic geographic visualizations with time-ba
 
 ```bash
 # Run a specific example
-./gradlew run -Popenrndr.application=examples.anim.BasicAnimationKt
+./gradlew run -Popenrndr.application=examples.anim.BasicAnimation
 
 # Or use the main class directly
-./gradlew run --main=examples.anim.BasicAnimationKt
+./gradlew run --main=examples.anim.BasicAnimation
 ```
 
 ## Package

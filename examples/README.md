@@ -36,7 +36,7 @@ For example, to run an example in the core category:
 
 ## Sample Data
 
-Sample geographic data files are located in `data/geo/`:
+Sample geographic data files are located in `examples/data/geo/`:
 
 - `sample.geojson` — Simple example features
 - `coastline.geojson` — Coastline data
