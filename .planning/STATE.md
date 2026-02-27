@@ -53,6 +53,10 @@ Progress: [▓▓▓▓▓▓▓▓▓▓▓] 100%
 
 None yet.
 
+### Pending Todos
+
+- 2026-02-27: Graticule layer for zoomed-in maps (layer) — examples/layer/01-graticure.kt
+
 ## Session Continuity
 
 Last session: 2026-02-27
