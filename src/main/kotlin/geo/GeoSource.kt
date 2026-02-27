@@ -182,6 +182,7 @@ abstract class GeoSource(
             bounds = bounds,
             width = drawer.width.toDouble(),
             height = drawer.height.toDouble(),
+            // TODO I though padding had changed to pixels?
             padding = 0.9,
             projection = ProjectionType.MERCATOR
         )
@@ -258,6 +259,95 @@ abstract class GeoSource(
         }
         println("└$separator┘")
     }
+
+    /**
+     * Returns a Sequence of ProjectedFeature with projected screen geometry.
+     * Projection is applied lazily during iteration.
+     *
+     * ## Usage
+     * ```kotlin
+     * source.withProjection(projection).forEach { (feature, projected) ->
+     *     // projected.screenPoints ready for rendering
+     * }
+     * ```
+     */
+    fun withProjection(projection: GeoProjection): Sequence<ProjectedFeature> {
+        return features.map { feature ->
+            ProjectedFeature(feature, projectGeometry(feature.geometry, projection))
+        }
+    }
+
+    private fun projectGeometry(geom: Geometry, projection: GeoProjection): ProjectedGeometry = when (geom) {
+        is Point -> ProjectedPoint(projection.project(Vector2(geom.x, geom.y)))
+        is LineString -> ProjectedLineString(geom.points.map { projection.project(it) })
+        is Polygon -> ProjectedPolygon(
+            exterior = geom.exterior.map { projection.project(it) },
+            holes = geom.interiors.map { ring -> ring.map { projection.project(it) } }
+        )
+        is MultiPoint -> ProjectedMultiPoint(geom.points.map { projection.project(Vector2(it.x, it.y)) })
+        is MultiLineString -> ProjectedMultiLineString(geom.lineStrings.map { line ->
+            line.points.map { projection.project(it) }
+        })
+        is MultiPolygon -> ProjectedMultiPolygon(geom.polygons.map { poly ->
+            ProjectedPolygon(
+                exterior = poly.exterior.map { projection.project(it) },
+                holes = poly.interiors.map { ring -> ring.map { projection.project(it) } }
+            )
+        })
+    }
+
+    /**
+     * Filters features by predicate, returning a new GeoSource.
+     * Use for pre-render filtering based on properties.
+     *
+     * ## Usage
+     * ```kotlin
+     * source.filter { it.doubleProperty("population") > 100000 }
+     *       .withProjection(projection)
+     *       .forEach { ... }
+     * ```
+     *
+     * Note: Returns new GeoSource, original unchanged.
+     */
+    fun filter(predicate: (Feature) -> Boolean): GeoSource {
+        val filtered = this
+        return object : GeoSource(crs) {
+            override val features: Sequence<Feature> = filtered.features.filter(predicate)
+        }
+    }
+
+    /**
+     * Transforms features, returning a new GeoSource.
+     * Use for property extraction or geometry modification.
+     *
+     * ## Usage
+     * ```kotlin
+     * source.map { feature ->
+     *     Feature(feature.geometry, mapOf("id" to feature.property("gid")))
+     * }
+     * ```
+     */
+    fun map(transform: (Feature) -> Feature): GeoSource {
+        val source = this
+        return object : GeoSource(crs) {
+            override val features: Sequence<Feature> = source.features.map(transform)
+        }
+    }
+}
+
+/**
+ * Extension on Sequence<ProjectedFeature> for forEach with destructuring.
+ * Enables clean iteration syntax.
+ *
+ * ## Usage
+ * ```kotlin
+ * source.withProjection(projection).forEach { (feature, projected) ->
+ *     drawer.drawPolygon(projected.screenPoints)
+ * }
+ * ```
+ */
+fun Sequence<ProjectedFeature>.forEachWithProjection(action: (Feature, ProjectedGeometry) -> Unit) {
+    forEach { action(it.feature, it.projectedGeometry) }
 }
 
 /**

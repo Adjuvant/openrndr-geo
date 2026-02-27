@@ -1,5 +1,7 @@
 package geo
 
+import org.openrndr.math.Vector2
+
 /**
  * Represents a geographic feature combining geometry with properties.
  * Features are the primary unit of geographic data - each feature has
@@ -92,4 +94,46 @@ data class Feature(
             return Feature(Point(x, y), properties)
         }
     }
+}
+
+/**
+ * Wrapper providing a Feature with its projected screen geometry.
+ * Used for iteration with projection context.
+ */
+data class ProjectedFeature(
+    val feature: Feature,
+    val projectedGeometry: ProjectedGeometry
+)
+
+/**
+ * Sealed class representing projected screen geometry.
+ * Preserves geometry type for type-safe rendering.
+ */
+sealed class ProjectedGeometry {
+    abstract val screenPoints: List<Vector2>
+}
+
+data class ProjectedPoint(val screen: Vector2) : ProjectedGeometry() {
+    override val screenPoints: List<Vector2> = listOf(screen)
+}
+
+data class ProjectedLineString(override val screenPoints: List<Vector2>) : ProjectedGeometry()
+
+data class ProjectedPolygon(
+    val exterior: List<Vector2>,
+    val holes: List<List<Vector2>> = emptyList()
+) : ProjectedGeometry() {
+    override val screenPoints: List<Vector2> = exterior
+}
+
+data class ProjectedMultiPoint(val points: List<Vector2>) : ProjectedGeometry() {
+    override val screenPoints: List<Vector2> = points
+}
+
+data class ProjectedMultiLineString(val lineStrings: List<List<Vector2>>) : ProjectedGeometry() {
+    override val screenPoints: List<Vector2> = lineStrings.flatten()
+}
+
+data class ProjectedMultiPolygon(val polygons: List<ProjectedPolygon>) : ProjectedGeometry() {
+    override val screenPoints: List<Vector2> = polygons.flatMap { it.exterior }
 }
