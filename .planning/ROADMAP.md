@@ -15,7 +15,7 @@
 ### Phases
 
 - [x] **Phase 7: Data Inspection** — GeoSource summary() for runtime debugging (completed 2026-02-26)
-- [x] **Phase 8: Rendering Improvements** — Polygon holes and bounds handling
+- [x] **Phase 8: Rendering Improvements** — Polygon holes and bounds handling (completed 2026-02-27)
 - [ ] **Phase 9: API Design** — Feature traversal and two-tier API
 - [ ] **Phase 10: Documentation & Examples** — Runnable examples with data files
 
@@ -51,8 +51,8 @@ Plans:
 Plans:
 - [x] 08-00-PLAN.md — Create test scaffolds for hole rendering (Wave 0, REND-09)
 - [x] 08-01-PLAN.md — Implement interiorsToScreen() and writePolygonWithHoles() (REND-07)
-- [ ] 08-02-PLAN.md — Update drawPolygon/drawMultiPolygon for hole rendering with clamping (REND-07, REND-08)
-- [ ] 08-03-PLAN.md — Add tests and verify ocean.geojson rendering (REND-09)
+- [x] 08-02-PLAN.md — Update drawPolygon/drawMultiPolygon for hole rendering with clamping (REND-07, REND-08)
+- [x] 08-03-PLAN.md — Add tests and verify ocean.geojson rendering (REND-09)
 
 ### Phase 9: API Design
 **Goal**: Users have intuitive API matching OpenRNDR conventions
@@ -96,7 +96,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 7. Data Inspection | 1/1 | Complete    | 2026-02-26 |
-| 8. Rendering Improvements | 2/4 | In progress | - |
+| 8. Rendering Improvements | 4/4 | Complete    | 2026-02-27 |
 | 9. API Design | 0/3 | Not started | - |
 | 10. Documentation & Examples | 0/4 | Not started | - |
 
