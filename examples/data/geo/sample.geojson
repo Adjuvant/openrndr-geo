@@ -1,0 +1,394 @@
+
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.9041, 52.3676]
+      },
+      "properties": {
+        "name": "Amsterdam",
+        "category": "city",
+        "population": 872680,
+        "capital": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.4777, 51.9244]
+      },
+      "properties": {
+        "name": "Rotterdam",
+        "category": "city",
+        "population": 651446,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.3007, 52.0705]
+      },
+      "properties": {
+        "name": "The Hague",
+        "category": "city",
+        "population": 548320,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [5.1214, 52.0907]
+      },
+      "properties": {
+        "name": "Utrecht",
+        "category": "city",
+        "population": 359370,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [5.4697, 51.4416]
+      },
+      "properties": {
+        "name": "Eindhoven",
+        "category": "city",
+        "population": 235691,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [6.5665, 53.2194]
+      },
+      "properties": {
+        "name": "Groningen",
+        "category": "city",
+        "population": 233273,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [5.8372, 51.8126]
+      },
+      "properties": {
+        "name": "Nijmegen",
+        "category": "city",
+        "population": 177659,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [6.083, 52.5121]
+      },
+      "properties": {
+        "name": "Zwolle",
+        "category": "city",
+        "population": 129840,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.6462, 52.3874]
+      },
+      "properties": {
+        "name": "Haarlem",
+        "category": "city",
+        "population": 162543,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [5.6910, 50.8514]
+      },
+      "properties": {
+        "name": "Maastricht",
+        "category": "city",
+        "population": 120227,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [6.8958, 52.2215]
+      },
+      "properties": {
+        "name": "Enschede",
+        "category": "city",
+        "population": 159732,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.8951, 51.5889]
+      },
+      "properties": {
+        "name": "Breda",
+        "category": "city",
+        "population": 184126,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [4.9041, 52.3676],
+          [4.6913, 52.0689],
+          [4.4777, 51.9244]
+        ]
+      },
+      "properties": {
+        "name": "Amsterdam–Rotterdam Rail",
+        "category": "transport",
+        "length_km": 78.5
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [4.4777, 51.9244],
+          [4.3007, 52.0705],
+          [4.3571, 52.0116]
+        ]
+      },
+      "properties": {
+        "name": "Rotterdam–The Hague Link",
+        "category": "transport",
+        "length_km": 24.0
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [4.85, 52.33],
+            [4.95, 52.33],
+            [4.95, 52.40],
+            [4.85, 52.40],
+            [4.85, 52.33]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Amsterdam City Zone",
+        "category": "zone",
+        "area_sqkm": 15.2
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [4.40, 51.88],
+            [4.56, 51.88],
+            [4.56, 51.96],
+            [4.40, 51.96],
+            [4.40, 51.88]
+          ],
+          [
+            [4.46, 51.91],
+            [4.50, 51.91],
+            [4.50, 51.94],
+            [4.46, 51.94],
+            [4.46, 51.91]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Rotterdam Park Zone (with lake hole)",
+        "category": "park",
+        "area_sqkm": 8.7
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiPoint",
+        "coordinates": [
+          [5.1214, 52.0907],
+          [5.4697, 51.4416],
+          [3.6171, 51.4485]
+        ]
+      },
+      "properties": {
+        "name": "Secondary Cities",
+        "category": "cluster",
+        "description": "Utrecht, Eindhoven, Middelburg"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiLineString",
+        "coordinates": [
+          [
+            [4.9041, 52.3676],
+            [5.1214, 52.0907]
+          ],
+          [
+            [5.1214, 52.0907],
+            [5.4697, 51.4416]
+          ],
+          [
+            [4.4777, 51.9244],
+            [3.6171, 51.4485]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Rail Network Segments",
+        "category": "transport",
+        "segments": 3
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [5.08, 52.06],
+              [5.16, 52.06],
+              [5.16, 52.12],
+              [5.08, 52.12],
+              [5.08, 52.06]
+            ]
+          ],
+          [
+            [
+              [5.42, 51.41],
+              [5.52, 51.41],
+              [5.52, 51.47],
+              [5.42, 51.47],
+              [5.42, 51.41]
+            ]
+          ],
+          [
+            [
+              [3.57, 51.42],
+              [3.67, 51.42],
+              [3.67, 51.48],
+              [3.57, 51.48],
+              [3.57, 51.42]
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "City Districts",
+        "category": "administrative",
+        "description": "Utrecht, Eindhoven, and Middelburg districts"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [4.70, 52.28],
+              [4.80, 52.28],
+              [4.80, 52.35],
+              [4.70, 52.35],
+              [4.70, 52.28]
+            ],
+            [
+              [4.73, 52.30],
+              [4.77, 52.30],
+              [4.77, 52.33],
+              [4.73, 52.33],
+              [4.73, 52.30]
+            ]
+          ],
+          [
+            [
+              [4.90, 52.28],
+              [5.00, 52.28],
+              [5.00, 52.35],
+              [4.90, 52.35],
+              [4.90, 52.28]
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "West Amsterdam Zones",
+        "category": "zone",
+        "description": "Two zones, first has a hole (lake)"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [3.37, 51.20],
+            [7.21, 51.20],
+            [7.21, 53.47],
+            [3.37, 53.47],
+            [3.37, 51.20]
+          ]
+        ]
+      },
+      "properties": {
+        "name": "Netherlands Bounding Box",
+        "category": "boundary",
+        "note": "Approximate extent"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.3571, 52.0116]
+      },
+      "properties": {
+        "name": "The Hague",
+        "category": "city",
+        "population": 547757,
+        "capital": false,
+        "note": null
+      }
+    }
+  ]
+}
