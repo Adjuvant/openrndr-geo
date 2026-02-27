@@ -35,15 +35,22 @@ An expressive, well-architected API that makes exploring intersections of geo da
 - ✓ fitBounds API — Reliable bounding box fitting with contain strategy — v1.1.0
 - ✓ Multi-dataset overlays — GeoStack with CRS unification — v1.1.0
 
+**v1.2.0 API Improvements & Examples:**
+- ✓ GeoSource summary() function — runtime inspection for debugging (INSP-01, INSP-02, INSP-03) — v1.2.0
+- ✓ Polygon interior ring rendering — proper compound shape rendering with holes (REND-07, REND-08, REND-09) — v1.2.0
+- ✓ Two-tier API — beginner (drawer.geo(source)) and professional (drawer.geo(source) { }) workflows (API-02, API-04) — v1.2.0
+- ✓ Feature-level iteration — withProjection() for internalized coordinate handling (API-01) — v1.2.0
+- ✓ Escape hatches — RawProjection and styleByFeature for advanced patterns (API-03) — v1.2.0
+- ✓ 16 runnable examples — structured by category with sample data (DOC-01, DOC-02, DOC-03, DOC-04) — v1.2.0
+
 ### Active
 
-**v1.2.0 Focus:**
-- [ ] GeoSource summary() function — runtime inspection for debugging
-- [ ] Polygon interior/exterior ring handling — proper compound shape rendering
-- [ ] Reduce rendering boilerplate — streamline load → render workflow
-- [ ] Fix MultiPolygon ocean data — handle coordinates outside projection bounds
-- [ ] Batch screen space projection — performance optimization
-- [ ] Example files — well-structured, one feature at a time (following openrndr-examples pattern)
+**v1.3.0 Focus:**
+- [ ] Batch screen space projection — performance optimization (PERF-01)
+- [ ] Cache projected geometries across frames (PERF-02)
+- [ ] Graticule layer improvements — support for zoomed-in maps
+- [ ] Clip geometries at projection bounds (vs current clamp) (ADV-01)
+- [ ] Configurable bounds handling strategy (ADV-02)
 
 **Deferred:**
 - [ ] Documentation — guide for exploring available functions, organized by visual intent (deferred from v1.0)
@@ -61,12 +68,13 @@ An expressive, well-architected API that makes exploring intersections of geo da
 
 ## Context
 
-**Current State (v1.1.0 shipped):**
-- ~12,713 lines of Kotlin production code
-- 304 files created/modified
-- 27 plans completed across 7 phases
-- Build: OPENRNDR 0.4.5, Kotlin 1.9.22, JVM 17
-- Test coverage: 193 tests passing
+**Current State (v1.2.0 shipped):**
+- ~15,986 lines of Kotlin production code
+- 350+ files created/modified
+- 34 plans completed across 10 phases
+- Build: OPENRNDR 0.4.5, Kotlin 2.2.10, JVM 17
+- Test coverage: 200+ tests passing
+- 16 runnable examples across 5 categories
 
 - Built on OPENRNDR 0.4.5 with Kotlin 2.2.10, JVM 17
 - Existing template project with ORX extensions (shapes, noise, color, composition, envelopes, etc.)
@@ -83,6 +91,13 @@ An expressive, well-architected API that makes exploring intersections of geo da
 - Reduced "load → visualize" boilerplate from 10+ lines to 1-2 lines
 - Viewport-relative zoom semantics (zoom=0 fits world)
 - Three-tier API: drawer.geoJSON() → geoSource() → full control
+
+**v1.2.0 Improvements:**
+- Runtime data inspection with pandas-style console output (printSummary())
+- Polygon holes render as transparent cutouts via OpenRNDR Shape contours
+- Two-tier API matching OpenRNDR DSL conventions (Style { } pattern)
+- 16 runnable examples organized by category (core, render, proj, anim, layer)
+- @file:JvmName annotations for digit-prefixed example filenames
 
 ## Constraints
 
@@ -106,6 +121,11 @@ An expressive, well-architected API that makes exploring intersections of geo da
 | Viewport-relative zoom (not tile-based) | Tile pyramid math wrong for creative coding | ✓ Shipped in v1.1.0 — zoom=0 fits world |
 | Three-tier API design | Common case too verbose | ✓ Shipped in v1.1.0 — 1-2 line workflows |
 | CRS auto-detection | Manual EPSG handling painful | ✓ Shipped in v1.1.0 — transparent transforms |
+| Single-pass statistics collection | Efficiency for large datasets | ✓ Shipped in v1.2.0 — one iteration for all stats |
+| Box-drawing console output | pandas-style familiarity | ✓ Shipped in v1.2.0 — clean formatted tables |
+| OpenRNDR Shape contours for holes | Native transparency support | ✓ Shipped in v1.2.0 — holes show background |
+| Two-tier vs three-tier API | Simpler mental model | ✓ Shipped in v1.2.0 — collapsed to two tiers |
+| @file:JvmName for examples | Kotlin naming with numbered files | ✓ Shipped in v1.2.0 — valid class names |
 
 ---
-*Last updated: 2026-02-26 after v1.1.0 milestone, starting v1.2.0*
+*Last updated: 2026-02-27 after v1.2.0 milestone, planning v1.3.0*

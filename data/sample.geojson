@@ -31,6 +31,136 @@
     {
       "type": "Feature",
       "geometry": {
+        "type": "Point",
+        "coordinates": [4.3007, 52.0705]
+      },
+      "properties": {
+        "name": "The Hague",
+        "category": "city",
+        "population": 548320,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [5.1214, 52.0907]
+      },
+      "properties": {
+        "name": "Utrecht",
+        "category": "city",
+        "population": 359370,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [5.4697, 51.4416]
+      },
+      "properties": {
+        "name": "Eindhoven",
+        "category": "city",
+        "population": 235691,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [6.5665, 53.2194]
+      },
+      "properties": {
+        "name": "Groningen",
+        "category": "city",
+        "population": 233273,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [5.8372, 51.8126]
+      },
+      "properties": {
+        "name": "Nijmegen",
+        "category": "city",
+        "population": 177659,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [6.083, 52.5121]
+      },
+      "properties": {
+        "name": "Zwolle",
+        "category": "city",
+        "population": 129840,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.6462, 52.3874]
+      },
+      "properties": {
+        "name": "Haarlem",
+        "category": "city",
+        "population": 162543,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [5.6910, 50.8514]
+      },
+      "properties": {
+        "name": "Maastricht",
+        "category": "city",
+        "population": 120227,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [6.8958, 52.2215]
+      },
+      "properties": {
+        "name": "Enschede",
+        "category": "city",
+        "population": 159732,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [4.8951, 51.5889]
+      },
+      "properties": {
+        "name": "Breda",
+        "category": "city",
+        "population": 184126,
+        "capital": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": {
         "type": "LineString",
         "coordinates": [
           [4.9041, 52.3676],
