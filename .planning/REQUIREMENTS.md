@@ -19,10 +19,10 @@
 
 ### API Design
 
-- [ ] **API-01**: User can access feature-level iteration with projected coordinates internalized
-- [ ] **API-02**: User can choose between simple workflow (beginner) and detailed control (professional)
-- [ ] **API-03**: User has escape hatches for advanced/custom rendering patterns
-- [ ] **API-04**: API style matches OpenRNDR DSL conventions (not one-line magic)
+- [x] **API-01**: User can access feature-level iteration with projected coordinates internalized
+- [x] **API-02**: User can choose between simple workflow (beginner) and detailed control (professional)
+- [x] **API-03**: User has escape hatches for advanced/custom rendering patterns
+- [x] **API-04**: API style matches OpenRNDR DSL conventions (not one-line magic)
 
 ### Documentation
 
@@ -67,10 +67,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 | REND-07 | Phase 8 | Complete |
 | REND-08 | Phase 8 | Complete |
 | REND-09 | Phase 8 | Complete |
-| API-01 | Phase 9 | Pending |
-| API-02 | Phase 9 | Pending |
-| API-03 | Phase 9 | Pending |
-| API-04 | Phase 9 | Pending |
+| API-01 | Phase 9 | Complete |
+| API-02 | Phase 9 | Complete |
+| API-03 | Phase 9 | Complete |
+| API-04 | Phase 9 | Complete |
 | DOC-01 | Phase 10 | Pending |
 | DOC-02 | Phase 10 | Pending |
 | DOC-03 | Phase 10 | Pending |
