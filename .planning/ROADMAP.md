@@ -17,7 +17,7 @@
 - [x] **Phase 7: Data Inspection** — GeoSource summary() for runtime debugging (completed 2026-02-26)
 - [x] **Phase 8: Rendering Improvements** — Polygon holes and bounds handling (completed 2026-02-27)
 - [x] **Phase 9: API Design** — Feature traversal, two-tier API, and escape hatches (completed 2026-02-27)
-- [ ] **Phase 10: Documentation & Examples** — Runnable examples with data files
+- [ ] **Phase 10: Documentation & Examples** — Runnable examples with data files (1/4 complete)
 
 ---
 
@@ -83,7 +83,7 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 10-01-PLAN.md — Create directory structure, copy data files, add README templates (DOC-01, DOC-02)
+- [x] 10-01-PLAN.md — Create directory structure, copy data files, add README templates (DOC-01, DOC-02)
 - [ ] 10-02-PLAN.md — Write core examples (load, inspection) and render examples (points, lines, polygons, Style DSL) (DOC-01, DOC-02, DOC-03)
 - [ ] 10-03-PLAN.md — Write proj, anim, and layer examples with category READMEs (DOC-01, DOC-02, DOC-03)
 - [ ] 10-04-PLAN.md — Compile validation and UAT checkpoint for visual verification (DOC-04)
@@ -99,7 +99,7 @@ Plans:
 | 7. Data Inspection | 1/1 | Complete    | 2026-02-26 |
 | 8. Rendering Improvements | 4/4 | Complete    | 2026-02-27 |
 | 9. API Design | 4/4 | Complete    | 2026-02-27 |
-| 10. Documentation & Examples | 0/4 | Not started | - |
+| 10. Documentation & Examples | 1/4 | In progress | 2026-02-27 |
 
 ---
 
