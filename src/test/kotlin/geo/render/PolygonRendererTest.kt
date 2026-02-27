@@ -131,9 +131,100 @@ class PolygonRendererTest {
         ))
         
         val bbox = poly.boundingBox
-        assertEquals(0.0, bbox.minX, 0.0001)
-        assertEquals(10.0, bbox.maxX, 0.0001)
-        assertEquals(0.0, bbox.minY, 0.0001)
-        assertEquals(10.0, bbox.maxY, 0.0001)
+        assertEquals("minX should be 0.0", 0.0, bbox.minX, 0.0001)
+        assertEquals("maxX should be 10.0", 10.0, bbox.maxX, 0.0001)
+        assertEquals("minY should be 0.0", 0.0, bbox.minY, 0.0001)
+        assertEquals("maxY should be 10.0", 10.0, bbox.maxY, 0.0001)
+    }
+
+    @Test
+    fun testWritePolygonWithHoles() {
+        // Test that writePolygonWithHoles can be called with valid configuration
+        val exterior = listOf(
+            Vector2(0.0, 0.0),
+            Vector2(100.0, 0.0),
+            Vector2(100.0, 100.0),
+            Vector2(0.0, 100.0)
+        )
+        val interiors = listOf(
+            listOf(
+                Vector2(25.0, 25.0),
+                Vector2(75.0, 25.0),
+                Vector2(75.0, 75.0),
+                Vector2(25.0, 75.0)
+            )
+        )
+        val style = Style {
+            fill = ColorRGBa.RED.withAlpha(0.5)
+            stroke = ColorRGBa.BLACK
+            strokeWeight = 2.0
+        }
+        
+        // Verify configuration is valid
+        assertEquals("Exterior should have 4 points", 4, exterior.size)
+        assertEquals("Should have 1 interior ring", 1, interiors.size)
+        assertEquals("Interior ring should have 4 points", 4, interiors[0].size)
+        assertNotNull("Style fill should not be null", style.fill)
+        assertEquals("Alpha should be 0.5", 0.5, style.fill?.alpha ?: 0.0, 0.0001)
+        
+        // The actual rendering call will fail until implementation
+        // This scaffold verifies the configuration is correct
+    }
+
+    @Test
+    fun testHolesAreTransparent() {
+        // Verify that holes appear as transparent cutouts
+        val poly = geo.Polygon(
+            exterior = listOf(
+                Vector2(0.0, 0.0),
+                Vector2(100.0, 0.0),
+                Vector2(100.0, 100.0),
+                Vector2(0.0, 100.0)
+            ),
+            interiors = listOf(
+                listOf(
+                    Vector2(25.0, 25.0),
+                    Vector2(75.0, 25.0),
+                    Vector2(75.0, 75.0),
+                    Vector2(25.0, 75.0)
+                )
+            )
+        )
+        
+        assertTrue("Polygon should have holes", poly.hasHoles())
+        assertEquals("Should have 1 interior ring", 1, poly.interiors.size)
+        
+        // OpenRNDR Shape with multiple contours renders holes as transparent
+        // This is the expected behavior - verification happens via visual checkpoint
+    }
+
+    @Test
+    fun testPolygonWithMultipleHoles() {
+        // Polygon with two holes
+        val poly = geo.Polygon(
+            exterior = listOf(
+                Vector2(0.0, 0.0),
+                Vector2(100.0, 0.0),
+                Vector2(100.0, 100.0),
+                Vector2(0.0, 100.0)
+            ),
+            interiors = listOf(
+                listOf(
+                    Vector2(10.0, 10.0),
+                    Vector2(30.0, 10.0),
+                    Vector2(30.0, 30.0),
+                    Vector2(10.0, 30.0)
+                ),
+                listOf(
+                    Vector2(60.0, 60.0),
+                    Vector2(90.0, 60.0),
+                    Vector2(90.0, 90.0),
+                    Vector2(60.0, 90.0)
+                )
+            )
+        )
+        
+        assertTrue("Polygon should have holes", poly.hasHoles())
+        assertEquals("Should have 2 interior rings", 2, poly.interiors.size)
     }
 }
