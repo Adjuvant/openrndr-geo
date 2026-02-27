@@ -46,9 +46,10 @@ Plans:
   2. User can render MultiPolygon features with interior rings clamped to Mercator bounds
   3. User sees correct rendering of ocean/whole-world MultiPolygon data without artifacts
   4. User can verify hole rendering by comparing to QGIS output
-**Plans**: 3 plans
+**Plans**: 4 plans
 
 Plans:
+- [ ] 08-00-PLAN.md — Create test scaffolds for hole rendering (Wave 0, REND-09)
 - [ ] 08-01-PLAN.md — Implement interiorsToScreen() and writePolygonWithHoles() (REND-07)
 - [ ] 08-02-PLAN.md — Update drawPolygon/drawMultiPolygon for hole rendering with clamping (REND-07, REND-08)
 - [ ] 08-03-PLAN.md — Add tests and verify ocean.geojson rendering (REND-09)
@@ -95,7 +96,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 7. Data Inspection | 1/1 | Complete    | 2026-02-26 |
-| 8. Rendering Improvements | 0/3 | Not started | - |
+| 8. Rendering Improvements | 0/4 | Not started | - |
 | 9. API Design | 0/3 | Not started | - |
 | 10. Documentation & Examples | 0/4 | Not started | - |
 
