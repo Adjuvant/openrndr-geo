@@ -2,79 +2,109 @@ package geo
 
 import org.junit.Test
 import org.junit.Assert.*
-import org.junit.Ignore
 import org.openrndr.math.Vector2
 import geo.projection.GeoProjection
 import geo.projection.ProjectionConfig
+import geo.projection.ProjectionFactory
 
 /**
- * Test scaffold for API-01: Feature iteration with projected coordinates.
- * 
+ * Tests for API-01: Feature iteration with projected coordinates.
  * Tests chainable operations (forEach/filter/map) on GeoSource with projection context.
- * 
- * @see <a href="https://github.com/openrndr/openrndr-geo/issues/XX">API-01</a>
  */
-@Ignore("Implementation pending in 09-01")
 class GeoSourceChainingTest {
 
     /**
-     * Test that forEach provides access to projected geometry.
+     * Test that withProjection provides access to projected geometry.
      * Each feature iteration should have projected coordinates available.
      */
     @Test
     fun testForEachWithProjection() {
-        // Placeholder test - GeoSource.forEachWithProjection() not yet implemented
-        // When implemented, should verify:
-        // - Each feature iteration provides both original and projected geometry
-        // - Projection is applied correctly during iteration
-        
-        val hasGeoSource = true
-        val hasProjection = true
-        
-        assertTrue("GeoSource should exist", hasGeoSource)
-        assertTrue("GeoProjection interface should exist", hasProjection)
+        val features = sequenceOf(
+            Feature(Point(0.0, 0.0), mapOf("name" to "origin")),
+            Feature(Point(10.0, 10.0), mapOf("name" to "offset"))
+        )
+        val source = object : GeoSource() {
+            override val features: Sequence<Feature> = features
+        }
+        val projection = ProjectionFactory.mercator(800.0, 600.0)
+
+        val projected = source.withProjection(projection).toList()
+        assertEquals(2, projected.size)
+        assertTrue(projected[0].projectedGeometry is ProjectedPoint)
+        assertTrue(projected[1].projectedGeometry is ProjectedPoint)
+
+        // Verify the original feature is preserved
+        assertEquals("origin", projected[0].feature.stringProperty("name"))
     }
 
     /**
-     * Test that filter returns a sequence that maintains projection context.
+     * Test that filter returns a new GeoSource that maintains the chainable API.
      */
     @Test
     fun testFilterReturnsProjectedSequence() {
-        // Placeholder test - GeoSource.filterWithProjection() not yet implemented
-        // When implemented, should verify:
-        // - Filter lambda has access to projection context
-        // - Returns a lazy sequence with projected features
-        
-        val filterSupported = true
-        assertTrue("Filter with projection should be supported", filterSupported)
+        val features = sequenceOf(
+            Feature(Point(0.0, 0.0), mapOf("pop" to 50000)),
+            Feature(Point(10.0, 10.0), mapOf("pop" to 150000))
+        )
+        val source = object : GeoSource() {
+            override val features: Sequence<Feature> = features
+        }
+
+        val result = source.filter { it.doubleProperty("pop")!! > 100000 }
+        val filteredFeatures = result.features.toList()
+
+        assertEquals(1, filteredFeatures.size)
+        assertEquals(150000.0, filteredFeatures[0].doubleProperty("pop"))
     }
 
     /**
-     * Test that map transforms features while preserving projection.
+     * Test that map transforms features while preserving the chainable API.
      */
     @Test
     fun testMapTransformsFeatures() {
-        // Placeholder test - GeoSource.mapWithProjection() not yet implemented
-        // When implemented, should verify:
-        // - Map lambda can access both feature and projection
-        // - Returns transformed features while maintaining projection
-        
-        val mapSupported = true
-        assertTrue("Map with projection should be supported", mapSupported)
+        val features = sequenceOf(
+            Feature(Point(0.0, 0.0), mapOf("gid" to 1)),
+            Feature(Point(10.0, 10.0), mapOf("gid" to 2))
+        )
+        val source = object : GeoSource() {
+            override val features: Sequence<Feature> = features
+        }
+
+        val result = source.map { feature ->
+            Feature(feature.geometry, mapOf("id" to feature.property("gid")))
+        }
+        val transformedFeatures = result.features.toList()
+
+        assertEquals(2, transformedFeatures.size)
+        assertEquals(1, transformedFeatures[0].property("id"))
+        assertEquals(2, transformedFeatures[1].property("id"))
     }
 
     /**
-     * Test that filter().map().forEach() chain works correctly.
+     * Test that filter().map().withProjection().forEach() chain works correctly.
      */
     @Test
     fun testChainedOperations() {
-        // Placeholder test - chainable operations not yet implemented
-        // When implemented, should verify:
-        // - filter().map().forEach() chain works
-        // - Projection context is maintained through chain
-        
-        val chainingSupported = true
-        assertTrue("Chained operations should be supported", chainingSupported)
+        val features = sequenceOf(
+            Feature(Point(0.0, 0.0), mapOf("pop" to 50000)),
+            Feature(Point(10.0, 10.0), mapOf("pop" to 150000)),
+            Feature(Point(20.0, 20.0), mapOf("pop" to 200000))
+        )
+        val source = object : GeoSource() {
+            override val features: Sequence<Feature> = features
+        }
+        val projection = ProjectionFactory.mercator(800.0, 600.0)
+
+        val result = source
+            .filter { it.doubleProperty("pop")!! > 100000 }
+            .withProjection(projection)
+            .toList()
+
+        assertEquals(2, result.size)
+
+        // Verify both have projected geometry
+        assertTrue(result[0].projectedGeometry is ProjectedPoint)
+        assertTrue(result[1].projectedGeometry is ProjectedPoint)
     }
 
     /**
@@ -82,17 +112,37 @@ class GeoSourceChainingTest {
      */
     @Test
     fun testWithProjectionLazy() {
-        // Placeholder test - GeoSource.withProjection() not yet implemented
-        // When implemented, should verify:
-        // - Returns lazy Sequence, not eager evaluation
-        // - Multiple iterations don't re-project
-        
-        val lazySupported = true
-        assertTrue("Lazy projection should be supported", lazySupported)
+        var evaluationCount = 0
+        val features = sequenceOf(
+            Feature(Point(0.0, 0.0), mapOf("name" to "a")),
+            Feature(Point(10.0, 10.0), mapOf("name" to "b"))
+        )
+        val source = object : GeoSource() {
+            override val features: Sequence<Feature> = features.map {
+                evaluationCount++
+                it
+            }
+        }
+        val projection = ProjectionFactory.mercator(800.0, 600.0)
+
+        // Before iteration, count should be 0 (lazy)
+        assertEquals(0, evaluationCount)
+
+        // Create the projected sequence (still lazy)
+        val projected = source.withProjection(projection)
+
+        // Still 0 - no iteration yet
+        assertEquals(0, evaluationCount)
+
+        // Take one - triggers evaluation
+        projected.first()
+
+        // Now we should have evaluated at least once
+        assertTrue("Should have evaluated features lazily", evaluationCount > 0)
     }
 
     // ============================================================================
-    // Test Helpers - These exist and can be used
+    // Test Helpers
     // ============================================================================
 
     private fun createTestGeoSource(): GeoSource {
