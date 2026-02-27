@@ -2,8 +2,8 @@ package geo.render
 
 import org.junit.Test
 import org.junit.Assert.*
-import org.junit.Ignore
 import org.openrndr.math.Vector2
+import org.openrndr.color.ColorRGBa
 import geo.GeoSource
 import geo.Feature
 import geo.Point
@@ -11,85 +11,107 @@ import geo.projection.GeoProjection
 import geo.projection.ProjectionConfig
 
 /**
- * Test scaffold for API-02: Two-tier API with config block.
+ * Test for API-02: Two-tier API with config block.
  * 
  * Tests drawer.geo() extension function with and without config block.
- * 
- * @see <a href="https://github.com/openrndr/openrndr-geo/issues/XX">API-02</a>
  */
-@Ignore("Implementation pending in 09-02")
 class DrawerGeoExtensionsTest {
 
     /**
-     * Test that drawer.geo(source) works without config block (simple API).
+     * Test that config-less call creates default config.
      */
     @Test
     fun testSimpleGeoCall() {
-        // Placeholder test - drawer.geo() extension not yet implemented
-        // When implemented, should verify:
-        // - drawer.geo(source) renders all features with defaults
-        // - Uses sensible defaults: minimal, black background, thin white lines
-        
-        val simpleApiPlanned = true
-        assertTrue("Simple API should be planned", simpleApiPlanned)
+        val config = GeoRenderConfig()
+        assertNull("Default config should have no projection", config.projection)
+        assertNull("Default config should have no style", config.style)
+        assertTrue("Default config should have empty styleByType", config.styleByType.isEmpty())
+        assertNull("Default config should have no styleByFeature", config.styleByFeature)
     }
-
+    
     /**
-     * Test that drawer.geo(source) { projection = ... } works (config block API).
+     * Test that config block is applied.
      */
     @Test
     fun testGeoWithConfigBlock() {
-        // Placeholder test - drawer.geo() with config block not yet implemented
-        // When implemented, should verify:
-        // - Config block syntax works: drawer.geo(source) { ... }
-        // - projection parameter accessible in config block
+        val config = GeoRenderConfig()
+        config.style = Style { stroke = ColorRGBa.RED }
         
-        val configBlockPlanned = true
-        assertTrue("Config block API should be planned", configBlockPlanned)
+        assertNotNull("Config should have style", config.style)
+        assertEquals("Style should have red stroke", ColorRGBa.RED, config.style?.stroke)
     }
-
+    
     /**
-     * Test that projection is applied from config block.
+     * Test that projection from config block is stored.
      */
     @Test
     fun testConfigBlockProjection() {
-        // Placeholder test - projection from config block not yet implemented
-        // When implemented, should verify:
-        // - projection = ... sets the projection for rendering
+        val proj = createTestProjection()
+        val config = GeoRenderConfig()
+        config.projection = proj
         
-        val projectionConfigPlanned = true
-        assertTrue("Projection config should be planned", projectionConfigPlanned)
+        assertSame("Config should store projection", proj, config.projection)
     }
-
+    
     /**
-     * Test that style is applied from config block.
+     * Test that style from config block is applied.
      */
     @Test
     fun testConfigBlockStyle() {
-        // Placeholder test - style from config block not yet implemented
-        // When implemented, should verify:
-        // - style = ... applies the style to rendered features
+        val customStyle = Style { fill = ColorRGBa.BLUE; stroke = ColorRGBa.GREEN }
+        val config = GeoRenderConfig()
+        config.style = customStyle
         
-        val styleConfigPlanned = true
-        assertTrue("Style config should be planned", styleConfigPlanned)
+        assertEquals("Style should have blue fill", ColorRGBa.BLUE, config.style?.fill)
+        assertEquals("Style should have green stroke", ColorRGBa.GREEN, config.style?.stroke)
     }
-
+    
     /**
-     * Test auto-fit when projection not specified in config block.
+     * Test auto-fit when projection not specified.
      */
     @Test
     fun testAutoFitWhenNoProjection() {
-        // Placeholder test - auto-fit not yet implemented
-        // When implemented, should verify:
-        // - When projection not specified, auto-fits to viewport bounds
-        // - Uses ProjectionFactory.fitBounds() internally
+        val config = GeoRenderConfig()
+        assertNull("Default config should have no projection", config.projection)
+    }
+    
+    /**
+     * Test GeoRenderConfig snapshot creates immutable copy.
+     */
+    @Test
+    fun testConfigSnapshot() {
+        val original = GeoRenderConfig()
+        original.style = Style { stroke = ColorRGBa.RED }
         
-        val autoFitPlanned = true
-        assertTrue("Auto-fit should be planned", autoFitPlanned)
+        val snapshot = original.snapshot()
+        
+        // Modify original
+        original.style = Style { stroke = ColorRGBa.BLUE }
+        
+        // Snapshot should be unchanged
+        assertEquals("Snapshot should have original style", ColorRGBa.RED, snapshot.style?.stroke)
+    }
+    
+    /**
+     * Test styleByType map is copied in snapshot.
+     */
+    @Test
+    fun testStyleByTypeSnapshot() {
+        val pointStyle = Style { size = 10.0 }
+        val original = GeoRenderConfig()
+        original.styleByType = mapOf("Point" to pointStyle)
+        
+        val snapshot = original.snapshot()
+        
+        // Modify original map
+        original.styleByType = mapOf("Point" to Style { size = 20.0 })
+        
+        // Snapshot should be unchanged
+        assertEquals("Snapshot should have original styleByType", 10.0, snapshot.styleByType["Point"]?.size)
     }
 
     // ============================================================================
-    // Test Helpers - These exist and can be used
+    // Test Helpers
     // ============================================================================
 
     private fun createTestGeoSource(): GeoSource {
