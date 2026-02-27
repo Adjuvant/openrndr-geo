@@ -192,6 +192,41 @@ class MultiRendererTest {
     }
 
     @Test
+    fun testMultiPolygonWithHoles() {
+        val polygons = listOf(
+            geo.Polygon(
+                exterior = listOf(
+                    Vector2(0.0, 0.0),
+                    Vector2(50.0, 0.0),
+                    Vector2(50.0, 50.0),
+                    Vector2(0.0, 50.0)
+                ),
+                interiors = listOf(
+                    listOf(
+                        Vector2(10.0, 10.0),
+                        Vector2(40.0, 10.0),
+                        Vector2(40.0, 40.0),
+                        Vector2(10.0, 40.0)
+                    )
+                )
+            ),
+            geo.Polygon(
+                exterior = listOf(
+                    Vector2(100.0, 0.0),
+                    Vector2(150.0, 0.0),
+                    Vector2(150.0, 50.0),
+                    Vector2(100.0, 50.0)
+                )
+            )
+        )
+        val multiPolygon = geo.MultiPolygon(polygons)
+        
+        assertEquals(2, multiPolygon.size)
+        assertTrue(multiPolygon.polygons[0].hasHoles())
+        assertFalse(multiPolygon.polygons[1].hasHoles())
+    }
+
+    @Test
     fun testMultiPolygonWithHolesClamped() {
         // Create a MultiPolygon with polygons that have holes at extreme latitudes
         val polygons = listOf(

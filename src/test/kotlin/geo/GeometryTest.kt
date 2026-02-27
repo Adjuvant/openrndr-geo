@@ -140,6 +140,26 @@ class GeometryTest {
     }
 
     @Test
+    fun testExteriorToScreenWithPolygon() {
+        val poly = Polygon(listOf(
+            Vector2(0.0, 0.0),
+            Vector2(10.0, 0.0),
+            Vector2(5.0, 10.0)
+        ))
+        
+        val projection = geo.projection.ProjectionFactory.equirectangular(
+            width = 800.0,
+            height = 600.0
+        )
+        
+        val projected = poly.exteriorToScreen(projection)
+        
+        assertEquals(3, projected.size)
+        // Verify coordinates are transformed
+        assertNotEquals(0.0, projected[0].x)
+    }
+
+    @Test
     fun testMultiPointCreation() {
         val mp = MultiPoint(listOf(
             Point(0.0, 0.0),
