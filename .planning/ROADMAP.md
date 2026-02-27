@@ -60,15 +60,16 @@ Plans:
 **Requirements**: API-01, API-02, API-03, API-04
 **Success Criteria** (what must be TRUE):
   1. User can iterate features with projected coordinates handled internally
-  2. Beginner user can accomplish common tasks with simple workflow (drawer.geoJSON style)
+  2. Beginner user can accomplish common tasks with simple workflow (drawer.geo style)
   3. Professional user can access detailed control when needed (escape hatches)
   4. User recognizes OpenRNDR DSL patterns in the API (not one-line magic)
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 09-01: Implement feature-level iteration with internalized projection
-- [ ] 09-02: Design two-tier API (simple + detailed) with escape hatches
-- [ ] 09-03: Review API style against OpenRNDR DSL conventions
+- [ ] 09-00-PLAN.md — Create test scaffolds for API features (Wave 0, API-01, API-02, API-03)
+- [ ] 09-01-PLAN.md — Implement feature-level iteration with projected coordinates (API-01)
+- [ ] 09-02-PLAN.md — Implement two-tier API with config block DSL (API-02, API-04)
+- [ ] 09-03-PLAN.md — Add escape hatches (RawProjection, style resolution) (API-03, API-04)
 
 ### Phase 10: Documentation & Examples
 **Goal**: Users can learn the library through runnable examples
@@ -97,7 +98,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 7. Data Inspection | 1/1 | Complete    | 2026-02-26 |
 | 8. Rendering Improvements | 4/4 | Complete    | 2026-02-27 |
-| 9. API Design | 0/3 | Not started | - |
+| 9. API Design | 0/4 | Not started | - |
 | 10. Documentation & Examples | 0/4 | Not started | - |
 
 ---
