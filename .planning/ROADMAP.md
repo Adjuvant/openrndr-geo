@@ -76,17 +76,17 @@ Plans:
 **Depends on**: Phase 9
 **Requirements**: DOC-01, DOC-02, DOC-03, DOC-04
 **Success Criteria** (what must be TRUE):
-  1. User can browse examples organized by functional category (core_, render_, proj_, anim_, layer_)
+  1. User can browse examples organized by functional category (core, render, proj, anim, layer)
   2. User can run any example immediately with included data files
   3. User can understand each example because it demonstrates ONE concept
   4. Examples validate that framework features work correctly (UAT)
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] 10-01: Create example directory structure with categories
-- [ ] 10-02: Add minimal sample data files (GeoJSON/GeoPackage)
-- [ ] 10-03: Write examples for each category (one feature per example)
-- [ ] 10-04: Run all examples as UAT validation
+- [ ] 10-01-PLAN.md — Create directory structure, copy data files, add README templates (DOC-01, DOC-02)
+- [ ] 10-02-PLAN.md — Write core examples (load, inspection) and render examples (points, lines, polygons, Style DSL) (DOC-01, DOC-02, DOC-03)
+- [ ] 10-03-PLAN.md — Write proj, anim, and layer examples with category READMEs (DOC-01, DOC-02, DOC-03)
+- [ ] 10-04-PLAN.md — Compile validation and UAT checkpoint for visual verification (DOC-04)
 
 ---
 
