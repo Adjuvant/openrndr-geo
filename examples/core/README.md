@@ -4,10 +4,14 @@ This category covers fundamental operations for working with geographic data: lo
 
 ## Examples
 
-Placeholder for example listings.
+| File | Concept | Data Used |
+|------|---------|-----------|
+| 01-load-geojson.kt | GeoJSON loading | sample.geojson |
+| 02-load-geopackage.kt | GeoPackage loading | ness-vectors.gpkg |
+| 03-print-summary.kt | Data inspection | sample.geojson, ness-vectors.gpkg |
 
 ## Key Concepts
 
-- Loading GeoJSON and GPKG files using GeoSource builders
-- Inspecting feature properties and geometry types
-- Working with FeatureCollections and individual Features
+- `GeoJSON.load()` and `GeoPackage.load()` for data loading
+- `printSummary()` for runtime inspection
+- Console output (no window) for core examples
