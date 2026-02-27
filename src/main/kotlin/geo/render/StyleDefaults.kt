@@ -74,6 +74,21 @@ object StyleDefaults {
         lineCap = LineCap.BUTT,
         lineJoin = LineJoin.MITER
     )
+
+    /**
+     * Get default style for a geometry type.
+     *
+     * @param geometry The geometry to get default style for
+     * @return Default style for the geometry type
+     */
+    fun forGeometry(geometry: geo.Geometry): Style = when (geometry) {
+        is geo.Point -> defaultPointStyle
+        is geo.LineString -> defaultLineStyle
+        is geo.Polygon -> defaultPolygonStyle
+        is geo.MultiPoint -> defaultPointStyle
+        is geo.MultiLineString -> defaultLineStyle
+        is geo.MultiPolygon -> defaultPolygonStyle
+    }
 }
 
 /**
