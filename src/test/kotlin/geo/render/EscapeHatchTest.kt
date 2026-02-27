@@ -1,229 +1,107 @@
 package geo.render
 
+import geo.*
+import geo.projection.RawProjection
 import org.junit.Test
 import org.junit.Assert.*
-import org.junit.Ignore
-import org.openrndr.math.Vector2
 import org.openrndr.color.ColorRGBa
-import geo.GeoSource
-import geo.Feature
-import geo.Point
-import geo.Polygon
-import geo.LineString
-import geo.projection.GeoProjection
-import geo.projection.ProjectionConfig
+import org.openrndr.math.Vector2
 
 /**
- * Test scaffold for API-03: Escape hatches - RawProjection and style resolution.
- * 
- * Tests RawProjection type for bypassing projections and style resolution precedence.
- * 
- * @see <a href="https://github.com/openrndr/openrndr-geo/issues/XX">API-03</a>
+ * Test escape hatches for advanced rendering:
+ * - RawProjection type for bypassing projections
+ * - Style resolution precedence chain
+ * - Feature.geometry direct access
  */
-@Ignore("Implementation pending in 09-03")
 class EscapeHatchTest {
 
-    /**
-     * Test that RawProjection returns input coordinates unchanged.
-     */
     @Test
     fun testRawProjectionIdentity() {
-        val rawProjection = RawProjection
-        
         val input = Vector2(100.0, 200.0)
-        val output = rawProjection.project(input)
-        
-        assertEquals("RawProjection should return input unchanged", input, output)
+        val result = RawProjection.project(input)
+        assertEquals(input, result)
     }
-
-    /**
-     * Test that RawProjection bypasses projection math entirely.
-     */
+    
     @Test
     fun testRawProjectionBypass() {
-        val rawProjection = RawProjection
+        // Verify RawProjection returns input unchanged (no transformation)
+        val geoCoord = Vector2(-122.0, 47.0)  // Seattle coordinates
+        val result = RawProjection.project(geoCoord)
+        assertEquals(geoCoord, result)
         
-        // Even with extreme coordinates, RawProjection should not transform
-        val extreme = Vector2(999999.0, 888888.0)
-        val result = rawProjection.project(extreme)
-        
-        assertEquals("RawProjection should bypass all projection math", extreme, result)
+        // Unproject should also be identity
+        val unprojected = RawProjection.unproject(result)
+        assertEquals(geoCoord, unprojected)
     }
-
-    /**
-     * Test that styleByFeature function is called per feature.
-     */
+    
     @Test
     fun testStyleByFeatureFunction() {
-        val source = createTestGeoSource()
-        var callCount = 0
+        val feature = Feature(Point(0.0, 0.0), mapOf("pop" to 2_000_000))
         
-        val styleFunction: (Feature) -> Style = { feature ->
-            callCount++
-            Style {
-                fill = ColorRGBa.RED
-            }
+        val config = GeoRenderConfig()
+        config.styleByFeature = { f ->
+            val pop = f.property("pop") as? Number
+            if (pop != null && pop.toDouble() > 1_000_000) {
+                Style { stroke = ColorRGBa.RED }
+            } else null
         }
         
-        // Apply style function to source
-        // This should call the function for each feature
-        applyStyleByFeature(source, styleFunction)
-        
-        assertTrue("Style function should be called for each feature", callCount > 0)
+        val style = resolveStyle(feature, config)
+        assertEquals(ColorRGBa.RED, style.stroke)
     }
-
-    /**
-     * Test that styleByType map applies style by geometry type.
-     */
+    
     @Test
     fun testStyleByTypeMap() {
-        val styleMap = mapOf(
-            "Point" to Style { fill = ColorRGBa.RED },
-            "LineString" to Style { stroke = ColorRGBa.BLUE },
-            "Polygon" to Style { fill = ColorRGBa.GREEN }
+        val polygonFeature = Feature(
+            Polygon(listOf(Vector2(0.0, 0.0), Vector2(1.0, 0.0), Vector2(0.5, 1.0), Vector2(0.0, 0.0)))
         )
         
-        // Point should get Point style
-        val pointStyle = resolveStyleByType("Point", styleMap)
-        assertNotNull("Point should have style", pointStyle)
+        val polygonStyle = Style { fill = ColorRGBa.BLUE }
+        val config = GeoRenderConfig()
+        config.styleByType = mapOf("Polygon" to polygonStyle)
         
-        // LineString should get LineString style
-        val lineStyle = resolveStyleByType("LineString", styleMap)
-        assertNotNull("LineString should have style", lineStyle)
-        
-        // Polygon should get Polygon style
-        val polygonStyle = resolveStyleByType("Polygon", styleMap)
-        assertNotNull("Polygon should have style", polygonStyle)
+        val style = resolveStyle(polygonFeature, config)
+        assertEquals(ColorRGBa.BLUE, style.fill)
     }
-
-    /**
-     * Test style resolution precedence: per-feature > by-type > global > default.
-     */
+    
     @Test
     fun testStyleResolutionPrecedence() {
-        // Highest priority: per-feature style
-        val perFeatureStyle = Style { fill = ColorRGBa.RED }
-        val resolvedStyle1 = resolveStyle(
-            perFeature = perFeatureStyle,
-            byType = null,
-            global = null
-        )
-        assertEquals("Per-feature should have highest precedence", perFeatureStyle.fill, resolvedStyle1.fill)
+        // Feature with property that triggers per-feature style
+        val feature = Feature(Point(0.0, 0.0), mapOf("priority" to "high"))
         
-        // Second priority: by-type style
-        val byTypeStyle = Style { fill = ColorRGBa.BLUE }
-        val resolvedStyle2 = resolveStyle(
-            perFeature = null,
-            byType = byTypeStyle,
-            global = null
-        )
-        assertEquals("By-type should have second precedence", byTypeStyle.fill, resolvedStyle2.fill)
+        val perFeatureStyle = Style { stroke = ColorRGBa.RED; strokeWeight = 5.0 }
+        val typeStyle = Style { stroke = ColorRGBa.GREEN; strokeWeight = 3.0 }
+        val globalStyle = Style { stroke = ColorRGBa.BLUE; strokeWeight = 1.0 }
         
-        // Third priority: global style
-        val globalStyle = Style { fill = ColorRGBa.GREEN }
-        val resolvedStyle3 = resolveStyle(
-            perFeature = null,
-            byType = null,
-            global = globalStyle
-        )
-        assertEquals("Global should have third precedence", globalStyle.fill, resolvedStyle3.fill)
+        val config = GeoRenderConfig()
+        config.style = globalStyle
+        config.styleByType = mapOf("Point" to typeStyle)
+        config.styleByFeature = { f ->
+            val priority = f.property("priority") as? String
+            if (priority == "high") perFeatureStyle
+            else null
+        }
+        
+        // Per-feature should win
+        val style = resolveStyle(feature, config)
+        assertEquals(ColorRGBa.RED, style.stroke)
+        assertEquals(5.0, style.strokeWeight, 0.001)
+        
+        // Verify type-style wins when per-feature returns null
+        val normalFeature = Feature(Point(0.0, 0.0), mapOf("priority" to "low"))
+        val typeResult = resolveStyle(normalFeature, config)
+        assertEquals(ColorRGBa.GREEN, typeResult.stroke)
     }
-
-    /**
-     * Test that feature.geometry is accessible for custom rendering.
-     */
+    
     @Test
     fun testFeatureGeometryDirectAccess() {
-        val feature = Feature(
-            geometry = Point(100.0, 200.0),
-            properties = mapOf("name" to "test")
-        )
+        // Verify feature.geometry is accessible (escape hatch for custom rendering)
+        val point = Point(10.0, 20.0)
+        val feature = Feature(point, mapOf("name" to "test"))
         
-        // Direct geometry access should work
-        val geometry = feature.geometry
-        assertNotNull("Feature geometry should be accessible", geometry)
-        
-        // Should be able to access geometry-specific properties
-        when (geometry) {
-            is Point -> {
-                assertEquals("Point x should be accessible", 100.0, geometry.x, 0.0001)
-                assertEquals("Point y should be accessible", 200.0, geometry.y, 0.0001)
-            }
-            else -> fail("Expected Point geometry")
-        }
-    }
-
-    // ============================================================================
-    // Test Helpers / Placeholder Functions
-    // ============================================================================
-
-    private fun createTestGeoSource(): GeoSource {
-        return object : GeoSource("EPSG:4326") {
-            override val features: Sequence<Feature> = sequenceOf(
-                Feature(
-                    geometry = Point(0.0, 0.0),
-                    properties = mapOf("name" to "point1")
-                ),
-                Feature(
-                    geometry = LineString(listOf(
-                        Vector2(0.0, 0.0),
-                        Vector2(1.0, 1.0),
-                        Vector2(2.0, 0.0)
-                    )),
-                    properties = mapOf("name" to "line1")
-                ),
-                Feature(
-                    geometry = Polygon(listOf(
-                        Vector2(0.0, 0.0),
-                        Vector2(1.0, 0.0),
-                        Vector2(1.0, 1.0),
-                        Vector2(0.0, 1.0)
-                    )),
-                    properties = mapOf("name" to "polygon1")
-                )
-            )
-        }
-    }
-
-    // Placeholder functions - would be implemented in actual API
-    private fun applyStyleByFeature(source: GeoSource, styleFunction: (Feature) -> Style) {
-        // Placeholder: actual implementation would apply style function
-    }
-
-    private fun resolveStyleByType(geometryType: String, styleMap: Map<String, Style>): Style? {
-        return styleMap[geometryType]
-    }
-
-    private fun resolveStyle(
-        perFeature: Style?,
-        byType: Style?,
-        global: Style?
-    ): Style {
-        // Precedence: perFeature > byType > global > default
-        return perFeature ?: byType ?: global ?: Style()
-    }
-}
-
-/**
- * RawProjection - bypasses all projection calculations.
- * Use this when you want to render in raw coordinates without transformation.
- */
-object RawProjection : GeoProjection {
-    override fun project(latLng: Vector2): Vector2 {
-        // Identity - return input unchanged
-        return latLng
-    }
-
-    override fun unproject(screen: Vector2): Vector2 {
-        // Identity - return input unchanged
-        return screen
-    }
-
-    override fun configure(config: ProjectionConfig): GeoProjection {
-        return this
-    }
-
-    override fun fitWorld(config: ProjectionConfig): GeoProjection {
-        return this
+        // Direct access should work
+        assertSame(point, feature.geometry)
+        assertEquals(10.0, (feature.geometry as Point).x, 0.001)
+        assertEquals(20.0, (feature.geometry as Point).y, 0.001)
     }
 }
