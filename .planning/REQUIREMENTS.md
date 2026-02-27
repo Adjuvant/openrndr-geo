@@ -13,9 +13,9 @@
 
 ### Rendering
 
-- [ ] **REND-07**: User can render Polygon features with interior rings (holes) correctly
-- [ ] **REND-08**: User can render MultiPolygon features with interior rings clamped to projection bounds
-- [ ] **REND-09**: User sees correct rendering of ocean/whole-world MultiPolygon data
+- [x] **REND-07**: User can render Polygon features with interior rings (holes) correctly
+- [x] **REND-08**: User can render MultiPolygon features with interior rings clamped to projection bounds
+- [x] **REND-09**: User sees correct rendering of ocean/whole-world MultiPolygon data
 
 ### API Design
 
@@ -64,9 +64,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | INSP-01 | Phase 7 | Pending |
 | INSP-02 | Phase 7 | Pending |
 | INSP-03 | Phase 7 | Pending |
-| REND-07 | Phase 8 | Pending |
-| REND-08 | Phase 8 | Pending |
-| REND-09 | Phase 8 | Pending |
+| REND-07 | Phase 8 | Complete |
+| REND-08 | Phase 8 | Complete |
+| REND-09 | Phase 8 | Complete |
 | API-01 | Phase 9 | Pending |
 | API-02 | Phase 9 | Pending |
 | API-03 | Phase 9 | Pending |
