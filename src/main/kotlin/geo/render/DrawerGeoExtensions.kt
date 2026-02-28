@@ -149,11 +149,73 @@ fun Drawer.geoFeatures(
         bounds = bounds,
         width = this.width.toDouble(),
         height = this.height.toDouble(),
-        padding = 0.9,
+        padding = 0.0,
         projection = ProjectionType.MERCATOR
     )
     
     featureList.forEach { feature ->
+        feature.geometry.renderToDrawer(this, proj, style)
+    }
+}
+
+/**
+ * Draw a sequence of features with automatic projection fitting and configuration block support.
+ *
+ * ## Tier 1: Beginner - one-liner
+ * ```kotlin
+ * val features = GeoJSON.load("data.json").features
+ * drawer.geoFeatures(features)  // Auto-fit projection, default style
+ * ```
+ *
+ * ## Tier 2: Professional - config block
+ * ```kotlin
+ * drawer.geoFeatures(features) {
+ *     projection = ProjectionMercator { width = 800; height = 600 }
+ *     style = Style { stroke = ColorRGBa.WHITE }
+ *     styleByType = mapOf(
+ *         "Polygon" to Style { fill = ColorRGBa.RED },
+ *         "LineString" to Style { stroke = ColorRGBa.BLUE }
+ *     )
+ *     styleByFeature = { feature ->
+ *         if (feature.doubleProperty("pop") > 1000000) {
+ *             Style { stroke = ColorRGBa.YELLOW; strokeWeight = 2.0 }
+ *         } else null
+ *     }
+ * }
+ * ```
+ *
+ * @param features Features to render
+ * @param block Optional configuration block for projection and styling
+ */
+fun Drawer.geoFeatures(
+    features: Sequence<Feature>,
+    block: (GeoRenderConfig.() -> Unit)? = null
+) {
+    val config = block?.let { GeoRenderConfig().apply(it) } ?: GeoRenderConfig()
+
+    val featureList = features.toList()
+    if (featureList.isEmpty()) return
+
+    // Calculate bounds from all features
+    val bounds = featureList.fold(Bounds.empty()) { acc, f ->
+        acc.expandToInclude(f.boundingBox)
+    }
+
+    // Auto-fit projection if not specified (beginner-friendly default)
+    val proj = config.projection ?: ProjectionFactory.fitBounds(
+        bounds = bounds,
+        width = this.width.toDouble(),
+        height = this.height.toDouble(),
+        padding = 0.0,
+        projection = ProjectionType.MERCATOR
+    )
+
+    // Snapshot config for safe iteration
+    val resolved = config.snapshot()
+
+    // Render each feature with style resolution
+    featureList.forEach { feature ->
+        val style = resolveStyle(feature, resolved)
         feature.geometry.renderToDrawer(this, proj, style)
     }
 }
