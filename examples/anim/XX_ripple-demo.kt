@@ -1,12 +1,12 @@
-package geo.examples
+@file:JvmName("RippleDemo")
+package examples.anim
 
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.math.Vector2
 import geo.Point
-import geo.render.Shape
-import geo.render.drawPoint
 import geo.Feature
+import org.openrndr.draw.Drawer
 
 /**
  * Ripple Effect Visualizer (Spatial Stagger)
@@ -209,7 +209,7 @@ fun createRandomFeatures(count: Int): List<Feature> {
 }
 
 private fun drawCircleRipple(
-    drawer: org.openrndr.draw.Drawer,
+    drawer: Drawer,
     x: Double,
     y: Double,
     radius: Double,
@@ -222,7 +222,7 @@ private fun drawCircleRipple(
     drawer.circle(x, y, radius)
 }
 
-private fun dividerRipple(drawer: org.openrndr.draw.Drawer, x: Double, y: Double, width: Double) {
+private fun dividerRipple(drawer: Drawer, x: Double, y: Double, width: Double) {
     drawer.stroke = ColorRGBa.WHITE.opacify(0.3)
     drawer.strokeWeight = 2.0
     drawer.lineStrip(listOf(Vector2(x, y), Vector2(x + width, y)))

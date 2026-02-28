@@ -1,11 +1,12 @@
-package geo.examples
+@file:JvmName("TimelineDemo")
+package examples.anim
 
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.math.Vector2
 import geo.animation.*
 import geo.animation.composition.GeoTimeline
-import geo.Point
+import org.openrndr.draw.Drawer
 
 /**
  * Timeline Composition Visualizer
@@ -199,14 +200,14 @@ fun main() = application {
 }
 
 // Drawing helpers
-fun drawCircle(drawer: org.openrndr.draw.Drawer, x: Double, y: Double, size: Double, color: ColorRGBa) {
+fun drawCircle(drawer: Drawer, x: Double, y: Double, size: Double, color: ColorRGBa) {
     drawer.fill = color
     drawer.stroke = ColorRGBa.WHITE
     drawer.strokeWeight = 2.0
     drawer.circle(x, y, size)
 }
 
-fun drawSquare(drawer: org.openrndr.draw.Drawer, x: Double, y: Double, size: Double, color: ColorRGBa) {
+fun drawSquare(drawer: Drawer, x: Double, y: Double, size: Double, color: ColorRGBa) {
     drawer.fill = color
     drawer.stroke = ColorRGBa.WHITE
     drawer.strokeWeight = 2.0
@@ -214,7 +215,7 @@ fun drawSquare(drawer: org.openrndr.draw.Drawer, x: Double, y: Double, size: Dou
     drawer.rectangle(x - half, y - half, size, size)
 }
 
-fun drawTriangle(drawer: org.openrndr.draw.Drawer, x: Double, y: Double, size: Double, color: ColorRGBa) {
+fun drawTriangle(drawer: Drawer, x: Double, y: Double, size: Double, color: ColorRGBa) {
     drawer.fill = color
     drawer.stroke = ColorRGBa.WHITE
     drawer.strokeWeight = 2.0
@@ -228,7 +229,7 @@ fun drawTriangle(drawer: org.openrndr.draw.Drawer, x: Double, y: Double, size: D
     drawer.lineStrip(listOf(top, bottomLeft, bottomRight, top))
 }
 
-fun drawTimelineBar(drawer: org.openrndr.draw.Drawer, x: Double, y: Double, width: Double, elapsed: Long) {
+fun drawTimelineBar(drawer: Drawer, x: Double, y: Double, width: Double, elapsed: Long) {
     // Draw bar background
     drawer.fill = ColorRGBa.fromHex("#333333")
     drawer.stroke = ColorRGBa.WHITE.opacify(0.3)
@@ -266,7 +267,7 @@ fun drawTimelineBar(drawer: org.openrndr.draw.Drawer, x: Double, y: Double, widt
     )
 }
 
-fun dividerTimeline(drawer: org.openrndr.draw.Drawer, x: Double, y: Double, width: Double) {
+fun dividerTimeline(drawer: Drawer, x: Double, y: Double, width: Double) {
     drawer.stroke = ColorRGBa.WHITE.opacify(0.3)
     drawer.strokeWeight = 2.0
     drawer.lineStrip(listOf(Vector2(x, y), Vector2(x + width, y)))

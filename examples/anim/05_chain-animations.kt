@@ -1,4 +1,4 @@
-@file:JvmName("ChainDemo")
+@file:JvmName("ChainAnimations")
 package examples.anim
 
 import org.openrndr.application

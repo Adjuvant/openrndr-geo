@@ -74,6 +74,16 @@ class GeoAnimator : Animatable() {
     var y: Double = 0.0
 
     /**
+     * Animated size for demonstration.
+     *
+     * This property serves as a placeholder for future tweening primitives.
+     * In 05-02, this will be populated by actual animation configurations.
+     *
+     * Usage: Animate via property reference `::size.animate(target, duration, easing)`
+     */
+    var size: Double = 0.0
+
+    /**
      * Animation progress from 0.0 (start) to 1.0 (complete).
      *
      * Useful for progress-based rendering effects alongside animated properties.
@@ -101,6 +111,7 @@ class GeoAnimator : Animatable() {
         val duration: Long = 1000L
     )
 
+    // TODO Not sure animator should be a singleton, can only animate one thing?
     companion object {
         /**
          * Singleton instance of GeoAnimator.

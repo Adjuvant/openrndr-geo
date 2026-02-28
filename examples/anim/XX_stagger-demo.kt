@@ -1,14 +1,13 @@
-package geo.examples
+@file:JvmName("StaggerDemo")
+package examples.anim
 
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.math.Vector2
 import geo.Point
-import geo.render.Shape
-import geo.render.drawPoint
-import geo.render.Style
 import geo.Feature
 import geo.animation.AnimationWrapper
+import org.openrndr.draw.Drawer
 
 /**
  * Stagger Effect Visualizer
@@ -187,7 +186,7 @@ fun createFeatureGrid(rows: Int, cols: Int): List<Feature> {
 }
 
 fun drawCircle(
-    drawer: org.openrndr.draw.Drawer,
+    drawer: Drawer,
     x: Double,
     y: Double,
     radius: Double,
@@ -200,7 +199,7 @@ fun drawCircle(
     drawer.circle(x, y, radius)
 }
 
-fun divider(drawer: org.openrndr.draw.Drawer, x: Double, y: Double, width: Double) {
+fun divider(drawer: Drawer, x: Double, y: Double, width: Double) {
     drawer.stroke = ColorRGBa.WHITE.opacify(0.3)
     drawer.strokeWeight = 2.0
     drawer.lineStrip(listOf(Vector2(x, y), Vector2(x + width, y)))
