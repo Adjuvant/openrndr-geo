@@ -71,6 +71,7 @@ None.
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
+| 6 | Refactor and relocate anim_LineStringColor to examples/anim/ | 2026-02-28 | 8725814 | [6-refactor-and-relocate-anim-linestringcol](./quick/6-refactor-and-relocate-anim-linestringcol/) |
 | 5 | Add config block overload to Drawer.geoFeatures | 2026-02-28 | 1ee2ce8 | [5-add-config-block-overload-to-drawer-geof](./quick/5-add-config-block-overload-to-drawer-geof/) |
 | 4 | Promote FeatureAnimator to first-class library component | 2026-02-28 | fb7d90d | [4-promote-featureanimator-to-first-class-f](./quick/4-promote-featureanimator-to-first-class-f/) |
 | 3 | Fix staggered point animation API in 04-stagger-animator.kt | 2026-02-28 | a0f85ec | [3-fix-staggered-point-animation-api-in-04-](./quick/3-fix-staggered-point-animation-api-in-04-/) |
@@ -82,7 +83,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-28
-Stopped at: Completed quick task 5: Add config block overload to Drawer.geoFeatures
+Stopped at: Completed quick task 6: Refactor and relocate anim_LineStringColor to examples/anim/
 Resume file: None
 
 **Next action:** Start v1.3.0 planning with `/gsd-new-milestone`
