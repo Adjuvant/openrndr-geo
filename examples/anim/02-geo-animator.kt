@@ -8,6 +8,7 @@ import geo.GeoJSON
 import geo.Point
 import geo.animation.animator
 import geo.projection.ProjectionFactory
+import geo.projection.ProjectionType
 import geo.render.Style
 import geo.render.Shape
 import geo.render.drawPoint
@@ -47,7 +48,8 @@ fun main() = application {
             data.boundingBox(),
             width.toDouble(),
             height.toDouble(),
-            padding = 50.0
+            padding = 20.0,
+            projection = ProjectionType.MERCATOR
         )
 
         // Get the first point as animation target
@@ -62,8 +64,8 @@ fun main() = application {
 
         // Calculate target screen position
         val targetScreen = targetPoint.toScreen(projection)
-        val startX = width / 2.0
-        val startY = height / 2.0
+        val originX = width / 2.0
+        val originY = height / 2.0
 
         // Animate position from center to target
         animator.apply {
@@ -111,10 +113,10 @@ fun main() = application {
 
             drawPoint(drawer, org.openrndr.math.Vector2(animator.x, animator.y), animatedStyle)
 
-            // Draw connection line from start to current position
+            // Draw the connection line from the start to the current position
             drawer.stroke = ColorRGBa.WHITE.withAlpha(0.3)
             drawer.strokeWeight = 1.0
-            drawer.lineSegment(startX, startY, animator.x, animator.y)
+            drawer.lineSegment(originX, originY, animator.x, animator.y)
 
             // Show target marker
             drawer.fill = ColorRGBa.GREEN.withAlpha(0.5)

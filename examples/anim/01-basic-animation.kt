@@ -11,7 +11,9 @@ import geo.render.withAlpha
  * ## 01 - Basic Animation
  *
  * Demonstrates basic property animation using OPENRNDR's Animatable with
- * the ::property.animate() syntax for smooth tweening.
+ * the ::property.animate() syntax for smooth tweening. Geo Animator is basically a
+ * wrapper around OPENRNDR's Animatable that provides a more convenient API for
+ * animating geometric properties.
  *
  * ### Concepts
  * - OPENRNDR Animatable for property-based animation

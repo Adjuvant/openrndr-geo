@@ -30,8 +30,7 @@ fun main() = application {
 
         // Create staggered animations using library FeatureAnimator
         // Each feature gets its own animator with staggered delay computed automatically
-        val featureAnimators = data.features.take(50)
-            .asSequence()
+        val featureAnimators = data.features.take(150)
             .staggerByIndex(delayMs = 50) { GeoAnimator() }
             .map { fa ->
                 fa.animator.apply {
