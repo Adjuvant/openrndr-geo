@@ -12,7 +12,7 @@ See: .planning/PROJECT.md (updated 2026-02-27)
 **Milestone:** v1.2.0 ✅ SHIPPED
 **Status:** Complete (4 phases, 13 plans)
 **Shipped:** 2026-02-27
-**Last activity:** 2026-02-28 - Completed quick task 3: Fix staggered point animation API in 04-stagger-animator.kt
+**Last activity:** 2026-02-28 - Completed quick task 4: Promote FeatureAnimator to first-class library component
 
 **Next Milestone:** v1.3.0 (planned)
 - Phase 11: Performance (batch projection, geometry caching)
@@ -71,6 +71,7 @@ None.
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
+| 4 | Promote FeatureAnimator to first-class library component | 2026-02-28 | fb7d90d | [4-promote-featureanimator-to-first-class-f](./quick/4-promote-featureanimator-to-first-class-f/) |
 | 3 | Fix staggered point animation API in 04-stagger-animator.kt | 2026-02-28 | a0f85ec | [3-fix-staggered-point-animation-api-in-04-](./quick/3-fix-staggered-point-animation-api-in-04-/) |
 
 ### Pending Todos
@@ -86,4 +87,4 @@ Resume file: None
 **Next action:** Start v1.3.0 planning with `/gsd-new-milestone`
 
 ---
-*Last updated: 2026-02-27 after v1.2.0 milestone completion*
+*Last updated: 2026-02-28 after quick task 4 completion*
