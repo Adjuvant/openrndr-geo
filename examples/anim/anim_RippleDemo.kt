@@ -42,7 +42,7 @@ fun main() = application {
             val (centerX, centerY) = feature.geometry.boundingBox.center
             val featurePoint = Vector2(centerX, centerY)
             val distance = featurePoint.distanceTo(origin)
-            val delayMs = (distance * 1.0).toLong()  // 2ms per pixel distance
+            val delayMs = (distance * .10).toLong()  // 2ms per pixel distance
 
             Triple(feature, distance, delayMs)
         }.toList()

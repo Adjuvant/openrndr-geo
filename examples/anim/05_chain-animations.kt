@@ -1,4 +1,5 @@
-package geo.examples
+@file:JvmName("ChainDemo")
+package examples.anim
 
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa

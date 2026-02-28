@@ -47,13 +47,13 @@ fun main() = application {
             }
             .toList()
 
-val startTime = System.currentTimeMillis()
+        val startTime = System.currentTimeMillis()
 
-            extend {
+        extend {
             drawer.clear(ColorRGBa.fromHex("#0a0a1a"))
 
             val currentTime = System.currentTimeMillis()
-            val elapsedTime = (currentTime - startTime).toLong()
+            val elapsedTime = (currentTime - startTime)
 
             val debugPanelX = 20.0
             var debugPanelY = 20.0
@@ -99,7 +99,8 @@ val startTime = System.currentTimeMillis()
                         val (centerX, centerY) = wrapper.feature.geometry.boundingBox.center
                         drawCircle(drawer, centerX, centerY, 4.0, ColorRGBa.GRAY, 0.3)
                     }
-timeSinceStart < 1000 -> {
+
+                    timeSinceStart < 1000 -> {
                         // Currently animating (1 second animation)
                         animatingCount++
                         val progress = timeSinceStart / 1000.0
@@ -114,6 +115,7 @@ timeSinceStart < 1000 -> {
                         drawer.stroke = null
                         drawer.circle(centerX, centerY, animatedSize * 1.5)
                     }
+
                     else -> {
                         // Animation complete
                         completedCount++
@@ -124,7 +126,11 @@ timeSinceStart < 1000 -> {
                 }
             }
 
-            drawer.text("  Animating: ${animatingCount} / Completed: ${completedCount} / Total: ${staggeredFeatures.size}", debugPanelX, debugPanelY)
+            drawer.text(
+                "  Animating: ${animatingCount} / Completed: ${completedCount} / Total: ${staggeredFeatures.size}",
+                debugPanelX,
+                debugPanelY
+            )
             debugPanelY += lineHeight * 2
 
             divider(drawer, debugPanelX - 10.0, debugPanelY - 10.0, 980.0)
@@ -180,7 +186,14 @@ fun createFeatureGrid(rows: Int, cols: Int): List<Feature> {
     return features
 }
 
-fun drawCircle(drawer: org.openrndr.draw.Drawer, x: Double, y: Double, radius: Double, color: ColorRGBa, opacity: Double) {
+fun drawCircle(
+    drawer: org.openrndr.draw.Drawer,
+    x: Double,
+    y: Double,
+    radius: Double,
+    color: ColorRGBa,
+    opacity: Double
+) {
     drawer.fill = color.opacify(opacity)
     drawer.stroke = color.mix(ColorRGBa.BLACK, 0.2).opacify(opacity)
     drawer.strokeWeight = 1.0
