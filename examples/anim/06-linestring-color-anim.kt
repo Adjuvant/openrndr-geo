@@ -5,6 +5,7 @@ import geo.geoSource
 import geo.projection.ProjectionFactory
 import geo.projection.ProjectionType
 import geo.render.Style
+import geo.render.geo
 import geo.animation.animator
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
@@ -37,7 +38,9 @@ fun main() = application {
 
         // Animate color progress
         val animator = animator()
-        animator::progress.animate(1.0, 3000)
+        animator.apply {
+            ::progress.animate(1.0, 3000)
+        }
 
         val startColor = ColorRGBa(0.29, 0.56, 0.85)
         val endColor = ColorRGBa(0.91, 0.30, 0.24)
@@ -49,8 +52,8 @@ fun main() = application {
             val currentColor = mix(startColor, endColor, animator.progress)
 
             drawer.geo(data) {
-                toScreen(projection)
-                styleByFeature { feature ->
+                this.projection = projection
+                styleByFeature = { feature: geo.Feature ->
                     val v = feature.doubleProperty("property_value") ?: minValue
                     val t = if (range > 0.0) (v - minValue) / range else 0.0
                     Style(stroke = currentColor, strokeWeight = 0.05 + t * 0.45)
