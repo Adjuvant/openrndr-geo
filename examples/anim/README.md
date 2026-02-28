@@ -5,10 +5,13 @@ This category shows how to create dynamic geographic visualizations with time-ba
 ## Examples
 
 | # | Example | Description |
-|---|---------|-------------|
+|---|---|---------|-------------|
 | 01 | [01-basic-animation.kt](01-basic-animation.kt) | Basic property animation using OPENRNDR Animatable with easing |
 | 02 | [02-geo-animator.kt](02-geo-animator.kt) | Animating geo-specific properties (coordinates, styles) |
 | 03 | [03-timeline.kt](03-timeline.kt) | Timeline-based animation sequencing with staggered offsets |
+| 04 | [04-stagger-animator.kt](04-stagger-animator.kt) | Staggered feature animation using FeatureAnimator |
+| 05 | [05-chain-animations.kt](05-chain-animations.kt) | Chained animation sequences with callbacks |
+| 06 | [06-linestring-color-anim.kt](06-linestring-color-anim.kt) | Animate LineString colors with property-based styling |
 
 ## Key Concepts
 
