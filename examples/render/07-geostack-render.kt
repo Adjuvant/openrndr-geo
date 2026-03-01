@@ -1,20 +1,15 @@
 @file:JvmName("GeoStackRender")
+
 package examples.render
 
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import org.openrndr.KEY_F
-import org.openrndr.KEY_I
-import org.openrndr.KEY_O
 import org.openrndr.KEY_ARROW_LEFT
 import org.openrndr.KEY_ARROW_RIGHT
 import org.openrndr.KEY_ARROW_UP
 import org.openrndr.KEY_ARROW_DOWN
-import org.openrndr.KEY_W
-import org.openrndr.KEY_A
-import org.openrndr.KEY_S
-import org.openrndr.KEY_D
 import geo.GeoJSON
+import geo.GeoStack
 import geo.geoStack
 
 /**
@@ -62,10 +57,69 @@ fun main() = application {
 
         println("GeoStack ready: ${stack.sourceCount()} sources, unified CRS: ${stack.crs}")
         println("\nInteractive controls:")
-        println("  F - Reset to full view")
-        println("  I - Zoom in")
-        println("  O - Zoom out")
+        println("  f - Reset to full view")
+        println("  i - Zoom in")
+        println("  o - Zoom out")
         println("  Arrow keys or WASD - Pan view")
+        // Key bindings for iterative exploration
+        keyboard.keyDown.listen {
+            when (it.key) {
+
+                // Pan directions (arrow keys or WASD)
+                KEY_ARROW_LEFT -> {
+                    panLeft(stack)
+                }
+
+                KEY_ARROW_RIGHT -> {
+                    panRight(stack)
+                }
+
+                KEY_ARROW_UP -> {
+                    panUp(stack)
+                }
+
+                KEY_ARROW_DOWN -> {
+                    panDown(stack)
+                }
+
+                else -> {}
+            }
+            when (it.name) {
+                // Reset to full view
+                "f" -> {
+                    stack.reset()
+                    println("Reset to full view")
+                }
+                // Zoom in
+                "i" -> {
+                    stack.zoom(1.5)
+                    println("Zoomed in 1.5x")
+                }
+                // Zoom out
+                "o" -> {
+                    stack.zoom(0.75)
+                    println("Zoomed out 0.75x")
+                }
+                // Pan directions (arrow keys or WASD)
+                "a" -> {
+                    panLeft(stack)
+                }
+
+                "d" -> {
+                    panRight(stack)
+                }
+
+                "w" -> {
+                    panUp(stack)
+                }
+
+                "s" -> {
+                    panDown(stack)
+                }
+
+                else -> {}
+            }
+        }
 
         extend {
             // Clear with black background
@@ -75,44 +129,25 @@ fun main() = application {
             // Projection automatically uses current view bounds
             stack.render(drawer)
         }
-
-        // Key bindings for iterative exploration
-        keyboard.keyDown.listen {
-            when (it.key) {
-                // Reset to full view
-                KEY_F -> {
-                    stack.reset()
-                    println("Reset to full view")
-                }
-                // Zoom in
-                KEY_I -> {
-                    stack.zoom(1.5)
-                    println("Zoomed in 1.5x")
-                }
-                // Zoom out
-                KEY_O -> {
-                    stack.zoom(0.75)
-                    println("Zoomed out 0.75x")
-                }
-                // Pan directions (arrow keys or WASD)
-                KEY_ARROW_LEFT, KEY_A -> {
-                    stack.pan(-stack.getCurrentViewBounds().width * 0.2, 0.0)
-                    println("Panned left")
-                }
-                KEY_ARROW_RIGHT, KEY_D -> {
-                    stack.pan(stack.getCurrentViewBounds().width * 0.2, 0.0)
-                    println("Panned right")
-                }
-                KEY_ARROW_UP, KEY_W -> {
-                    stack.pan(0.0, stack.getCurrentViewBounds().height * 0.2)
-                    println("Panned up")
-                }
-                KEY_ARROW_DOWN, KEY_S -> {
-                    stack.pan(0.0, -stack.getCurrentViewBounds().height * 0.2)
-                    println("Panned down")
-                }
-                else -> {}
-            }
-        }
     }
+}
+
+private fun panUp(stack: GeoStack) {
+    stack.pan(0.0, stack.getCurrentViewBounds().height * 0.2)
+    println("Panned up")
+}
+
+private fun panLeft(stack: GeoStack) {
+    stack.pan(-stack.getCurrentViewBounds().width * 0.2, 0.0)
+    println("Panned left")
+}
+
+private fun panDown(stack: GeoStack) {
+    stack.pan(0.0, -stack.getCurrentViewBounds().height * 0.2)
+    println("Panned down")
+}
+
+private fun panRight(stack: GeoStack) {
+    stack.pan(stack.getCurrentViewBounds().width * 0.2, 0.0)
+    println("Panned right")
 }
