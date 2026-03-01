@@ -145,7 +145,7 @@ openrndr-geo/
 - No intermediate artifacts needed
 
 **Distribution:**
-- `build/libs/openrndr-template-1.0.0-all.jar` - Fat JAR (shadowJar task)
+- `build/libs/openrndr-geo-1.0.0-all.jar` - Fat JAR (shadowJar task)
 - `build/jpackage/` - Native executable bundle (jpackage task)
 - `build/distributions/openrndr-application.zip` - Release artifact
 

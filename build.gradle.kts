@@ -4,10 +4,10 @@ import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
-group = "org.openrndr.template"
-version = "1.0.0"
+group = "org.operational-play.openrndr-geo"
+version = "1.2.0"
 
-val applicationMainClass = "TemplateProgramKt"
+val applicationMainClass = "AppKt"
 
 /**  ## additional ORX features to be added to this project */
 val orxFeatures = setOf<String>(
@@ -213,9 +213,9 @@ tasks {
     named<org.beryx.runtime.JPackageTask>("jpackage") {
         doLast {
             val destPath = if (OperatingSystem.current().isMacOsX)
-                "build/jpackage/openrndr-application.app/Contents/Resources/data"
+                "build/jpackage/openrndr-geo.app/Contents/Resources/data"
             else
-                "build/jpackage/openrndr-application/data"
+                "build/jpackage/openrndr-geo/data"
 
             copy {
                 from("data") { include("**/*") }
@@ -225,7 +225,7 @@ tasks {
     }
 
     register<Zip>("jpackageZip") {
-        archiveFileName = "openrndr-application.zip"
+        archiveFileName = "openrndr-geo.zip"
         from("${layout.buildDirectory.get()}/jpackage") {
             include("**/*")
         }
@@ -235,7 +235,7 @@ tasks {
 
 runtime {
     jpackage {
-        imageName = "openrndr-application"
+        imageName = "openrndr-geo"
         skipInstaller = true
         if (OperatingSystem.current().isMacOsX) {
             jvmArgs.add("-XstartOnFirstThread")

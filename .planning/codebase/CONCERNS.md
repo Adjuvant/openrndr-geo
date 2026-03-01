@@ -4,12 +4,6 @@
 
 ## Tech Debt
 
-**Project Naming Inconsistency:**
-- Issue: Settings file declares project as "openrndr-template" but directory is "openrndr-geo"
-- Files: `settings.gradle.kts` (line 1)
-- Impact: Confusing for developers, may cause issues with build tooling expectations
-- Fix approach: Update `rootProject.name` to match actual project name
-
 **Outdated Testing Framework:**
 - Issue: Using JUnit 4.13.2 when JUnit 5 (Jupiter) is the modern standard
 - Files: `gradle/libs.versions.toml` (line 10)
