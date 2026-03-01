@@ -71,6 +71,7 @@ None.
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
+| 8 | Create GeoStack rendering example in examples/render/ | 2026-03-01 | d16b0cc | [8-create-geostack-rendering-example-in-exa](./quick/8-create-geostack-rendering-example-in-exa/) |
 | 7 | Create GeoStack example for multi-dataset composition | 2026-03-01 | 0b2c6dd | [7-create-geostack-example-for-multi-datase](./quick/7-create-geostack-example-for-multi-datase/) |
 | 6 | Refactor and relocate anim_LineStringColor to examples/anim/ | 2026-02-28 | 8725814 | [6-refactor-and-relocate-anim-linestringcol](./quick/6-refactor-and-relocate-anim-linestringcol/) |
 | 5 | Add config block overload to Drawer.geoFeatures | 2026-02-28 | 1ee2ce8 | [5-add-config-block-overload-to-drawer-geof](./quick/5-add-config-block-overload-to-drawer-geof/) |
@@ -84,7 +85,7 @@ None.
 ## Session Continuity
 
 Last session: 2026-03-01
-Stopped at: Completed quick task 7: Create GeoStack example for multi-dataset composition
+Stopped at: Completed quick task 8: Create GeoStack rendering example in examples/render/
 Resume file: None
 
 **Next action:** Start v1.3.0 planning with `/gsd-new-milestone`
