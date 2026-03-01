@@ -71,7 +71,7 @@ None.
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
-| 9 | Add zoom and pan helpers to GeoStack | 2026-03-01 | [pending] | [9-add-zoom-pan-helpers-to-geostack-for-ite](./quick/9-add-zoom-pan-helpers-to-geostack-for-ite/) |
+| 9 | Add zoom and pan helpers to GeoStack | 2026-03-01 | 86aeced | [9-add-zoom-pan-helpers-to-geostack-for-ite](./quick/9-add-zoom-pan-helpers-to-geostack-for-ite/) |
 | 8 | Create GeoStack rendering example in examples/render/ | 2026-03-01 | d16b0cc | [8-create-geostack-rendering-example-in-exa](./quick/8-create-geostack-rendering-example-in-exa/) |
 | 7 | Create GeoStack example for multi-dataset composition | 2026-03-01 | 0b2c6dd | [7-create-geostack-example-for-multi-datase](./quick/7-create-geostack-example-for-multi-datase/) |
 | 6 | Refactor and relocate anim_LineStringColor to examples/anim/ | 2026-02-28 | 8725814 | [6-refactor-and-relocate-anim-linestringcol](./quick/6-refactor-and-relocate-anim-linestringcol/) |
@@ -92,4 +92,4 @@ Resume file: None
 **Next action:** Start v1.3.0 planning with `/gsd-new-milestone`
 
 ---
-*Last updated: 2026-03-01 after quick task 7 completion*
+*Last updated: 2026-03-01 after quick task 9 completion*
