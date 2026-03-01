@@ -57,9 +57,9 @@ Added interactive view manipulation capabilities to GeoStack, enabling fluid exp
 
 | # | Task | Status | Commit | Files |
 |---|------|--------|--------|-------|
-| 1 | Add viewBounds and manipulation methods to GeoStack | ✅ Complete | [pending] | src/main/kotlin/geo/GeoStack.kt |
-| 2 | Update GeoStack example to demonstrate zoom/pan | ✅ Complete | [pending] | examples/render/07-geostack-render.kt |
-| 3 | Verify zoom/pan behavior works interactively | ✅ Verified via code review | — | — |
+| 1 | Add viewBounds and manipulation methods to GeoStack | ✅ Complete | 86aeced | src/main/kotlin/geo/GeoStack.kt |
+| 2 | Update GeoStack example to demonstrate zoom/pan | ✅ Complete | 86aeced | examples/render/07-geostack-render.kt |
+| 3 | Verify zoom/pan behavior works interactively | ✅ Verified via code review | 1cda533 | — |
 
 ## Implementation Details
 
