@@ -6,23 +6,48 @@ import org.openrndr.math.Vector2
 
 /**
  * GeoStack - A stack of multiple GeoSources for multi-dataset overlay rendering.
- * 
+ *
  * Automatically unifies CRS across all sources in the stack, using the first
  * source's CRS as the target. All subsequent sources are transformed to match.
- * 
+ *
  * ## Usage
  * ```kotlin
  * // Load multiple datasets with potentially different CRS
  * val coastline = geoSource("coastline.json")  // WGS84
  * val cities = geoSource("cities.json")       // WGS84
  * val rivers = geoSource("rivers.json")        // Could be different
- * 
+ *
  * // Create a stack - automatically unifies to first source's CRS
  * val map = geoStack(coastline, cities, rivers)
- * 
+ *
  * // Fit to view and render
  * map.fit(viewBounds)
  * map.render(drawer)
+ * ```
+ *
+ * ## Interactive Exploration
+ *
+ * GeoStack supports iterative exploration with zoom and pan operations:
+ * ```kotlin
+ * // Reset to show all data
+ * stack.reset()
+ *
+ * // Zoom in/out by factor
+ * stack.zoom(1.5)  // Zoom in 1.5x
+ * stack.zoom(0.75) // Zoom out
+ *
+ * // Pan the view
+ * stack.pan(-10.0, 0.0)  // Pan left
+ * stack.pan(10.0, 5.0)   // Pan right and up
+ *
+ * // Center on specific coordinates
+ * stack.centerOn(-73.9, 40.7)  // Center on New York
+ *
+ * // Zoom to specific bounds
+ * stack.zoomTo(Bounds(minX=-74.5, minY=40.5, maxX=-73.5, maxY=40.9))
+ *
+ * // Get current view bounds
+ * val viewBounds = stack.getCurrentViewBounds()
  * ```
  */
 class GeoStack(
@@ -31,6 +56,9 @@ class GeoStack(
     init {
         require(sources.isNotEmpty()) { "GeoStack requires at least one source" }
     }
+
+    /** Current view bounds, or null to show all data */
+    private var viewBounds: Bounds? = null
     
     /**
      * The unified CRS used by this stack.
@@ -75,11 +103,82 @@ class GeoStack(
     }
     
     /**
+     * Get the current view bounds.
+     * Returns viewBounds if set, otherwise returns total bounding box of all data.
+     */
+    fun getCurrentViewBounds(): Bounds = viewBounds ?: totalBoundingBox()
+
+    /**
+     * Zoom to fit specific geographic bounds.
+     * @param bounds Target bounds to show
+     */
+    fun zoomTo(bounds: Bounds) {
+        viewBounds = bounds
+    }
+
+    /**
+     * Center the view on a specific point.
+     * @param x Longitude/lat in current CRS
+     * @param y Latitude/lng in current CRS
+     */
+    fun centerOn(x: Double, y: Double) {
+        val current = getCurrentViewBounds()
+        val halfWidth = current.width / 2.0
+        val halfHeight = current.height / 2.0
+        viewBounds = Bounds(
+            minX = x - halfWidth,
+            minY = y - halfHeight,
+            maxX = x + halfWidth,
+            maxY = y + halfHeight
+        )
+    }
+
+    /**
+     * Zoom in/out by a factor.
+     * @param factor Zoom factor (< 1 = zoom out, > 1 = zoom in)
+     */
+    fun zoom(factor: Double) {
+        val current = getCurrentViewBounds()
+        val centerX = current.center.first
+        val centerY = current.center.second
+        val newWidth = current.width / factor
+        val newHeight = current.height / factor
+        viewBounds = Bounds(
+            minX = centerX - newWidth / 2.0,
+            minY = centerY - newHeight / 2.0,
+            maxX = centerX + newWidth / 2.0,
+            maxY = centerY + newHeight / 2.0
+        )
+    }
+
+    /**
+     * Pan the view by offset.
+     * @param dx Offset in X (negative = left, positive = right)
+     * @param dy Offset in Y (negative = down, positive = up)
+     */
+    fun pan(dx: Double, dy: Double) {
+        val current = getCurrentViewBounds()
+        viewBounds = Bounds(
+            minX = current.minX + dx,
+            minY = current.minY + dy,
+            maxX = current.maxX + dx,
+            maxY = current.maxY + dy
+        )
+    }
+
+    /**
+     * Reset view to show all data.
+     */
+    fun reset() {
+        viewBounds = null
+    }
+
+    /**
      * Render all features in the stack to the given drawer.
-     * Uses auto-fit projection.
+     * Uses auto-fit projection based on current view bounds.
      */
     fun render(drawer: Drawer) {
-        val bounds = totalBoundingBox()
+        val bounds = viewBounds ?: totalBoundingBox()  // Use viewBounds if set
         val projection = geo.projection.ProjectionFactory.fitBounds(
             bounds = bounds,
             width = drawer.width.toDouble(),
