@@ -3,9 +3,9 @@
   "depth": "standard",
   "parallelization": true,
   "commit_docs": true,
-  "model_profile": "smart",
+  "model_profile": "simple",
   "profiles": {
-    "active_profile": "smart",
+    "active_profile": "simple",
     "presets": {
       "quality": {
         "planning": "opencode-go/glm-5",
@@ -26,13 +26,19 @@
         "planning": "opencode-go/glm-5",
         "execution": "opencode-go/minimax-m2.5",
         "verification": "opencode-go/kimi-k2.5"
+      },
+      "simple": {
+        "planning": "opencode-go/kimi-k2.5",
+        "execution": "opencode-go/kimi-k2.5",
+        "verification": "opencode-go/kimi-k2.5"
       }
     },
     "custom_overrides": {
       "quality": {},
       "balanced": {},
       "budget": {},
-      "smart": {}
+      "smart": {},
+      "simple": {}
     }
   },
   "workflow": {
