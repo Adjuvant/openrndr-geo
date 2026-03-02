@@ -74,6 +74,6 @@ runtime {
             jvmArgs.add($$"-Duser.dir=$APPDIR/../Resources")
         }
     }
-    options = listOf("--strip-debug", "--compress", "zip-6", "--no-header-files", "--no-man-pages")
+    options = listOf("--strip-debug", "--compress", "2", "--no-header-files", "--no-man-pages")
     modules = listOf("jdk.unsupported", "java.management", "java.desktop")
 }
