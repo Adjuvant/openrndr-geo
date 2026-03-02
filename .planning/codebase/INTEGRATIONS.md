@@ -1,32 +1,39 @@
 # External Integrations
 
-**Analysis Date:** 2026-02-21
+**Analysis Date:** 2026-03-02
 
 ## APIs & External Services
 
 **None detected** - This is a standalone creative coding application with no external API integrations.
 
-The following are available as optional dependencies but are currently disabled:
+The following OpenRNDR extensions are available but not currently enabled:
 
-- **OSC (Open Sound Control):** `orx-osc` - Available but not enabled
-- **MIDI:** `orx-midi` - Available but not enabled
-- **Runway ML:** `orx-runway` - Available but not enabled
-- **Chataigne:** `orx-chataigne` - Available but not enabled
+- **OSC (Open Sound Control):** `orx-osc` - Available in ORX catalog
+- **MIDI:** `orx-midi` - Available in ORX catalog
+- **Runway ML:** `orx-runway` - Available in ORX catalog
+- **Chataigne:** `orx-chataigne` - Available in ORX catalog
 
 ## Data Storage
 
 **Databases:**
-- None - No database connectivity
+- **GeoPackage** (via `mil.nga.geopackage:geopackage:6.6.5`)
+  - OGC GeoPackage Encoding Standard support
+  - File-based geospatial database format
+  - Used in: `src/main/kotlin/geo/GeoPackage.kt`
+  - Features: Spatial indexing, multiple feature tables
 
 **File Storage:**
 - Local filesystem only
 - Assets loaded from `data/` directory relative to working directory
 - Images: PNG, JPG formats supported
 - Fonts: OTF format supported
+- GeoPackage: .gpkg files
+- GeoJSON: .json files
 - Video: FFmpeg-based (when enabled)
 
 **Caching:**
-- None - No caching layer implemented
+- None - No distributed caching layer
+- In-memory spatial indexing available (`src/main/kotlin/geo/SpatialIndex.kt`)
 
 ## Authentication & Identity
 
@@ -39,14 +46,11 @@ The following are available as optional dependencies but are currently disabled:
 - None - No external error tracking service
 
 **Logs:**
-- SLF4J with Log4j2 backend (FULL logging mode)
+- SLF4J with slf4j-simple backend (default)
+- Optional Log4j2 backend (FULL logging mode)
 - Configured in `build.gradle.kts`:
   ```kotlin
-  when (applicationLogging) {
-      Logging.NONE -> runtimeOnly(libs.slf4j.nop)
-      Logging.SIMPLE -> runtimeOnly(libs.slf4j.simple)
-      Logging.FULL -> runtimeOnly(libs.log4j.slf4j2)
-  }
+  runtimeOnly(libs.bundles.logging.simple)  // Default
   ```
 
 ## CI/CD & Deployment
@@ -56,15 +60,15 @@ The following are available as optional dependencies but are currently disabled:
 
 **CI Pipeline:**
 - GitHub Actions (`.github/workflows/`)
-  - `build-on-commit.yaml` - Builds on push to master/next-version
-  - `publish-binaries.yaml` - Publishes releases on version tags
+  - `build-on-commit.yaml` - Builds on push to master/next-version branches
+  - `publish-binaries.yaml` - Publishes releases on version tags (v1.*, v1.*.*)
 
 **Release Process:**
-1. Tag commit with version (e.g., `v1.0.0`)
+1. Tag commit with version (e.g., `v1.2.0`)
 2. Push tag to origin
 3. Matrix build runs on ubuntu, windows, macos
 4. jpackage creates platform-specific executables
-5. Release created with zipped artifacts
+5. Release created with zipped artifacts via `ncipollo/release-action@v1.14.0`
 
 ## Environment Configuration
 
@@ -73,7 +77,7 @@ The following are available as optional dependencies but are currently disabled:
 
 **Optional build properties:**
 - `openrndr.application` - Override main class to run
-- `targetPlatform` - Cross-compile for different OS (windows, macos, linux-x64, linux-arm64)
+- `targetPlatform` - Cross-compile for different OS (not currently used)
 
 **Secrets location:**
 - GitHub Actions: `GITHUB_TOKEN` (automatic, used for releases)
@@ -95,10 +99,25 @@ The following are available as optional dependencies but are currently disabled:
 **Audio:**
 - `openrndr-openal-natives-{platform}` - Platform-specific OpenAL bindings
 
-**Video (optional):**
+**Video:**
 - `openrndr-ffmpeg-natives-{platform}` - FFmpeg native libraries
-- Disabled on ARM architectures
+- Available but may be excluded on ARM architectures
+
+## Coordinate Reference Systems
+
+**CRS Transformation:**
+- **Proj4j** (`org.locationtech.proj4j:proj4j:1.4.1`)
+  - Java port of PROJ.4 library
+  - EPSG database via `proj4j-epsg`
+  - Used for coordinate reference system transformations
+  - Implementation: `src/main/kotlin/geo/projection/CRSTransformer.kt`
+
+**Supported CRS:**
+- WGS84 (EPSG:4326) - GPS standard
+- Web Mercator (EPSG:3857) - Web map standard
+- British National Grid (EPSG:27700) - UK Ordnance Survey
+- Custom CRS via EPSG codes
 
 ---
 
-*Integration audit: 2026-02-21*
+*Integration audit: 2026-03-02*

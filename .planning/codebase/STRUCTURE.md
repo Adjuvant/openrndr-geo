@@ -1,169 +1,289 @@
 # Codebase Structure
 
-**Analysis Date:** 2026-02-21
+**Analysis Date:** 2026-03-02
 
 ## Directory Layout
 
 ```
 openrndr-geo/
-├── .github/                # CI/CD workflows
-│   └── workflows/          # GitHub Actions
-├── data/                   # Runtime assets
-│   ├── fonts/              # Font files (.otf)
-│   └── images/             # Image assets (.png, .jpg)
-├── gradle/                 # Gradle configuration
-│   ├── wrapper/            # Gradle wrapper binaries
-│   └── libs.versions.toml  # Version catalog
-├── src/                    # Source code
-│   └── main/
-│       ├── kotlin/         # Kotlin source files
-│       └── resources/      # Runtime resources
-├── build.gradle.kts        # Build configuration
-├── gradle.properties       # Gradle settings
-├── settings.gradle.kts     # Project settings
-├── gradlew                 # Gradle wrapper (Unix)
-└── gradlew.bat             # Gradle wrapper (Windows)
+├── buildSrc/                        # Gradle build conventions
+│   ├── build.gradle.kts             # BuildSrc dependencies
+│   ├── settings.gradle.kts          # BuildSrc settings
+│   └── src/main/kotlin/conventions/ # Convention plugins
+│       ├── kotlin-jvm.gradle.kts
+│       ├── openrndr-tasks.gradle.kts
+│       ├── distribute-application.gradle.kts
+│       └── publish-library.gradle.kts
+├── examples/                        # Runnable example programs
+│   ├── core/                        # Core functionality examples
+│   ├── proj/                        # Projection examples
+│   ├── render/                      # Rendering examples
+│   ├── anim/                        # Animation examples
+│   ├── layer/                       # Layer/composition examples
+│   └── data/                        # Example data files
+│       └── geo/                     # GeoJSON, GeoPackage sample files
+├── src/
+│   ├── main/
+│   │   ├── kotlin/
+│   │   │   ├── App.kt               # Main application entry
+│   │   │   ├── TemplateProgram.kt   # Template for new programs
+│   │   │   ├── TemplateLiveProgram.kt  # Live-coding template
+│   │   │   └── geo/                 # Library source code
+│   │   │       ├── animation/       # Animation system
+│   │   │       ├── crs/             # CRS definitions
+│   │   │       ├── examples/        # Embedded examples
+│   │   │       ├── exception/       # Custom exceptions
+│   │   │       ├── layer/           # Map layers (graticule, etc.)
+│   │   │       ├── projection/      # CRS transformations
+│   │   │       │   └── internal/    # Internal projection math
+│   │   │       └── render/          # OPENRNDR rendering integration
+│   │   └── resources/               # Runtime resources
+│   │       └── log4j2.yaml          # Logging configuration
+│   └── test/
+│       └── kotlin/geo/              # Unit and integration tests
+│           ├── animation/
+│           ├── projection/
+│           └── render/
+├── data/                            # Application data (images, fonts)
+│   ├── fonts/
+│   └── images/
+├── gradle/
+│   └── libs.versions.toml           # Version catalog
+├── build.gradle.kts                 # Main build configuration
+├── settings.gradle.kts              # Project settings
+├── gradle.properties                # Project properties
+├── gradlew                          # Gradle wrapper (Unix)
+└── gradlew.bat                      # Gradle wrapper (Windows)
 ```
 
 ## Directory Purposes
 
 **`src/main/kotlin/`:**
-- Purpose: All Kotlin source files
-- Contains: Top-level `.kt` files with OPENRNDR programs
-- Key files: `TemplateProgram.kt`, `TemplateLiveProgram.kt`
-- Convention: Flat structure, no subpackages by default
+- Purpose: Application entry points
+- Contains: Top-level `.kt` files (`App.kt`, `TemplateProgram.kt`, etc.)
+- Convention: Flat structure at root, only `geo/` package uses nested structure
 
-**`src/main/resources/`:**
-- Purpose: Runtime configuration files bundled into JAR
-- Contains: `log4j2.yaml` for logging configuration
-- Key files: `log4j2.yaml`
-- Note: NOT for images/fonts - use `data/` directory instead
+**`src/main/kotlin/geo/`:**
+- Purpose: Library source code
+- Contains: Core geospatial functionality organized by feature
+- Key files:
+  - `Geometry.kt` - Geometry types (Point, LineString, Polygon, etc.)
+  - `Feature.kt` - Feature model with properties
+  - `GeoSource.kt` - Abstract data source
+  - `GeoStack.kt` - Multi-source composition
+  - `GeoJSON.kt` - GeoJSON parsing
+  - `GeoPackage.kt` - GeoPackage loading
+  - `Bounds.kt` - Bounding box operations
+  - `SpatialIndex.kt` - Spatial indexing
 
-**`data/`:**
-- Purpose: External assets loaded at runtime
-- Contains: Images, fonts, and other media files
-- Key files: `data/fonts/default.otf`, `data/images/pm5544.png`
-- Note: Bundled with jpackage distributions, separate from JAR
+**`src/main/kotlin/geo/animation/`:**
+- Purpose: Animation and tweening
+- Contains: `GeoAnimator.kt`, `Tweening.kt`, `EasingExtensions.kt`, `FeatureAnimator.kt`, `ProceduralMotion.kt`
+- Subpackages: `composition/`, `interpolators/`
+
+**`src/main/kotlin/geo/projection/`:**
+- Purpose: Projections and CRS transformations
+- Contains: `GeoProjection.kt`, `CRSTransformer.kt`, `ProjectionFactory.kt`, `ScreenTransform.kt`
+- Projections: `ProjectionMercator.kt`, `ProjectionEquirectangular.kt`, `ProjectionBNG.kt`
+- Subpackage: `internal/` - Low-level projection math
+
+**`src/main/kotlin/geo/render/`:**
+- Purpose: OPENRNDR rendering integration
+- Contains:
+  - `DrawerGeoExtensions.kt` - Extension functions on Drawer
+  - `Style.kt`, `StyleDefaults.kt` - Styling DSL
+  - `render.kt` - Main render entry points
+  - `PointRenderer.kt`, `LineRenderer.kt`, `PolygonRenderer.kt` - Geometry renderers
+  - `MultiRenderer.kt` - Multi-geometry rendering
+  - `GeoRenderConfig.kt` - Render configuration
+  - `Shape.kt` - Shape utilities
+
+**`src/main/kotlin/geo/layer/`:**
+- Purpose: Map composition layers
+- Contains: `GeoLayer.kt` (interface), `Graticule.kt` (implementation)
+
+**`src/main/kotlin/geo/crs/`:**
+- Purpose: CRS definitions
+- Contains: `CRS.kt` - Strongly-typed CRS enum
+
+**`src/main/kotlin/geo/exception/`:**
+- Purpose: Custom exceptions
+- Contains: `ProjectionExceptions.kt`
+
+**`src/main/kotlin/geo/examples/`:**
+- Purpose: Embedded examples callable from main app
+- Contains: `core_*.kt`, `proj_*.kt`, `render_*.kt`, `layer_*.kt`
+
+**`examples/`:**
+- Purpose: Standalone runnable examples (separate from main source)
+- Organized by category: `core/`, `proj/`, `render/`, `anim/`, `layer/`
+- Included in main source set via `build.gradle.kts`: `kotlin.srcDir("examples")`
+- Each subdirectory has a `README.md` with documentation
+
+**`src/test/kotlin/geo/`:**
+- Purpose: Unit and integration tests
+- Mirrors main source structure:
+  - `*Test.kt` files for core classes
+  - `animation/` - Animation tests
+  - `projection/` - Projection tests
+  - `render/` - Rendering tests
+
+**`buildSrc/`:**
+- Purpose: Gradle convention plugins
+- Structure:
+  - `build.gradle.kts` - Dependencies for build logic
+  - `settings.gradle.kts` - BuildSrc settings
+  - `src/main/kotlin/conventions/` - Plugin definitions
+- Convention plugins:
+  - `kotlin-jvm.gradle.kts` - Kotlin compilation
+  - `openrndr-tasks.gradle.kts` - OPENRNDR-specific tasks
+  - `distribute-application.gradle.kts` - Packaging
+  - `publish-library.gradle.kts` - Publishing
 
 **`gradle/`:**
-- Purpose: Gradle build configuration
-- Contains: Version catalog and wrapper
-- Key files: `libs.versions.toml` (all dependency versions)
+- Purpose: Gradle configuration
+- Contains: `libs.versions.toml` - Version catalog with all dependency versions
 
-**`.github/workflows/`:**
-- Purpose: CI/CD automation
-- Contains: GitHub Actions workflow files
-- Key files: `build-on-commit.yaml`, `publish-binaries.yaml`
+**`data/`:**
+- Purpose: Application runtime assets
+- Contains: `fonts/`, `images/` - Loaded via relative paths
+- Note: Separate from `examples/data/` which contains geospatial sample data
 
 ## Key File Locations
 
 **Entry Points:**
-- `src/main/kotlin/TemplateProgram.kt`: Standard program template
-- `src/main/kotlin/TemplateLiveProgram.kt`: Live-coding program template
+- `src/main/kotlin/App.kt` - Main application (default run target)
+- `src/main/kotlin/TemplateProgram.kt` - Standard program template
+- `src/main/kotlin/TemplateLiveProgram.kt` - Live-coding template
 
 **Configuration:**
-- `build.gradle.kts`: Main build configuration, ORX feature toggles
-- `gradle/libs.versions.toml`: Dependency versions (OPENRNDR, ORX, Kotlin)
-- `gradle.properties`: Gradle settings (task visibility, Kotlin style)
-- `settings.gradle.kts`: Project name and plugin repositories
+- `build.gradle.kts` - Main build configuration
+- `gradle/libs.versions.toml` - Dependency versions
+- `gradle.properties` - Project properties (name, version, main class)
+- `settings.gradle.kts` - Project settings, version catalog setup
+- `buildSrc/src/main/kotlin/conventions/*.gradle.kts` - Build conventions
 
-**Resources:**
-- `src/main/resources/log4j2.yaml`: Logging configuration
-- `data/fonts/default.otf`: Default UI font
-- `data/images/pm5544.png`: Test pattern image
-- `data/images/cheeta.jpg`: Sample photograph
+**Core Library:**
+- `src/main/kotlin/geo/Geometry.kt` - All geometry types
+- `src/main/kotlin/geo/Feature.kt` - Feature model
+- `src/main/kotlin/geo/GeoSource.kt` - Data source abstraction
+- `src/main/kotlin/geo/GeoStack.kt` - Multi-source composition
 
-**CI/CD:**
-- `.github/workflows/build-on-commit.yaml`: Build verification
-- `.github/workflows/publish-binaries.yaml`: Cross-platform releases
+**Rendering:**
+- `src/main/kotlin/geo/render/DrawerGeoExtensions.kt` - Main rendering API
+- `src/main/kotlin/geo/render/Style.kt` - Styling DSL
+
+**Projection:**
+- `src/main/kotlin/geo/projection/ProjectionFactory.kt` - Create projections
+- `src/main/kotlin/geo/projection/CRSTransformer.kt` - CRS transformations
 
 ## Naming Conventions
 
 **Files:**
-- Kotlin programs: `PascalCase.kt` (e.g., `TemplateProgram.kt`)
-- Entry point class: `<Name>Kt` suffix for Gradle (e.g., `TemplateProgramKt`)
+- Kotlin source: `PascalCase.kt`
+- Top-level programs: `App.kt`, `TemplateProgram.kt`
+- Library classes: `GeoSource.kt`, `Feature.kt`, `Geometry.kt`
+- Example programs: `01-load-geojson.kt` (kebab-case with numbers)
 - Gradle files: `lowercase.gradle.kts`
-- Workflows: `kebab-case.yaml`
+- Test files: `*Test.kt` suffix
 
-**Directories:**
-- Source packages: lowercase (if packages used)
-- Asset categories: lowercase plural (e.g., `fonts/`, `images/`)
+**Packages:**
+- Root library: `geo.*`
+- Subpackages: lowercase, descriptive (`animation`, `projection`, `render`)
 
-**Programs:**
-- Main function: `fun main() = application { }`
-- Configuration: `configure { }` block
-- Setup: `program { }` or `oliveProgram { }` block
-- Render: `extend { }` block
+**Classes:**
+- Data classes: `Geometry`, `Feature`, `Bounds`
+- Service classes: `GeoSource`, `CRSTransformer`, `GeoStack`
+- Renderers: `PointRenderer`, `LineRenderer`, `PolygonRenderer`
+
+**Functions:**
+- Extension functions: Lowercase, descriptive
+  - `geoSource(path)` - Create GeoSource
+  - `geoStack(vararg sources)` - Create GeoStack
+  - `drawer.geo(source)` - Render to Drawer
 
 ## Where to Add New Code
 
-**New Program:**
-- Create file: `src/main/kotlin/MyProgram.kt`
-- Copy structure from `TemplateProgram.kt`
-- Run with: `./gradlew run -Popenrndr.application=MyProgramKt`
+**New Geometry Type:**
+- Add to: `src/main/kotlin/geo/Geometry.kt`
+- Add renderer: `src/main/kotlin/geo/render/{Type}Renderer.kt`
+- Add tests: `src/test/kotlin/geo/GeometryTest.kt`
 
-**New Assets:**
-- Images: `data/images/my-image.png`
-- Fonts: `data/fonts/my-font.ttf`
-- Load with: `loadImage("data/images/my-image.png")`
+**New Projection:**
+- Add class: `src/main/kotlin/geo/projection/Projection{Name}.kt`
+- Implement: `GeoProjection` interface
+- Register: `ProjectionFactory` or `ProjectionType` enum
+- Add tests: `src/test/kotlin/geo/projection/ProjectionTest.kt`
 
-**New ORX Extension:**
-- Edit: `build.gradle.kts`
-- Add to `orxFeatures` set: `"orx-feature-name"`
-- Reload Gradle configuration
+**New Data Source:**
+- Create class: Extends `GeoSource`
+- Location: `src/main/kotlin/geo/`
+- Add loader function: `geoSource()` or `GeoPackage.load()` pattern
+- Add tests: `src/test/kotlin/geo/{Name}Test.kt`
 
-**New Dependencies:**
-- External libs: Add to `gradle/libs.versions.toml` under `[libraries]`
-- Reference in: `build.gradle.kts` as `implementation(libs.my.lib)`
+**New Animation Feature:**
+- Location: `src/main/kotlin/geo/animation/`
+- Add interpolators to: `interpolators/` subpackage
+- Add composition types to: `composition/` subpackage
+- Add tests: `src/test/kotlin/geo/animation/`
 
-**Tests (Future):**
-- Location: `src/test/kotlin/` (currently not present)
-- Follow: Standard Gradle test structure
+**New Example:**
+- Location: `examples/{category}/`
+- Naming: `##-descriptive-name.kt` (numbered for ordering)
+- Update: `examples/{category}/README.md`
+
+**New Layer Type:**
+- Implement: `GeoLayer` interface
+- Location: `src/main/kotlin/geo/layer/`
+- Pattern after: `Graticule.kt`
+
+**New Tests:**
+- Mirror structure: `src/test/kotlin/geo/` mirrors `src/main/kotlin/geo/`
+- Naming: `{ClassUnderTest}Test.kt`
+- Framework: JUnit 4
+
+## Build System Details
+
+**Module Catalogs:**
+- OPENRNDR catalog: `openrndr.*` - Core OPENRNDR modules
+- ORX catalog: `orx.*` - OPENRNDR extensions
+- Versions parsed from `gradle/libs.versions.toml` via regex in `settings.gradle.kts`
+
+**Convention Plugins:**
+- Applied in `build.gradle.kts`:
+  - `conventions.kotlin-jvm` - Kotlin JVM settings
+  - `conventions.openrndr-tasks` - OPENRNDR tasks
+  - `conventions.distribute-application` - Packaging
+
+**Source Sets:**
+- Main: `src/main/kotlin/` + `examples/` (examples compiled as part of main)
+- Test: `src/test/kotlin/`
+
+**Running Programs:**
+```bash
+./gradlew run                                    # Run App.kt (default)
+./gradlew run -Popenrndr.application=AppKt       # Explicit main class
+./gradlew run -Popenrndr.application=01_load_geojsonKt  # Run example
+```
 
 ## Special Directories
 
-**`gradle/wrapper/`:**
-- Purpose: Gradle wrapper for consistent builds
-- Generated: Yes (by Gradle)
-- Committed: Yes
+**`buildSrc/`:**
+- Purpose: Build logic as code
+- Generated: Build outputs in `buildSrc/build/`
+- Committed: Source yes, build no
+- Note: Changes trigger full Gradle reconfiguration
 
-**`data/`:**
-- Purpose: Runtime assets (not bundled in JAR, loaded from filesystem)
-- Generated: No
-- Committed: Yes
-- Bundle: Copied to jpackage output
+**`examples/`:**
+- Purpose: Runnable examples and tutorials
+- Included: In main source set via `kotlin.srcDir("examples")`
+- Categories: Each subdirectory is a feature area
+- Data: `examples/data/geo/` contains sample geospatial files
 
-**`.planning/codebase/`:**
-- Purpose: GSD planning documents
-- Generated: Yes (by GSD tools)
-- Committed: Optional
-
-## Build Outputs
-
-**Development:**
-- `./gradlew run` - Compiles and runs directly
-- No intermediate artifacts needed
-
-**Distribution:**
-- `build/libs/openrndr-geo-1.0.0-all.jar` - Fat JAR (shadowJar task)
-- `build/jpackage/` - Native executable bundle (jpackage task)
-- `build/distributions/openrndr-application.zip` - Release artifact
-
-## Platform-Specific Notes
-
-**macOS:**
-- Uses `-XstartOnFirstThread` JVM arg for GLFW compatibility
-- jpackage creates `.app` bundle
-- Data files placed in `Contents/Resources/data/`
-
-**Windows:**
-- Use `gradlew.bat` instead of `./gradlew`
-- jpackage creates executable in `bin/` directory
-
-**Linux:**
-- Standard executable in `bin/` directory
-- Both x64 and arm64 architectures supported
+**`examples/data/` vs `data/`:**
+- `examples/data/` - Geospatial sample files for examples
+- `data/` - Application assets (fonts, images) for main app
 
 ---
 
-*Structure analysis: 2026-02-21*
+*Structure analysis: 2026-03-02*
