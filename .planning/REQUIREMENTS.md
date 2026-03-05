@@ -11,33 +11,27 @@
 - [ ] **PERF-02**: Rendering pipeline uses batch projection for all geometry types (Point, LineString, Polygon, Multi*)
 - [ ] **PERF-03**: Batch projection preserves existing API contracts (no signature changes to public methods)
 
-### Performance — Geometry Caching
+### Performance — Viewport Caching
 
-- [ ] **PERF-04**: Library caches projected geometries keyed by projection parameters
-- [ ] **PERF-05**: Cache automatically invalidates when projection state changes (zoom, pan, viewport size)
-- [ ] **PERF-06**: Cache uses bounded LRU eviction to prevent unbounded memory growth
+- [ ] **PERF-04**: Library caches projected geometries for current viewport state
+- [ ] **PERF-05**: Cache invalidates when viewport changes (zoom, pan, viewport size)
+- [ ] **PERF-06**: Cache bounded by simple size limit (clear-on-change, not LRU/LFU)
 - [ ] **PERF-07**: Caching is transparent to existing code (no API changes required)
-- [ ] **PERF-08**: Cache hit/miss metrics available for debugging (internal, not public API)
-
-### Performance — State Detection
-
-- [ ] **PERF-09**: Library detects when projection parameters change
-- [ ] **PERF-10**: Projection state can be hashed for efficient cache key comparison
-- [ ] **PERF-11**: State detection handles animation/tweening without excessive invalidation
 
 ### Performance — Measurement
 
-- [ ] **PERF-12**: Internal frame time tracking confirms 10x+ improvement for static camera scenarios
-- [ ] **PERF-13**: Performance tests validate caching effectiveness with realistic datasets
-- [ ] **PERF-14**: All 16 v1.2.0 examples continue to work unchanged (regression test)
+- [ ] **PERF-08**: Static camera scenarios show 10x+ improvement over v1.2.0 baseline
+- [ ] **PERF-09**: Performance validated with realistic datasets
+- [ ] **PERF-10**: All 16 v1.2.0 examples continue to work unchanged (regression test)
 
 ## v2+ Requirements (Deferred)
 
 ### Performance — Advanced
 
-- **PERF-15**: Lazy vs eager projection strategy (user-controlled memory vs compute tradeoff)
-- **PERF-16**: Spatial culling — skip projection for off-screen geometries
-- **PERF-17**: Multi-threaded batch projection leveraging all CPU cores
+- **PERF-11**: Lazy vs eager projection strategy (user-controlled memory vs compute tradeoff)
+- **PERF-12**: Spatial culling — skip projection for off-screen geometries
+- **PERF-13**: Multi-threaded batch projection leveraging all CPU cores
+- **PERF-14**: Cache hit/miss metrics for debugging
 
 ### Advanced Features (Deferred from v1.3.0)
 
@@ -49,8 +43,10 @@
 
 | Feature | Reason |
 |---------|--------|
-| Full JMH benchmarking suite | Creative coding library doesn't need enterprise-grade benchmarking; internal metrics sufficient |
-| GPU-based projection compute shaders | Massive complexity, overkill for prototyping use case |
+| Caffeine/Aedile caching libraries | Overkill for creative coding; simple Map sufficient |
+| LRU/LFU eviction algorithms | Web-style optimization not needed for viewport-based geometry |
+| Full JMH benchmarking suite | Internal metrics sufficient; no framework weight |
+| GPU-based projection compute shaders | Massive complexity, overkill for prototyping |
 | Persistent/distributed caching | In-memory only sufficient for creative sessions |
 | Real-time adaptive LOD | HIGH complexity, deferred to v2+ |
 
@@ -61,23 +57,27 @@
 | PERF-01 | Phase 11 | Pending |
 | PERF-02 | Phase 11 | Pending |
 | PERF-03 | Phase 11 | Pending |
-| PERF-04 | Phase 11 | Pending |
-| PERF-05 | Phase 11 | Pending |
-| PERF-06 | Phase 11 | Pending |
-| PERF-07 | Phase 11 | Pending |
-| PERF-08 | Phase 11 | Pending |
-| PERF-09 | Phase 11 | Pending |
-| PERF-10 | Phase 11 | Pending |
-| PERF-11 | Phase 11 | Pending |
-| PERF-12 | Phase 11 | Pending |
-| PERF-13 | Phase 11 | Pending |
-| PERF-14 | Phase 11 | Pending |
+| PERF-04 | Phase 12 | Pending |
+| PERF-05 | Phase 12 | Pending |
+| PERF-06 | Phase 12 | Pending |
+| PERF-07 | Phase 12 | Pending |
+| PERF-08 | Phase 13 | Pending |
+| PERF-09 | Phase 13 | Pending |
+| PERF-10 | Phase 13 | Pending |
 
 **Coverage:**
-- v1.3.0 requirements: 14 total
-- Mapped to phases: 0 (pending roadmap creation)
-- Unmapped: 14 (will be mapped during roadmap creation)
+- v1.3.0 requirements: 10 total
+- Mapped to phases: 10/10 ✓
+- Unmapped: 0
+
+### Coverage by Phase
+
+| Phase | Requirements | Count |
+|-------|--------------|-------|
+| Phase 11: Batch Projection | PERF-01, PERF-02, PERF-03 | 3 |
+| Phase 12: Viewport Caching | PERF-04, PERF-05, PERF-06, PERF-07 | 4 |
+| Phase 13: Integration & Validation | PERF-08, PERF-09, PERF-10 | 3 |
 
 ---
 *Requirements defined: 2026-03-05*
-*Last updated: 2026-03-05 after research synthesis*
+*Last updated: 2026-03-05 after simplification review*

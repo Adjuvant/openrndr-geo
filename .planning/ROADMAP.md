@@ -1,79 +1,139 @@
-# Roadmap: openrndr-geo
+# Roadmap: v1.3.0 Performance
 
-## Milestones
+**Milestone:** v1.3.0 Performance  
+**Goal:** Optimize rendering performance through batch projection and simple viewport caching.  
+**Target:** 10x+ improvement for static camera scenarios.  
+**Last Updated:** 2026-03-05
 
-- ✅ **v1.0.0 MVP** — Phases 1-5 (shipped 2026-02-22)
-- ✅ **v1.1.0** — Fix Projection API (shipped 2026-02-26) — [Details](milestones/v1.1.0-ROADMAP.md)
-- ✅ **v1.2.0** — API Improvements & Examples (shipped 2026-02-27) — [Details](milestones/v1.2.0-ROADMAP.md)
-- 📋 **v1.3.0** — Performance & Advanced Features (planned)
+## Phases
 
----
-
-## Current Milestone: v1.3.0 (Planned)
-
-**Milestone Goal:** Performance optimizations and advanced features for production use.
-
-### Planned Phases
-
-- [ ] **Phase 11: Performance** — Batch projection and geometry caching
-- [ ] **Phase 12: Advanced Features** — Clipping, graticule improvements, bounds strategies
-
----
-
-<details>
-<summary>✅ v1.2.0 API Improvements & Examples (Phases 7-10) — SHIPPED 2026-02-27</summary>
-
-**Milestone Goal:** Polish the API with data inspection, proper polygon hole rendering, intuitive API design, and runnable examples.
-
-### Phase 7: Data Inspection
-- [x] **Phase 7: Data Inspection** — GeoSource summary() for runtime debugging (completed 2026-02-26)
-  - Plans: 1 (07-01) — Implement printSummary() with test scaffold
-
-### Phase 8: Rendering Improvements
-- [x] **Phase 8: Rendering Improvements** — Polygon holes and bounds handling (completed 2026-02-27)
-  - Plans: 4 (08-00, 08-01, 08-02, 08-03)
-
-### Phase 9: API Design
-- [x] **Phase 9: API Design** — Feature traversal, two-tier API, and escape hatches (completed 2026-02-27)
-  - Plans: 4 (09-00, 09-01, 09-02, 09-03)
-
-### Phase 10: Documentation & Examples
-- [x] **Phase 10: Documentation & Examples** — Runnable examples with data files (completed 2026-02-27)
-  - Plans: 4 (10-01, 10-02, 10-03, 10-04)
-
-**Requirements:** INSP-01/02/03, REND-07/08/09, API-01/02/03/04, DOC-01/02/03/04
-
-</details>
-
-<details>
-<summary>✅ v1.1.0 Fix Projection API (Phases 6) — SHIPPED 2026-02-26</summary>
-
-See: [v1.1.0 Milestone Details](milestones/v1.1.0-ROADMAP.md)
-
-</details>
-
-<details>
-<summary>✅ v1.0.0 MVP (Phases 1-5) — SHIPPED 2026-02-22</summary>
-
-- [x] Phase 1: Foundation
-- [x] Phase 2: GeoJSON Loading
-- [x] Phase 3: GeoPackage Loading
-- [x] Phase 4: Rendering Core
-- [x] Phase 5: Multi-layer Composition
-
-</details>
-
----
+- [ ] **Phase 11: Batch Projection** - Transform coordinate arrays efficiently
+- [ ] **Phase 12: Viewport Caching** - Simple cache with clear-on-change semantics
+- [ ] **Phase 13: Integration & Validation** - Verify all v1.2.0 examples work unchanged
 
 ## Progress
 
-| Phase | Milestone | Plans Complete | Status | Completed |
-|-------|-----------|----------------|--------|-----------|
-| 7. Data Inspection | v1.2.0 | 1/1 | Complete | 2026-02-26 |
-| 8. Rendering Improvements | v1.2.0 | 4/4 | Complete | 2026-02-27 |
-| 9. API Design | v1.2.0 | 4/4 | Complete | 2026-02-27 |
-| 10. Documentation & Examples | v1.2.0 | 4/4 | Complete | 2026-02-27 |
+| Phase | Plans Complete | Status | Completed |
+|-------|----------------|--------|-----------|
+| 11. Batch Projection | 0/2 | Not started | - |
+| 12. Viewport Caching | 0/2 | Not started | - |
+| 13. Integration & Validation | 0/2 | Not started | - |
+
+**Coverage:** 10/10 v1.3.0 requirements mapped ✓
+
+## Phase Details
+
+### Phase 11: Batch Projection
+
+**Goal:** Library can batch-transform coordinate arrays efficiently and integrate batch projection into the rendering pipeline while preserving existing API contracts.
+
+**Depends on:** Phase 10 (v1.2.0 completion)
+
+**Requirements:** PERF-01, PERF-02, PERF-03
+
+**Success Criteria** (what must be TRUE):
+1. Coordinate arrays are transformed using batch operations instead of per-point projection
+2. Rendering pipeline uses batch projection for all geometry types (Point, LineString, Polygon, Multi*)
+3. All existing public API signatures remain unchanged (backward compatible)
+4. Batch projection is transparent to existing code (no changes required to use)
+5. Internal timing confirms measurable improvement over per-point projection
+
+**Plans:** TBD
 
 ---
 
-_For detailed phase information, see archived milestone files in `.planning/milestones/`_
+### Phase 12: Viewport Caching
+
+**Goal:** Library caches projected geometries for the current viewport state with simple clear-on-change semantics.
+
+**Depends on:** Phase 11 (Batch Projection)
+
+**Requirements:** PERF-04, PERF-05, PERF-06, PERF-07
+
+**Success Criteria** (what must be TRUE):
+1. Projected geometries are cached for current viewport state
+2. Cache invalidates entirely when viewport changes (zoom, pan, viewport size)
+3. Cache bounded by simple size limit (no LRU/LFU complexity)
+4. Caching is transparent to existing code (no API changes required)
+5. Simple Kotlin `MutableMap` implementation (no external caching libraries)
+
+**Plans:** TBD
+
+---
+
+### Phase 13: Integration & Validation
+
+**Goal:** All optimizations are validated against v1.2.0 baseline and all 16 existing examples work unchanged.
+
+**Depends on:** Phase 11 (Batch Projection), Phase 12 (Viewport Caching)
+
+**Requirements:** PERF-08, PERF-09, PERF-10
+
+**Success Criteria** (what must be TRUE):
+1. Static camera scenarios show 10x+ improvement over v1.2.0 baseline
+2. Performance validated with realistic datasets (100k+ features)
+3. All 16 v1.2.0 examples continue to work unchanged (regression test passed)
+4. Memory usage remains bounded during extended creative sessions
+5. Pan operations show measurable improvement from batch projection
+
+**Plans:** TBD
+
+---
+
+## Dependency Graph
+
+```
+Phase 11: Batch Projection
+    ↓
+Phase 12: Viewport Caching
+    ↓
+Phase 13: Integration & Validation
+```
+
+## Coverage Matrix
+
+| Requirement | Phase | Category |
+|-------------|-------|----------|
+| PERF-01 | 11 | Batch Projection |
+| PERF-02 | 11 | Batch Projection |
+| PERF-03 | 11 | Batch Projection |
+| PERF-04 | 12 | Viewport Caching |
+| PERF-05 | 12 | Viewport Caching |
+| PERF-06 | 12 | Viewport Caching |
+| PERF-07 | 12 | Viewport Caching |
+| PERF-08 | 13 | Measurement |
+| PERF-09 | 13 | Measurement |
+| PERF-10 | 13 | Validation |
+
+**Coverage:** 10/10 v1.3.0 requirements mapped ✓
+
+## Success Criteria Summary
+
+| Phase | Criteria | Focus |
+|-------|----------|-------|
+| 11 | 5 | Batch transformation infrastructure |
+| 12 | 5 | Simple viewport-based caching |
+| 13 | 5 | Validation & regression testing |
+
+## Notes
+
+**Phase Ordering Rationale:**
+1. **Batch Projection (11)** must come first — prerequisite for caching
+2. **Viewport Caching (12)** builds on batch projection — simple clear-on-change semantics
+3. **Integration (13)** validates everything — ensures no regressions and meets performance targets
+
+**Key Constraints:**
+- NO Caffeine/Aedile dependencies — simple Kotlin `MutableMap` only
+- NO LRU/LFU algorithms — web-style optimization not needed for creative coding
+- Clear entire cache on viewport change (not per-entry eviction)
+- All 16 v1.2.0 examples must work unchanged
+
+**Simplification Rationale:**
+Creative coding use case differs from web applications:
+- User explores with pan/zoom, then observes static view
+- When camera moves, **everything** becomes stale (not LRU-worthy)
+- Simple clear-on-change is sufficient and more predictable
+- Bounded by "one viewport worth of data" — no complex eviction needed
+
+---
+*Created: 2026-03-05 for v1.3.0 Performance milestone*

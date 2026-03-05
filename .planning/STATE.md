@@ -1,85 +1,106 @@
-# Project State
+# Project State: openrndr-geo
+
+**Current Milestone:** v1.3.0 Performance  
+**Phase:** Starting Phase 11  
+**Last Updated:** 2026-03-05
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-03-05)
+**Core Value:** An expressive, well-architected API that makes exploring intersections of geo datasets feel fluid and creative — decoupling data operations from rendering so new visual ideas can be prototyped quickly.
 
-**Core value:** An expressive, well-architected API that makes exploring intersections of geo datasets feel fluid and creative — decoupling data operations from rendering so new visual ideas can be prototyped quickly.
-**Current focus:** Planning v1.3.0 — Performance optimizations
+**Current Focus:** Optimize rendering performance through batch coordinate projection and simple viewport caching. Target: 10x+ improvement for static cameras.
+
+**Tech Stack:** Kotlin/JVM, OPENRNDR 0.4.5, simple `MutableMap` caching (no external libraries)
 
 ## Current Position
 
-**Milestone:** v1.3.0 — Performance
-**Status:** Defining requirements
-**Phase:** Not started
-**Last activity:** 2026-03-05 — Started v1.3.0 milestone planning
+| Milestone | Status | Progress |
+|-----------|--------|----------|
+| v1.0.0 Foundation | ✓ Complete | 100% |
+| v1.1.0 API Improvements | ✓ Complete | 100% |
+| v1.2.0 API & Examples | ✓ Complete | 100% |
+| **v1.3.0 Performance** | 🔄 Ready | 0% |
+| v1.4.0 Advanced Features | ⏳ Pending | 0% |
 
-**Previous Milestone:** v1.2.0 ✅ SHIPPED (2026-02-27)
-- 4 phases, 13 plans, 16 examples
+### Phase Status
+
+| Phase | Name | Status | Plans | Blocked By |
+|-------|------|--------|-------|------------|
+| 11 | Batch Projection | ⏳ Ready | 0/2 | - |
+| 12 | Viewport Caching | ⏳ Pending | 0/2 | Phase 11 |
+| 13 | Integration & Validation | ⏳ Pending | 0/2 | Phase 12 |
 
 ## Performance Metrics
 
-**Velocity:**
-- Total plans completed: 34 (across v1.0.0 + v1.1.0 + v1.2.0)
-- Total phases completed: 10
-- Lines of code: ~16,000 Kotlin
-- Test coverage: 200+ tests passing
+### Current Baseline (v1.2.0)
+- No performance optimization implemented
+- Per-point coordinate transformation
+- No geometry caching
+- 16 runnable examples working
 
-**By Milestone:**
-
-| Milestone | Phases | Plans | Status | Date |
-|-----------|--------|-------|--------|------|
-| v1.0.0 MVP | 5 | 15 | Complete | 2026-02-22 |
-| v1.1.0 | 1 | 6 | Complete | 2026-02-26 |
-| v1.2.0 | 4 | 13 | Complete | 2026-02-27 |
-| v1.3.0 | — | — | Planning | — |
+### Target Metrics (v1.3.0)
+- **Static camera:** 10x+ frame time improvement
+- **Pan operations:** Improvement from batch projection
+- **Memory:** Simple size limit (clear-on-change, no LRU)
+- **Compatibility:** All 16 v1.2.0 examples work unchanged
 
 ## Accumulated Context
 
-### v1.2.0 Accomplishments
+### Key Decisions
 
-- **Data Inspection:** printSummary() with pandas-style console output
-- **Polygon Holes:** interiorsToScreen() and writePolygonWithHoles() for complex shapes
-- **Two-tier API:** drawer.geo(source) and drawer.geo(source) { } workflows
-- **Escape Hatches:** RawProjection and styleByFeature for advanced patterns
-- **16 Examples:** Complete example library with sample data across 5 categories
+| Decision | Rationale | Status |
+|----------|-----------|--------|
+| Start phases at 11 | v1.2.0 ended at phase 10 | ✓ Confirmed |
+| 3 phases for v1.3.0 | Simplified from 4-phase structure | ✓ Approved |
+| Simple MutableMap caching | Creative coding use case — clear-on-change sufficient | ✓ Simplified |
+| No Caffeine/Aedile | Overkill for viewport-based geometry | ✓ Agreed |
+| No LRU/LFU | Web-style optimization not needed | ✓ Agreed |
+| Batch before caching | Prerequisite dependency | ✓ Logical |
 
-### Key Decisions (from v1.2.0)
+### Active Requirements (v1.3.0)
 
-- Phase numbering starts at 7 (v1.0.0 ended at 5, v1.1.0 had phase 6)
-- Batch projection deferred to v1.3.0 (performance benchmarking needed)
-- Examples follow openrndr-examples pattern (one concept per file)
-- Test scaffolds use @Ignore markers to defer implementation to subsequent plans
-- Two-tier API uses DSL builder pattern (Style { } style) for consistency
-- Single-pass statistics collection for efficiency
-- Box-drawing console output for pandas-style familiarity
-- @file:JvmName annotations for valid Kotlin class names with numbered files
+**Phase 11 — Batch Projection:**
+- PERF-01: Batch-transform coordinate arrays
+- PERF-02: Rendering pipeline uses batch projection
+- PERF-03: Preserve existing API contracts
 
-### Blockers/Concerns
+**Phase 12 — Viewport Caching:**
+- PERF-04: Cache projected geometries for viewport
+- PERF-05: Clear cache on viewport change
+- PERF-06: Simple size limit (not LRU)
+- PERF-07: Transparent to existing code
 
-None.
+**Phase 13 — Integration & Validation:**
+- PERF-08: 10x+ improvement for static camera
+- PERF-09: Performance validated with datasets
+- PERF-10: All 16 v1.2.0 examples work unchanged
 
-### Pending Todos
+### Known Blockers
 
-**Active (8):**
-- 2026-02-27: Graticule layer for zoomed-in maps (layer) — deferred to v1.4.0
-- 2026-02-27: Fix filter comparison operators — known issue
-- 2026-02-27: Fix README run commands and data paths — docs
-- 2026-02-27: UX improvements: RawProjection warning & API samples — polish
-- 2026-02-26: Improve polygon interior/exterior ring handling — enhancement
-- 2026-02-25: Fix multipolygon ocean data — bug
-- 2026-02-25: Reduce rendering boilerplate — deferred to v1.4.0
-- 2026-02-25: Batch screen space projection — IN v1.3.0 scope ✓
-
-**Archived (4):** See `.planning/todos/archived/`
+None currently.
 
 ## Session Continuity
 
-Last session: 2026-03-05
-Stopped at: Started v1.3.0 milestone planning, updated PROJECT.md
-Resume file: None
+### Last Actions
+- Created simplified ROADMAP.md for v1.3.0 with 3 phases (11-13)
+- Mapped 10 PERF requirements to phases (reduced from 14)
+- Validated 100% coverage
+- Removed Caffeine/Aedile dependencies
+- Simplified caching to clear-on-change semantics
 
-**Next action:** Research decision → Requirements → Roadmap
+### Next Actions
+1. Run `/gsd-execute-phase 11` to start Batch Projection
+2. Or `/gsd-discuss-phase 11` to clarify approach first
+
+## Files
+
+| File | Purpose | Last Updated |
+|------|---------|--------------|
+| PROJECT.md | Core value, constraints, decisions | 2026-03-05 |
+| REQUIREMENTS.md | PERF-01 to PERF-10 requirements | 2026-03-05 |
+| ROADMAP.md | Phase structure and success criteria | 2026-03-05 |
+| MILESTONES.md | Milestone completion tracking | 2026-03-05 |
+| research/SUMMARY.md | Research findings (superseded by simplification) | 2026-03-05 |
 
 ---
-*Last updated: 2026-03-05 after starting v1.3.0 milestone*
+*State file for project continuity across sessions*
