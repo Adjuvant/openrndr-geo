@@ -1,502 +1,543 @@
-# Domain Pitfalls — v1.2.0 API Improvements
+# Domain Pitfalls: Performance Optimization for Geospatial Visualization
 
-**Domain:** Geospatial Visualization Library (Kotlin/OpenRNDR)
-**Milestone:** v1.2.0 — Adding API improvements and examples
-**Researched:** 2026-02-26
+**Domain:** Creative coding / Geospatial visualization library (openrndr-geo)  
+**Milestone:** v1.3.0 — Adding batch projection and geometry caching  
+**Researched:** 2026-03-05  
 **Confidence:** HIGH (based on codebase analysis + domain expertise)
 
 ---
 
 ## Critical Pitfalls
 
-Mistakes that cause rewrites or major issues when adding these specific features.
+Mistakes that cause rewrites, major performance regressions, or broken user workflows.
 
 ---
 
-### Pitfall 1: GeoSource Summary Functions — Costly Operations on Lazy Sequences
+### Pitfall 1: Premature Optimization Without Profiling Baseline
 
-**What goes wrong:**
-Calling `countFeatures()` or `totalBoundingBox()` on a lazy Sequence-backed GeoSource iterates through ALL features. For large datasets (12GB GeoPackage), this causes:
-- Multi-second delays on first access
-- Memory pressure as sequences are consumed
-- User confusion ("why is my app frozen?")
+**What goes wrong:** Implementing complex batch projection and caching systems without first establishing where time is actually spent. The optimization targets the wrong bottleneck.
 
-**Why it happens:**
-- Sequence is lazy — no cached count/bounds
-- Developers expect O(1) property access
-- `countFeatures()` default implementation iterates everything
+**Why it happens:** 
+- Assumption that "projection is expensive" without measurement
+- Focus on algorithmic complexity (O(n) vs O(n²)) while ignoring constant factors
+- Not accounting for OPENRNDR's rendering pipeline overhead
 
 **Consequences:**
-- App appears frozen on data inspection
-- Performance tests fail intermittently (depending on sequence state)
-- Users blame the library for "slow rendering" when actually inspection is slow
+- Added complexity with no measurable benefit
+- Cache maintenance overhead may actually *decrease* performance for typical use cases
+- Code harder to maintain for prototyping workflows
 
 **Prevention:**
-```kotlin
-// BAD: Iterates entire sequence
-fun countFeatures(): Long = features.count().toLong()
+1. **Establish baseline metrics first** - Use the benchmarking tools from PERF-03 to measure current frame times
+2. **Profile before optimizing** - Identify whether projection, data loading, or rendering is the actual bottleneck
+3. **Set performance targets** - Define "acceptable" vs "needs optimization" thresholds
+4. **Test with real datasets** - Use the actual 12GB Ordnance Survey data mentioned in PROJECT.md, not toy examples
 
-// GOOD: Make cost explicit
-fun countFeatures(): Long {
-    // Warning: O(n) operation - materializes sequence
-    return features.count().toLong()
-}
+**Detection (Warning Signs):**
+- "I think this will be faster" without numbers
+- Optimizations added before any performance measurement
+- Complex caching for data that changes every frame anyway
 
-// BETTER: Provide both lazy and eager options
-fun countFeaturesLazy(): Long  // May require iteration
-fun countFeaturesEager(): Long // From cached metadata
-```
-
-**Detection:**
-- Test with 100k+ feature dataset
-- Profile: does `summary()` take > 100ms?
-- Add `@Deprecated("Use countFeaturesEager() for large datasets")` if needed
-
-**Phase to address:** Phase implementing GeoSource inspection API
+**Phase to Address:** Phase 1 (PERF-03 Benchmarking) - MUST complete before PERF-01/02
 
 ---
 
-### Pitfall 2: Polygon Interior Rings — Silent Data Loss
+### Pitfall 2: Cache Invalidation Cascade with Projection Changes
 
-**What goes wrong:**
-Current `drawPolygon()` only renders the exterior ring. Polygons with holes (lakes, courtyards, donuts) render as solid shapes — holes disappear silently.
+**What goes wrong:** Cached projected geometries become stale when projection parameters change, but the invalidation logic misses edge cases, causing visual artifacts or crashes.
 
 **Why it happens:**
-- OpenRNDR's `ShapeContour.fromPoints()` creates a single closed contour
-- Holes require `Shape` with multiple contours (outline + holes)
-- Easy to forget interior rings exist
+- Current `GeoProjection` is an interface with multiple implementations (Mercator, Equirectangular, BNG)
+- Projection can change per-frame via `configure()`, `fitWorld()`, or `fitBounds()`
+- Animation layer (v1.1.0) enables tweening projection parameters over time
 
-**Current code (from Geometry.kt):**
+**Consequences:**
+- Geometries render in wrong positions using stale cached coordinates
+- "Ghost" artifacts from partially invalidated caches
+- Memory corruption if cache keys don't capture all projection state
+
+**Prevention:**
+1. **Make projection state hashable** - `ProjectionConfig` should provide a cache key that captures all mutable state
+2. **Version the projection** - Add `projectionVersion: Long` that increments on any parameter change
+3. **Conservative invalidation** - When in doubt, invalidate. Better to reproject than show stale data
+4. **Explicit cache lifecycle** - `ProjectionCache` should be tied to a specific projection instance, not global
+
 ```kotlin
-// GeoSource.kt line 205-207 — HOLES IGNORED
-is Polygon -> {
-    val screenPoints = exterior.map { projection.project(it) }
-    drawPolygon(drawer, screenPoints, style)
+// Anti-pattern: Global cache with implicit invalidation
+object GlobalGeometryCache { ... }  // DON'T
+
+// Pattern: Cache tied to projection lifecycle
+class ProjectionWithCache(val projection: GeoProjection) {
+    private val cacheVersion = projection.config.cacheKey
+    private val geometryCache = mutableMapOf<...>()
+    
+    fun getCached(geometry: Geometry): List<Vector2> {
+        if (projection.config.cacheKey != cacheVersion) {
+            geometryCache.clear()  // Full invalidation on config change
+        }
+        // ... cache lookup
+    }
 }
 ```
 
+**Detection (Warning Signs):**
+- Geometries "stuck" in wrong positions after zoom/pan
+- Flickering or jumping when projection animates
+- Cache hit rates that seem too good to be true
+
+**Phase to Address:** Phase 2 (PERF-02 Caching) - Core design decision
+
+---
+
+### Pitfall 3: Unbounded Cache Growth (Memory Leaks)
+
+**What goes wrong:** Geometry caches grow without limit as users load different datasets or zoom through different regions, eventually causing OutOfMemoryError.
+
+**Why it happens:**
+- Multi-GB GeoPackage support means datasets can be massive
+- Prototyping workflow encourages loading many different datasets rapidly
+- No cache eviction strategy implemented
+
 **Consequences:**
-- Lake polygons show as solid blue (no hole)
-- Building footprints with courtyards render incorrectly
-- Data appears "wrong" but no error is thrown
+- Application crash after extended use
+- Unpredictable performance degradation as GC struggles
+- Poor experience for long-running creative sessions
 
 **Prevention:**
+1. **Bounded caches with LRU eviction** - Use `LinkedHashMap` with `removeEldestEntry` or Caffeine library
+2. **Size-aware caching** - Track approximate memory usage, evict when threshold exceeded
+3. **Explicit cache clearing API** - Allow users to `clearCache()` between dataset loads
+4. **Soft/Weak references for large geometries** - Allow GC to reclaim under memory pressure
+
 ```kotlin
-// Use OpenRNDR Shape for polygons with holes
-fun drawPolygonWithHoles(
-    drawer: Drawer,
-    exterior: List<Vector2>,
-    interiors: List<List<Vector2>>,
-    style: Style
-) {
-    if (interiors.isEmpty()) {
-        drawPolygon(drawer, exterior, style) // Simple case
-    } else {
-        // Create Shape with multiple contours
-        val shape = shape {
-            contour { /* exterior */ }
-            interiors.forEach { hole ->
-                contour { /* hole (reversed winding) */ }
+// Pattern: Bounded LRU cache for projected geometries
+class BoundedGeometryCache(maxEntries: Int = 1000) {
+    private val cache = object : LinkedHashMap<CacheKey, List<Vector2>>(
+        16, 0.75f, true  // access-order for LRU
+    ) {
+        override fun removeEldestEntry(eldest: MutableMap.Entry<CacheKey, List<Vector2>>): Boolean {
+            return size > maxEntries
+        }
+    }
+}
+```
+
+**Detection (Warning Signs):**
+- Memory usage grows monotonically during session
+- `OutOfMemoryError` after loading multiple datasets
+- Slowing performance over time (GC thrashing)
+
+**Phase to Address:** Phase 2 (PERF-02 Caching) - Implementation detail
+
+---
+
+### Pitfall 4: Breaking the Two-Tier API Contract
+
+**What goes wrong:** Batch projection and caching optimizations change method signatures or behavior in ways that break existing user code using the beginner/professional tier APIs.
+
+**Why it happens:**
+- v1.2.0 established a two-tier API: `drawer.geo(source)` (beginner) and `drawer.geo(source) { }` (professional)
+- Current `renderToDrawer()` in DrawerGeoExtensions.kt processes geometry per-frame
+- Optimizations may require pre-computation or different calling patterns
+
+**Consequences:**
+- User code from v1.2.0 examples breaks
+- "Quick start" promise of library is violated
+- Forces users to understand implementation details
+
+**Prevention:**
+1. **Preserve all existing entry points** - `drawer.geoJSON()`, `drawer.geoSource()`, `drawer.geo()` must work unchanged
+2. **Transparent optimization** - Caching should happen internally, not require API changes
+3. **Opt-in for advanced features** - If batching requires different setup, make it an optional config, not required
+4. **Test all 16 examples** - Ensure every example from v1.2.0 still works
+
+**Anti-pattern to avoid:**
+```kotlin
+// DON'T: Force users to manage cache explicitly
+val cache = GeometryCache()  // User shouldn't need this
+drawer.geo(source, cache)
+
+// DO: Internal optimization, same API
+drawer.geo(source)  // Internally uses cache, user doesn't care
+```
+
+**Detection (Warning Signs):**
+- Example code needs modification to work
+- Unit tests require updates
+- Documentation examples become invalid
+
+**Phase to Address:** Phase 2 (PERF-01/02) - Integration testing
+
+---
+
+### Pitfall 5: Over-Engineering for Prototyping Use Case
+
+**What goes wrong:** Implementing enterprise-grade caching (distributed, persistent, multi-level) when the use case is rapid creative prototyping with frequently changing data.
+
+**Why it happens:**
+- "While we're optimizing, let's do it right" thinking
+- Applying patterns from web services (Redis, memcached) to a desktop creative tool
+- Not respecting the PROJECT.md constraint: "focus is prototyping/exploration, not end-user apps"
+
+**Consequences:**
+- Complex code that's hard to modify for experiments
+- Optimization overhead exceeds benefit for typical datasets
+- Violates the library's core value: "fluid and creative" exploration
+
+**Prevention:**
+1. **YAGNI principle** - Don't implement features not needed for v1.3.0 scope
+2. **Start simple** - In-memory cache only, no persistence
+3. **Measure overhead** - Ensure cache management < 5% of frame time
+4. **Respect the domain** - Creative coding values flexibility over raw performance
+
+**Appropriate scope for v1.3.0:**
+- ✓ In-memory geometry cache for current session
+- ✓ Per-projection cache (cleared when projection changes)
+- ✓ Batch projection for visible geometries only
+- ✗ Persistent disk cache
+- ✗ Distributed/multi-level caching
+- ✗ Predictive pre-computation
+
+**Phase to Address:** Phase 1 (Design) - Scope definition
+
+---
+
+### Pitfall 6: Ignoring Data Locality in Batch Processing
+
+**What goes wrong:** Batch projection improves throughput but causes cache thrashing due to poor memory layout, negating the benefit.
+
+**Why it happens:**
+- Current `Geometry` sealed class with `List<Vector2>` creates pointer-chasing patterns
+- `Sequence<Feature>` iteration scatters memory access
+- Projection math on scattered data causes CPU cache misses
+
+**Consequences:**
+- Batch projection 50x slower than expected (per Game Programming Patterns Data Locality chapter)
+- No improvement over per-geometry projection
+- Wasted effort implementing batching
+
+**Prevention:**
+1. **Structure of Arrays (SoA) for batch operations** - Convert to contiguous arrays before batch projection
+2. **Process in tiles/chunks** - Work on spatially coherent subsets to improve cache locality
+3. **Avoid pointer chasing** - Flatten `List<List<Vector2>>` to primitive arrays for projection math
+4. **Profile with Cachegrind** - Verify cache hit rates improve
+
+```kotlin
+// Anti-pattern: Pointer chasing through nested lists
+features.forEach { feature ->  // Cache miss
+    feature.geometry.points.forEach { point ->  // Cache miss
+        projection.project(point)  // Cache miss on point data
+    }
+}
+
+// Pattern: Flatten to contiguous arrays first
+val flatCoords = FloatArray(totalPoints * 2)  // All coords contiguous
+// ... fill array ...
+batchProject(flatCoords)  // Sequential access, cache-friendly
+```
+
+**Detection (Warning Signs):**
+- Batch projection no faster than sequential
+- Performance doesn't scale with geometry count
+- CPU profiling shows high cache miss rates
+
+**Phase to Address:** Phase 2 (PERF-01 Batch Projection) - Implementation
+
+---
+
+### Pitfall 7: Cache Key Collisions with Geometry Identity
+
+**What goes wrong:** Different geometries with same bounds or similar properties generate identical cache keys, causing cross-contamination of cached results.
+
+**Why it happens:**
+- Using only bounding box as cache key misses internal structure differences
+- `List<Vector2>` hash codes may collide for different point arrangements
+- Multi-level geometries (Polygon with holes) have complex identity
+
+**Consequences:**
+- Geometry A renders with Geometry B's projected coordinates
+- Subtle visual corruption that's hard to debug
+- Non-deterministic behavior based on hash collisions
+
+**Prevention:**
+1. **Use structural hash** - Include all point coordinates in cache key computation
+2. **IdentityHashMap for object identity** - If objects are stable, use reference equality
+3. **Content-based addressing** - Hash the actual coordinate data, not metadata
+4. **Validate on retrieval** - Spot-check that cached result matches expected structure
+
+```kotlin
+// Pattern: Content-based cache key
+private fun geometryCacheKey(geometry: Geometry): Long {
+    var hash = geometry::class.java.name.hashCode().toLong()
+    when (geometry) {
+        is LineString -> {
+            hash = hash * 31 + geometry.points.size
+            geometry.points.forEach { pt ->
+                hash = hash * 31 + pt.x.hashCode()
+                hash = hash * 31 + pt.y.hashCode()
             }
         }
-        drawer.shape(shape)
+        // ... other types
+    }
+    return hash
+}
+```
+
+**Detection (Warning Signs):**
+- Wrong geometry rendered at wrong location
+- Cache hit rate suspiciously high
+- Visual artifacts that change on restart
+
+**Phase to Address:** Phase 2 (PERF-02 Caching) - Implementation
+
+---
+
+### Pitfall 8: Neglecting Multi-Geometry Sealed Class Exhaustiveness
+
+**What goes wrong:** Batch projection or caching optimization handles common geometry types (Point, LineString, Polygon) but misses Multi* variants, causing compiler errors or runtime failures.
+
+**Why it happens:**
+- `Geometry` is a sealed class with 6 types: Point, LineString, Polygon, MultiPoint, MultiLineString, MultiPolygon
+- Current `renderToDrawer()` uses exhaustive `when` expression
+- Optimizations may only target the "common" cases
+
+**Consequences:**
+- Kotlin compiler error: "'when' expression must be exhaustive"
+- Runtime `ClassCastException` or missing geometries
+- Incomplete feature implementation
+
+**Prevention:**
+1. **Compiler-enforced exhaustiveness** - Let Kotlin's sealed class checking catch missing cases
+2. **Test all geometry types** - Include Multi* variants in test suite
+3. **Refactor, don't bypass** - If `when` becomes complex, extract strategies but keep exhaustiveness
+4. **Use exhaustive when return** - `val result = when(geometry) { ... }` forces all branches
+
+```kotlin
+// Pattern: Exhaustive when with compiler checking
+fun projectGeometry(geometry: Geometry): ProjectedGeometry {
+    return when (geometry) {  // Compiler errors if any type missing
+        is Point -> ...
+        is LineString -> ...
+        is Polygon -> ...
+        is MultiPoint -> ...
+        is MultiLineString -> ...
+        is MultiPolygon -> ...
     }
 }
 ```
 
-**Detection:**
-- Test with GeoJSON containing Polygon with `holes` array
-- Visual test: Swiss cheese polygon should show holes
-- Assert: `polygon.interiors.isNotEmpty()` renders differently than exterior-only
+**Detection (Warning Signs):**
+- Kotlin compiler errors about non-exhaustive when
+- Missing Multi* geometries in rendered output
+- Tests pass individually but fail in batch
 
-**Warning signs:**
-- "My lake polygons are rendering solid"
-- "GeoJSON validates but looks wrong"
-- Coastal polygons showing land where water should be
-
-**Phase to address:** Phase implementing polygon ring rendering
+**Phase to Address:** Phase 2 (PERF-01/02) - Implementation
 
 ---
 
-### Pitfall 3: API Boilerplate Reduction — Over-Simplification That Removes Control
+### Pitfall 9: Assuming Projection Thread-Safety
 
-**What goes wrong:**
-Convenience APIs that are too simple:
-1. **Hide necessary configuration** — Users can't set padding, projection type, or CRS
-2. **Assume wrong defaults** — Mercator for polar data, WGS84 for BNG data
-3. **Block escape hatches** — No way to access underlying objects
-
-**Example of over-simplification:**
-```kotlin
-// TOO SIMPLE — hides projection choice
-fun Drawer.geoJSON(path: String) {
-    // Hardcoded Mercator, hardcoded padding, no CRS option
-}
-
-// BETTER — simple default, escape hatch available
-fun Drawer.geoJSON(
-    path: String,
-    projection: GeoProjection? = null,  // Allow override
-    style: Style? = null
-) {
-    // Uses provided projection, or fits automatically
-}
-```
+**What goes wrong:** Implementing parallel batch projection assuming `GeoProjection` implementations are thread-safe, causing race conditions or incorrect results.
 
 **Why it happens:**
-- "Make it simple" pressure leads to removing parameters
-- Demo code works with test data, fails with real data
-- Different users need different defaults
+- `ProjectionConfig` contains mutable state (center, scale, bounds)
+- `proj4j` library used for CRS transforms may have internal state
+- Kotlin coroutines make parallelization tempting
 
 **Consequences:**
-- Users abandon convenience API, go back to verbose approach
-- "The library doesn't support X" (it does, just not in convenience API)
-- GitHub issues requesting features that already exist
+- Non-deterministic projection results
+- Race conditions in concurrent batch processing
+- Subtle coordinate drift or corruption
 
 **Prevention:**
-Follow the **Tiered API Pattern** (already in codebase):
-```kotlin
-// Tier 1: One-liner (sensible defaults)
-drawer.geoJSON("world.json")
-
-// Tier 2: Load once, configure
-val source = geoSource("data.json")
-source.render(drawer, projection, style)
-
-// Tier 3: Full control
-val features = GeoJSON.load("data.json")
-features.forEach { /* custom logic */ }
-```
-
-**Key principle:** Convenience APIs must have **escape hatches** — optional parameters that expose underlying control.
-
-**Phase to address:** Phase implementing boilerplate reduction
-
----
-
-### Pitfall 4: MultiPolygon Projection — Per-Polygon vs Whole-Geometry Clamping
-
-**What goes wrong:**
-Two approaches to coordinate clamping in MultiPolygon, both have issues:
-
-1. **Clamp each polygon independently** — Creates visual artifacts at polygon boundaries
-2. **Clamp the whole MultiPolygon** — Requires expensive flatten/reconstruct
-
-**Current code (MultiRenderer.kt):**
-```kotlin
-fun drawMultiPolygon(...) {
-    val polygonsToRender = if (clampToMercatorBounds && projection is ProjectionMercator) {
-        multiPolygon.polygons.map { polygon ->
-            polygon.exterior.map { coord ->
-                Vector2(coord.x, coord.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT))
-            }
-        }
-    } else { ... }
-}
-```
-
-**Issue:** Only clamps exterior, ignores interior rings (holes).
-
-**Consequences:**
-- MultiPolygon with holes renders incorrectly at high latitudes
-- Some polygons show, others disappear (depending on clamp logic)
-- Inconsistent behavior between simple Polygon and MultiPolygon
-
-**Prevention:**
-```kotlin
-// Clamp ALL coordinates, including holes
-fun MultiPolygon.clampedToMercator(): MultiPolygon {
-    return MultiPolygon(
-        polygons.map { poly ->
-            Polygon(
-                exterior = poly.exterior.map { clampCoord(it) },
-                interiors = poly.interiors.map { ring ->
-                    ring.map { clampCoord(it) }
-                }
-            )
-        }
-    )
-}
-```
-
-**Detection:**
-- Test with MultiPolygon spanning > 85° latitude
-- Test with MultiPolygon containing holes at high latitude
-- Visual comparison: same geometry as Polygon vs MultiPolygon
-
-**Phase to address:** Phase implementing MultiPolygon improvements
-
----
-
-### Pitfall 5: Batch Coordinate Processing — Allocation Storm
-
-**What goes wrong:**
-Naive coordinate transformation allocates intermediate objects per-coordinate:
+1. **Treat projections as stateful** - Assume NOT thread-safe unless proven otherwise
+2. **Create projection per thread** - If parallelizing, give each thread its own projection instance
+3. **Document thread-safety** - Clearly mark which classes are safe for concurrent use
+4. **Test concurrency** - Use stress tests with multiple threads projecting same data
 
 ```kotlin
-// BAD: Allocates List + N Vector2s per geometry
-fun projectAll(points: List<Vector2>): List<Vector2> {
-    return points.map { projection.project(it) }  // New list + new Vector2s
-}
-
-// In render loop with 100k points:
-// 60 fps × 100k points = 6M allocations/second
-// GC pressure causes frame drops
-```
-
-**Why it happens:**
-- Kotlin's functional style encourages `.map { }` chains
-- Each `.map` creates new collection
-- Vector2 is immutable (must create new instances)
-
-**Consequences:**
-- Smooth animation at 1000 points, stuttering at 100k points
-- GC logs show frequent young-gen collections
-- "Works on my machine" (faster CPU hides the problem)
-
-**Prevention:**
-```kotlin
-// Option 1: Pre-compute and cache screen coordinates
-data class CachedGeometry(
-    val original: Geometry,
-    val screenCoords: List<Vector2>  // Computed once
-)
-
-// Option 2: Mutable buffer with reuse (for hot loops)
-class CoordinateBuffer(size: Int) {
-    private val buffer = DoubleArray(size * 2)
-    fun projectInto(source: List<Vector2>, projection: GeoProjection)
-}
-
-// Option 3: Materialize GeoSource once, not per-frame
-val source = geoSource("large.json").materialize()  // Pay once
-```
-
-**Detection:**
-- Profile with Android Studio/JProfiler
-- Count allocations per frame
-- Test with dataset 10x larger than typical
-
-**Phase to address:** Phase implementing coordinate batch processing
-
----
-
-### Pitfall 6: Educational Examples — Runnable vs Educational
-
-**What goes wrong:**
-Examples that prioritize being concise over being educational:
-
-```kotlin
-// BAD: Too concise, hides concepts
-fun main() = application {
-    program {
-        extend { drawer.geoJSON("data.json") }
+// Pattern: Thread-local projections for parallel batch processing
+class ParallelProjector(private val config: ProjectionConfig) {
+    private val threadLocalProjection = ThreadLocal.withInitial {
+        ProjectionFactory.create(config)
     }
-}
-// User learns: "call geoJSON()"
-// User doesn't learn: projections, features, styling, geometry types
-
-// BAD: Too complex, overwhelms
-fun main() = application {
-    program {
-        val source = GeoJSON.load("data.json", CRS.WebMercator)
-            .filterFeatures { it.properties["population"] > 100000 }
-            .materialize()
-        val projection = ProjectionFactory.fitBounds(
-            source.totalBoundingBox(),
-            width.toDouble(),
-            height.toDouble(),
-            padding = 0.9,
-            projection = ProjectionType.MERCATOR
-        )
-        // ... 50 more lines
-    }
+    
+    fun projectBatch(points: List<Vector2>): List<Vector2> = 
+        points.parallelStream().map { pt ->
+            threadLocalProjection.get().project(pt)
+        }.toList()
 }
 ```
+
+**Detection (Warning Signs):**
+- Flaky tests that pass/fail randomly
+- Coordinate values that change between runs
+- `ConcurrentModificationException` or similar
+
+**Phase to Address:** Phase 2 (PERF-01 Batch Projection) - If implementing parallelism
+
+---
+
+### Pitfall 10: Breaking Spatial Index Consistency
+
+**What goes wrong:** The Quadtree spatial index (v1.0.0) becomes inconsistent with cached geometries, causing incorrect spatial queries or missed features.
 
 **Why it happens:**
-- Developer writes example to test feature, not teach it
-- "Working code" != "Educational code"
-- No clear progression from simple to complex
+- v1.0.0 implemented Quadtree for efficient spatial queries on large datasets
+- If geometries are cached in transformed state, spatial index may reference wrong coordinates
+- `GeoSource` abstraction allows swappable sources with different indexing strategies
 
 **Consequences:**
-- Users copy-paste without understanding
-- "How do I customize X?" questions on trivial changes
-- Library appears more complex than it is
+- Spatial queries return wrong results
+- Features visible on screen not rendered (or vice versa)
+- Inconsistent behavior between query and render paths
 
 **Prevention:**
-Follow **Progressive Disclosure** in examples:
-```kotlin
-// Example 1: Minimal (show the concept)
-// Comments explain WHAT each line does
+1. **Index in source CRS** - Spatial index should always use original geographic coordinates
+2. **Separate concerns** - Spatial index for querying, cache for rendering
+3. **Consistent coordinate spaces** - Clear documentation of when coordinates are geo vs screen
+4. **Test index consistency** - Verify spatial queries work correctly with cached rendering
 
-// Example 2: Common customization (show options)
-// Comments explain WHY you'd change each thing
+**Detection (Warning Signs):**
+- `GeoSource.featuresInBounds()` returns different results than visible features
+- Missing or extra features when panning/zooming
+- Spatial query results don't match visual inspection
 
-// Example 3: Full control (show escape hatches)
-// Comments link to API docs for details
-```
-
-**Example file naming convention:**
-```
-render_BasicRendering.kt      // Minimal: load + render
-render_CustomStyle.kt         // Medium: styling options
-render_MultiProjection.kt     // Advanced: projection switching
-```
-
-**Detection:**
-- Can a new user understand the example in < 5 minutes?
-- Does the example demonstrate ONE concept clearly?
-- Are there comments explaining non-obvious choices?
-
-**Phase to address:** Phase implementing educational examples
+**Phase to Address:** Phase 2 (PERF-02 Caching) - Integration with existing features
 
 ---
 
 ## Moderate Pitfalls
 
-### Pitfall 7: Inspection API Naming — Confusing "Summary" vs "Stats"
+Issues that cause bugs or performance problems but are recoverable.
 
-**What goes wrong:**
-Inconsistent naming between `summary()`, `stats()`, `info()`, `describe()` — users don't know which to call.
+### Pitfall 11: Inefficient Cache Key Generation
 
-**Prevention:** Pick ONE term and use consistently:
-```kotlin
-// Choose "inspect" as the term
-fun GeoSource.inspect(): GeoSourceInspection
-data class GeoSourceInspection(
-    val featureCount: Long,
-    val bounds: Bounds,
-    val geometryTypes: Set<String>,
-    val propertyKeys: Set<String>
-)
-```
+**What goes wrong:** Computing cache keys (hash codes for geometry + projection) takes significant time, negating the benefit of caching.
 
-**Phase to address:** Phase implementing inspection API
+**Prevention:**
+- Cache the hash code in Geometry classes (immutable, so safe)
+- Use incremental hashing for large geometries
+- Consider identity-based caching for stable object graphs
 
 ---
 
-### Pitfall 8: Missing Geometry Type in Summary — Incomplete Information
+### Pitfall 12: Not Handling CRS Transformations in Cache
 
-**What goes wrong:**
-Summary shows feature count and bounds but NOT geometry types. User loads file, sees 1000 features, assumes all are Polygons — but 999 are Points.
+**What goes wrong:** Cache doesn't account for `CRSTransformer` usage (v1.1.0 feature), causing stale data when coordinate systems change.
 
 **Prevention:**
-```kotlin
-data class GeoSourceSummary(
-    val featureCount: Long,
-    val bounds: Bounds,
-    val geometryBreakdown: Map<String, Int>,  // "Point" -> 50, "Polygon" -> 10
-    val crs: String
-)
-```
-
-**Phase to address:** Phase implementing inspection API
+- Include source and target CRS in cache key
+- Invalidate cache when `autoTransformTo()` changes CRS
+- Document interaction between CRS transforms and projection cache
 
 ---
 
-### Pitfall 9: Convenience API CRS Assumptions — Wrong Defaults
+### Pitfall 13: Ignoring Animation Frame Coherence
 
-**What goes wrong:**
-`drawer.geoJSON(path)` assumes WGS84. If file is in British National Grid, coordinates are interpreted as lat/lng and projection fails.
+**What goes wrong:** Cache invalidates completely between frames even when projection is static, missing opportunity for frame-to-frame coherence.
 
 **Prevention:**
-- Read CRS from GeoJSON `crs` property (if present)
-- Provide explicit `crs` parameter in convenience API
-- Log warning when CRS is assumed
-
-**Phase to address:** Phase implementing boilerplate reduction
+- Track projection "generation" - only invalidate when config changes
+- Cache survives across frames by default
+- Clear only on explicit `extend { }` re-initialization
 
 ---
 
 ## Minor Pitfalls
 
-### Pitfall 10: Example Data Not Included — "File not found" Errors
+Annoyances or code quality issues.
 
-**What goes wrong:**
-Examples reference `"data/sample.geojson"` but file isn't in repo. Users clone, run example, get FileNotFoundException.
+### Pitfall 14: Verbosity in Cache Configuration
+
+**What goes wrong:** Users need to configure cache size, eviction policy, etc., adding friction to simple use cases.
 
 **Prevention:**
-- Include minimal sample data in `data/` directory
-- Or generate sample data programmatically in example
-- Document where to get larger test datasets
+- Sensible defaults (1000 entries, LRU eviction)
+- Global config override for advanced users
+- Beginner API should not expose cache configuration
 
-**Phase to address:** Phase implementing educational examples
+---
+
+### Pitfall 15: Missing Cache Statistics
+
+**What goes wrong:** No visibility into cache performance (hit rate, memory usage), making optimization debugging difficult.
+
+**Prevention:**
+- Optional `CacheStats` exposed via `GeoRenderConfig`
+- Debug logging for cache operations
+- Performance dashboard in debug builds
 
 ---
 
 ## Phase-Specific Warnings
 
-| Phase Topic | Likely Pitfall | Mitigation |
-|-------------|---------------|------------|
-| GeoSource inspection | O(n) operations on lazy sequences | Provide both lazy and eager variants; document cost |
-| Polygon ring rendering | Interior rings ignored | Use Shape for multi-contour; test with holes |
-| API boilerplate reduction | Over-simplification removes control | Tiered API with escape hatches |
-| MultiPolygon projection | Inconsistent clamping between Polygon/MultiPolygon | Unified clamp function for all geometry types |
-| Coordinate batch processing | Allocation storm in render loop | Pre-compute, cache, or use mutable buffers |
-| Educational examples | Too concise OR too complex | Progressive disclosure; one concept per example |
+| Phase | Likely Pitfall | Mitigation |
+|-------|---------------|------------|
+| PERF-03 (Benchmarking) | Measuring wrong things | Profile end-to-end frame time, not just projection |
+| PERF-01 (Batch Projection) | Data locality issues | Use SoA pattern, profile cache behavior |
+| PERF-02 (Caching) | Invalidation bugs | Version projection state, conservative invalidation |
+| Integration | Breaking existing APIs | Test all 16 examples, preserve entry points |
+| Testing | Not testing with real data | Use Ordnance Survey datasets, not toy examples |
 
 ---
 
-## Integration Pitfalls
+## Integration-Specific Pitfalls Summary
 
-| Integration Point | Common Mistake | Correct Approach |
-|-------------------|----------------|------------------|
-| OpenRNDR Shape for holes | Single ShapeContour | Multiple contours in Shape builder |
-| CRS in convenience API | Assume WGS84 | Read from file, allow override |
-| Projection fitting | Fit every frame | Fit once, cache projection |
-| Geometry transformation | Forget interior rings | Recursive transform of all coordinates |
+When adding batch projection and caching to the existing projection pipeline:
+
+1. **Projection Interface Compatibility** - `GeoProjection.project()` must remain the primary API; batch operations are optimizations, not replacements
+2. **Drawer Extension Transparency** - `drawer.geo()`, `drawer.geoSource()`, `drawer.geoJSON()` must work unchanged
+3. **Geometry Sealed Class Exhaustiveness** - All 6 geometry types must be handled in any new when expressions
+4. **Spatial Index Decoupling** - Don't tie spatial index updates to projection cache; keep concerns separate
+5. **CRS Transformation Ordering** - Cache should store post-CRS-transform, pre-projection data, not raw source data
 
 ---
 
 ## Prevention Checklist by Feature
 
-### GeoSource Inspection API
-- [ ] Document O(n) cost of lazy operations
-- [ ] Provide eager variants for large datasets
-- [ ] Include geometry type breakdown in summary
-- [ ] Test with 100k+ feature dataset
+### PERF-03: Benchmarking & Measurement
+- [ ] Profile end-to-end frame time before any optimization
+- [ ] Test with real datasets (Ordnance Survey 12GB GeoPackage)
+- [ ] Establish performance budgets (target: 60fps with 100k features)
+- [ ] Document current bottlenecks with measurements
 
-### Polygon Ring Rendering
-- [ ] Render interior rings (holes), not just exterior
-- [ ] Use OpenRNDR Shape for multi-contour
-- [ ] Test with GeoJSON containing holes
-- [ ] Verify winding order (right-hand rule)
+### PERF-01: Batch Screen Space Projection
+- [ ] Implement SoA (Structure of Arrays) for coordinate batches
+- [ ] Profile cache hit rates with Cachegrind or similar
+- [ ] Test all 6 geometry types (including Multi* variants)
+- [ ] Verify thread-safety if implementing parallel projection
+- [ ] Measure memory layout improvements
 
-### API Boilerplate Reduction
-- [ ] Keep Tier 3 (full control) API unchanged
-- [ ] Add optional parameters for escape hatches
-- [ ] Document what defaults are assumed
-- [ ] Test with non-default CRS/projection
+### PERF-02: Geometry Caching
+- [ ] Implement bounded LRU cache with configurable size
+- [ ] Create projection-versioned cache keys
+- [ ] Test cache invalidation on projection parameter changes
+- [ ] Verify no memory leaks with long-running sessions
+- [ ] Ensure cache is transparent to existing APIs
+- [ ] Document cache statistics for debugging
 
-### MultiPolygon Handling
-- [ ] Clamp interior rings, not just exterior
-- [ ] Consistent behavior with single Polygon
-- [ ] Test with high-latitude MultiPolygons
-- [ ] Test with MultiPolygons containing holes
-
-### Coordinate Batch Processing
-- [ ] Profile allocations per frame
-- [ ] Provide caching mechanism
-- [ ] Test with 100k+ coordinate dataset
-- [ ] Document performance tradeoffs
-
-### Educational Examples
-- [ ] One concept per example file
-- [ ] Comments explain non-obvious code
-- [ ] Include runnable sample data
-- [ ] Progressive complexity across examples
+### Integration Testing
+- [ ] All 16 v1.2.0 examples run without modification
+- [ ] Unit tests pass without changes to public API
+- [ ] Spatial index queries return correct results with cached rendering
+- [ ] CRS transformations work correctly with cache
+- [ ] Animation layer (projection tweening) works with cache invalidation
 
 ---
 
 ## Sources
 
-- **OpenRNDR Shape/ShapeContour**: Official guide on curves and shapes — Shape for holes
-- **GIS StackExchange**: Polygon holes in GeoJSON — winding order, rendering issues
-- **Codebase Analysis**: Geometry.kt, GeoSource.kt, MultiRenderer.kt, PolygonRenderer.kt
-- **Existing PITFALLS.md**: v1.0 CRS, memory, validation pitfalls (still relevant)
+- [Game Programming Patterns - Data Locality](https://gameprogrammingpatterns.com/data-locality.html) - Cache-friendly data structures, pointer chasing pitfalls
+- [Game Programming Patterns - Spatial Partition](https://gameprogrammingpatterns.com/spatial-partition.html) - Efficient spatial queries, data structure tradeoffs
+- [Game Programming Patterns - Flyweight](https://gameprogrammingpatterns.com/flyweight.html) - Shared state patterns, immutability requirements
+- [Martin Fowler - Two Hard Things](https://martinfowler.com/bliki/TwoHardThings.html) - Cache invalidation complexity
+- openrndr-geo PROJECT.md - Project context, constraints, existing architecture
+- openrndr-geo v1.2.0 codebase - Current projection pipeline, two-tier API, sealed class Geometry hierarchy
+- Previous PITFALLS.md (v1.2.0) - Related pitfalls for API design and coordinate processing
 
 ---
 
-*Pitfalls research for: openrndr-geo v1.2.0 API Improvements*
-*Researched: 2026-02-26*
+*Pitfalls research for: openrndr-geo v1.3.0 Performance Optimization*  
+*Researched: 2026-03-05*  
+*Previous: v1.2.0 PITFALLS.md (API Improvements)*

@@ -1,213 +1,174 @@
-# Research Summary — v1.2.0 API Improvements
+# Project Research Summary
 
-**Project:** openrndr-geo
-**Domain:** Geospatial visualization library (Kotlin/OpenRNDR)
-**Milestone:** v1.2.0 — API improvements and examples
-**Researched:** 2026-02-26
+**Project:** openrndr-geo  
+**Domain:** Geospatial Creative Coding Visualization  
+**Milestone:** v1.3.0 Performance  
+**Researched:** 2026-03-05  
 **Confidence:** HIGH
-
----
 
 ## Executive Summary
 
-v1.2.0 is an **API polish milestone** focused on filling gaps in the existing library rather than adding new capabilities. The research reveals that **no new dependencies are required** — all features leverage existing OpenRNDR 0.4.5 APIs (especially `Shape`/`ShapeContour` for polygon holes). The three priority features are: (1) `GeoSource.summary()` for data inspection, (2) polygon interior ring rendering (currently a TODO), and (3) batch coordinate projection for animation performance.
+The openrndr-geo v1.3.0 milestone focuses on performance optimization through batch coordinate projection and geometry caching for an existing Kotlin/JVM geospatial visualization library. Based on comprehensive analysis of the existing codebase and domain best practices, the recommended approach centers on implementing a **CachingGeoSource** wrapper pattern that transparently caches projected geometries keyed by projection parameters. This preserves the existing two-tier API (beginner/professional) while delivering 10-50x performance improvements for static cameras and pan operations.
 
-The main risk is **performance surprises from lazy sequences** — `summary()` operations are O(n) and can freeze apps on large GeoPackage datasets. Mitigation: document costs clearly and provide both lazy/eager variants. Secondary risk is **silent data loss** when polygon holes are ignored — current code renders only exterior rings, making lakes appear solid. This requires careful implementation using OpenRNDR's `Shape` API with multiple contours.
+The research confirms that **Caffeine 3.2.3** with **Aedile 3.0.2** provides the optimal caching foundation—offering peer-reviewed TinyLFU eviction algorithms and idiomatic Kotlin coroutine support. For benchmarking, **JMH 1.37** is essential to accurately measure JVM performance without JIT warmup and GC noise. The existing `kotlinx.coroutines` (already in classpath via OPENRNDR) handles parallel batch processing using `Dispatchers.Default` for CPU-bound coordinate transformations. All additions are carefully selected to respect OPENRNDR's single-threaded OpenGL context constraint.
 
----
+Key risks center on **cache invalidation** with projection changes (Fowler's "two hard things"), **unbounded cache growth** with multi-GB datasets, and **breaking the existing API contract** that users depend on. Mitigation requires projection-versioned cache keys, bounded LRU eviction, and transparent optimization that requires no API changes. The architecture follows established patterns: a caching layer between data and rendering, immutable `ProjectedGeometry` cache values, and lazy Sequence preservation for memory efficiency.
 
 ## Key Findings
 
 ### Recommended Stack
 
-**No new dependencies needed.** Existing stack supports all v1.2.0 features:
+The v1.3.0 milestone adds minimal but strategic dependencies to the existing Kotlin/JVM + OPENRNDR foundation. Core additions are **Caffeine 3.2.3** for high-performance caching (6x faster than Guava, used by Kafka/Cassandra/Neo4j), **Aedile 3.0.2** for idiomatic Kotlin coroutine wrappers, **JMH 1.37** for reliable microbenchmarking (official OpenJDK tool), and the JMH Gradle Plugin 0.7.3 for clean benchmark isolation. No additional threading libraries are needed—`kotlinx.coroutines` 1.10.2 is already available.
 
-| Technology | Purpose | v1.2.0 Use |
-|------------|---------|------------|
-| OpenRNDR 0.4.5 | Graphics/rendering | `Shape` API for polygon holes |
-| kotlinx-serialization | JSON parsing | Already used for GeoJSON |
-| proj4j | CRS transforms | No changes needed |
-| Kotlin stdlib | Extension functions | `summary()`, convenience APIs |
+**Core technologies:**
+- **Caffeine 3.2.3**: High-performance geometry cache with TinyLFU eviction — near-optimal caching used by major data systems
+- **Aedile 3.0.2**: Kotlin coroutine wrapper for Caffeine — provides `suspend` functions and Kotlin Duration support, eliminates Java Future boilerplate
+- **JMH 1.37**: Java Microbenchmark Harness — official OpenJDK tool eliminates JVM warmup, JIT, and GC noise
+- **kotlinx.coroutines 1.10.2**: Structured concurrency — use `Dispatchers.Default` for CPU-bound batch projection (already in classpath)
 
-**Key API to leverage:** `org.openrndr.shape.Shape` with multiple `ShapeContour` objects — exterior clockwise, holes counter-clockwise.
+**Critical constraint:** OPENRNDR's OpenGL context is single-threaded. All `Drawer` operations must happen on the main thread. Parallel processing is ONLY for data transformation (coordinate projection), not rendering.
 
-### Feature Breakdown
+### Expected Features
 
-**Priority 1 — Table Stakes (must have):**
+The research identifies four table stakes features users expect from a performance-oriented geospatial library, plus differentiators that provide competitive advantage. The existing codebase provides excellent foundation with `GeoProjection` interface, `ProjectedGeometry` sealed class, and Sequence-based lazy iteration.
 
-| Feature | Why | Complexity |
-|---------|-----|------------|
-| `GeoSource.summary()` | Users need to understand data before rendering; standard in Turf.js, GeoPandas | Low |
-| Polygon interior ring rendering | GeoJSON RFC 7946 mandates holes; current TODO leaves feature incomplete | Medium |
-| MultiPolygon bounds handling | Large datasets exceed Mercator limits; current implementation ignores interior rings | Low |
+**Must have (table stakes):**
+- **Batch Coordinate Projection** — transform arrays of geographic coordinates to screen space in one operation. Current gap: renderers call `map { projection.project(it) }` per-geometry instead of using existing `toScreen(points: List, projection)` batch variants.
+- **Projection State Detection** — automatic cache invalidation when zoom/pan changes. `ProjectionConfig` is already immutable (good!) but needs change detection mechanism.
+- **Frame-Stable Caching** — cache `ProjectedGeometry` per-feature when projection is stable. `withProjection()` creates projected features lazily every call—this should cache results.
+- **Performance Benchmarking** — frame time tracking, projection time breakdown, memory profiling. No performance measurement currently exists.
 
-**Priority 2 — Differentiators (should have):**
+**Should have (differentiators):**
+- **Lazy vs Eager Projection Strategy** — users choose memory vs compute tradeoff per-dataset. Builds on existing `GeoSource.materialize()` pattern.
+- **Spatial Partitioning for Visibility** — skip projection for off-screen geometries using existing `SpatialIndex`. `featuresInBounds()` exists but not used in renderers.
+- **Multi-threaded Batch Projection** — leverage all CPU cores for coordinate arrays. Kotlin coroutines make this idiomatic but adds thread-safety complexity.
 
-| Feature | Value | Complexity |
-|---------|-------|------------|
-| Batch coordinate projection | Cache projected coords for animation; most libs project per-frame | Medium |
-| Rendering boilerplate reduction | One-liner rendering with smart defaults | Low-Medium |
+**Defer (v2+):**
+- **Adaptive Level-of-Detail (LOD)** — simplify geometry based on zoom. HIGH complexity, requires simplification algorithm.
+- **GPU-Based Projection** — compute shaders. Massive complexity, overkill for creative coding use case.
 
-**Defer to v2+:**
-- Geometry clipping (vs clamping) — complex, rarely needed
-- Full GeoJSON validation — slow, most data is valid
-- Property-based styling DSL — better handled by user code
+### Architecture Approach
 
-### Architecture Integration
+The recommended architecture introduces a **CachingGeoSource** wrapper that sits between the data layer (`GeoSource`) and rendering layer, with cache invalidation keyed by projection parameters. This preserves the existing API while adding performance optimizations transparently.
 
-All v1.2.0 features integrate into **existing modules** — no new packages required:
+**Major components:**
+1. **CachingGeoSource** — wraps any GeoSource, maintains projection cache with invalidation semantics keyed by `ProjectionCacheKey`
+2. **BatchProjector** — efficient batch coordinate transformation using optimized bulk operations instead of per-point projection
+3. **ProjectionCacheKey** — immutable key capturing all projection parameters (width, height, center, scale) that affect screen coordinates
+4. **CacheStats** — optional performance metrics (hit rate, memory usage) for debugging and tuning
 
-```
-geo/
-├── GeoSource.kt           ← Add summary()
-├── GeoSourceSummary.kt    ← NEW data class
-├── Geometry.kt            ← Enhance clampToMercator() for interiors
-├── GeoSourceConvenience.kt ← Add convenience functions
-│
-├── render/
-│   ├── PolygonRenderer.kt ← Modify for interior rings
-│   └── MultiRenderer.kt   ← Use enhanced clamping
-│
-├── projection/
-│   └── ProjectionExtensions.kt ← Add batch projection
-│
-└── examples/              ← Add 5 new demo files
-```
-
-**Integration pattern:** Extend existing APIs rather than create parallel paths. Use default parameters for backward compatibility.
+The data flow changes from projecting every coordinate every frame to: cache check → hit (use cached) / miss (batch project → cache → use). Cache invalidation occurs on projection config changes, viewport size changes, or manual invalidate() call.
 
 ### Critical Pitfalls
 
-| Pitfall | Impact | Prevention |
-|---------|--------|------------|
-| **Lazy sequence O(n) operations** | `summary()` freezes app on 12GB GeoPackage | Document cost; provide eager variant |
-| **Silent polygon hole loss** | Lakes render solid, no error thrown | Use `Shape` with multiple contours; test with holes |
-| **Over-simplified convenience API** | Users can't customize projection/CRS | Keep escape hatches via optional parameters |
-| **MultiPolygon clamp ignores interiors** | Holes render incorrectly at high latitudes | Clamp all rings, not just exterior |
-| **Allocation storm in render loop** | GC pressure causes frame drops | Pre-project and cache screen coordinates |
+Research identified 10 pitfalls ranging from critical to minor. The top risks are:
 
----
+1. **Premature Optimization Without Profiling Baseline** — Implementing complex caching without first establishing where time is actually spent. **Avoid by:** Completing PERF-03 (benchmarking) BEFORE PERF-01/02; measuring current frame times with real datasets (12GB Ordnance Survey data).
+
+2. **Cache Invalidation Cascade with Projection Changes** — Cached geometries become stale when projection parameters change, causing visual artifacts. `GeoProjection` is an interface with multiple implementations; animation enables tweening parameters. **Avoid by:** Making projection state hashable; versioning projection with `projectionVersion: Long`; conservative invalidation (when in doubt, invalidate).
+
+3. **Unbounded Cache Growth (Memory Leaks)** — Geometry caches grow without limit with multi-GB GeoPackage support. **Avoid by:** Bounded LRU caches (Caffeine with maximumSize); soft/weak references for large geometries; explicit `clearCache()` API for users.
+
+4. **Breaking the Two-Tier API Contract** — v1.2.0 established `drawer.geo(source)` (beginner) and `drawer.geo(source) { }` (professional) APIs. Optimizations must not change signatures or behavior. **Avoid by:** Transparent optimization (caching internal, no API changes); preserving all existing entry points; testing all 16 v1.2.0 examples.
+
+5. **Over-Engineering for Prototyping Use Case** — Implementing enterprise-grade caching (distributed, persistent) when the use case is rapid creative prototyping. **Avoid by:** YAGNI principle—in-memory cache only, no persistence; ensuring cache management < 5% of frame time; respecting "fluid and creative" exploration goal.
 
 ## Implications for Roadmap
 
-### Suggested Phase Structure
+Based on research, suggested phase structure:
 
-#### Phase 1: Data Inspection API
-**Rationale:** Foundation feature with no dependencies; enables debugging workflows.
-**Delivers:** `GeoSource.summary()` + `GeoSourceSummary` data class
-**Files:** `GeoSource.kt`, new `GeoSourceSummary.kt`
-**Avoids:** Pitfall #1 (document O(n) cost, provide lazy/eager variants)
-**Example:** `api_SummaryDemo.kt`
+### Phase 1: Foundation (PERF-03 Benchmarking)
+**Rationale:** Must establish baseline metrics before any optimization work. "You can't improve what you don't measure." Completing this first prevents premature optimization (Pitfall #1).
+**Delivers:** JMH benchmark suite, current frame time measurements, bottleneck identification, performance budgets (target: 60fps with 100k features)
+**Addresses:** Performance Benchmarking (table stakes #4)
+**Avoids:** Pitfall #1 (premature optimization)
+**Research flag:** LOW — JMH is well-documented, established patterns
 
-#### Phase 2: Polygon Ring Rendering
-**Rationale:** Closes feature gap (current TODO); required before MultiPolygon improvements.
-**Delivers:** Interior ring rendering via OpenRNDR `Shape` API
-**Files:** `PolygonRenderer.kt`, `Geometry.kt`
-**Avoids:** Pitfall #2 (use Shape with multiple contours, test with holes)
-**Example:** `render_PolygonHoles.kt`
+### Phase 2: Batch Projection (PERF-01)
+**Rationale:** Core infrastructure for performance. Batch projection is prerequisite for caching (can't cache what isn't batched). Uses existing `ScreenTransform.toScreen()` variants.
+**Delivers:** BatchProjector component, integration with render pipeline, SoA (Structure of Arrays) for cache-friendly memory layout
+**Uses:** kotlinx.coroutines for parallel processing, Caffeine for simple caches
+**Implements:** Batch coordinate transformation, optimized bulk operations
+**Avoids:** Pitfall #6 (data locality issues), Pitfall #8 (sealed class exhaustiveness)
+**Research flag:** MEDIUM — needs validation with real datasets
 
-#### Phase 3: MultiPolygon Bounds Enhancement
-**Rationale:** Builds on Phase 2; applies ring handling to MultiPolygon clamping.
-**Delivers:** Interior ring clamping in `clampToMercator()`
-**Files:** `Geometry.kt`, `MultiRenderer.kt`
-**Avoids:** Pitfall #4 (clamp all rings, not just exterior)
-**Example:** `render_OceanData.kt`
+### Phase 3: Geometry Caching (PERF-02)
+**Rationale:** The main performance win. Builds on Phase 2's batch projection. Caching delivers 10-50x improvement for static cameras.
+**Delivers:** CachingGeoSource wrapper, ProjectionCacheKey, cache invalidation logic, LRU eviction
+**Uses:** Caffeine 3.2.3, Aedile 3.0.2 for coroutine support
+**Implements:** Caching layer between data and rendering, transparent optimization
+**Avoids:** Pitfall #2 (invalidation bugs), Pitfall #3 (unbounded growth), Pitfall #7 (cache key collisions)
+**Research flag:** HIGH — cache invalidation is complex, needs careful testing
 
-#### Phase 4: Convenience API Layer
-**Rationale:** Polish layer that depends on core features working correctly.
-**Delivers:** One-line rendering shortcuts, style presets
-**Files:** `GeoSourceConvenience.kt`, `DrawerGeoExtensions.kt`
-**Avoids:** Pitfall #3 (keep escape hatches via optional parameters)
-**Example:** `api_BoilerplateFree.kt`
+### Phase 4: Integration & Validation
+**Rationale:** Ensure all v1.2.0 examples work unchanged, spatial index consistency maintained, and API contract preserved.
+**Delivers:** Updated drawer extensions with optional `cache = true` parameter, integration tests, all 16 examples validated
+**Avoids:** Pitfall #4 (breaking API), Pitfall #10 (spatial index inconsistency)
+**Research flag:** LOW — integration testing is standard practice
 
-#### Phase 5: Batch Projection (Optional)
-**Rationale:** Performance optimization for animation use cases; can defer if time-constrained.
-**Delivers:** Pre-projected geometry cache, `projectOnce()` extension
-**Files:** New `ScreenSpace.kt` or extend `ProjectionExtensions.kt`
-**Avoids:** Pitfall #5 (cache screen coordinates, avoid per-frame allocation)
-**Example:** `perf_BatchProjection.kt`
-
-#### Phase 6: Documentation & Examples
-**Rationale:** Final phase to document all features with runnable examples.
-**Delivers:** 5+ new example files, updated README
-**Avoids:** Pitfall #6 (progressive disclosure, one concept per example)
+### Phase 5: Performance Examples (Optional)
+**Rationale:** Demonstrate the optimizations with working examples. Builds on all previous phases.
+**Delivers:** `perf_CachingDemo.kt`, `perf_BatchProjection.kt`, performance comparison visualizations
+**Research flag:** LOW — examples follow established patterns
 
 ### Phase Ordering Rationale
 
-1. **Phase 1 → Phase 2:** Summary API has no dependencies; polygon rings are independent but benefit from inspection for debugging
-2. **Phase 2 → Phase 3:** MultiPolygon clamp needs ring handling from Phase 2
-3. **Phase 4 depends on 1-3:** Convenience API wraps core features
-4. **Phase 5 is optional:** Performance optimization can ship in v1.2.1 if needed
-5. **Phase 6 is last:** Examples demonstrate all completed features
+The order follows dependency chain: **benchmarking → batch projection → caching → integration**. This prevents the critical mistake of optimizing without measurement (Phase 1 first). Batch projection must exist before caching can work (Phase 2 before 3). Integration testing must validate the complete system (Phase 4 last).
+
+The grouping separates infrastructure (Phases 1-2) from optimization (Phase 3) from validation (Phase 4). This minimizes rework—if batch projection design changes, caching implementation is affected but benchmarking remains valid.
 
 ### Research Flags
 
-**Phases needing deeper research during planning:**
-- **Phase 5 (Batch Projection):** Performance optimization needs benchmarking; exact API shape depends on profiling results
+Phases likely needing deeper research during planning:
+- **Phase 2 (PERF-01):** Batch projection memory layout—SoA pattern effectiveness needs validation with Cachegrind profiling
+- **Phase 3 (PERF-02):** Cache invalidation edge cases—projection animation tweening interaction needs API research
 
-**Phases with standard patterns (skip research-phase):**
-- **Phase 1 (Inspection):** Straightforward aggregation, well-documented patterns
-- **Phase 2 (Polygon Rings):** OpenRNDR Shape API is well-documented
-- **Phase 6 (Examples):** Follow existing naming convention
-
----
+Phases with standard patterns (skip research-phase):
+- **Phase 1 (PERF-03):** JMH benchmarking—well-documented, established patterns
+- **Phase 4 (Integration):** API compatibility testing—standard regression testing
+- **Phase 5 (Examples):** Example creation—follows existing naming convention
 
 ## Confidence Assessment
 
 | Area | Confidence | Notes |
 |------|------------|-------|
-| Stack | HIGH | Verified via OpenRNDR API docs, existing build.gradle.kts |
-| Features | HIGH | Based on codebase analysis, GeoJSON RFC 7946, industry patterns |
-| Architecture | HIGH | Direct codebase analysis of existing integration points |
-| Pitfalls | HIGH | Derived from actual TODO comments and known issues |
+| Stack | HIGH | All technologies verified with official sources (Caffeine 3.2.3, Aedile 3.0.2, JMH 1.37 all from official repos) |
+| Features | HIGH | Based on direct codebase analysis and established geospatial visualization patterns (D3, Mapbox, deck.gl) |
+| Architecture | HIGH | Based on direct codebase analysis + Kotlin caching patterns; wrapper pattern is established |
+| Pitfalls | HIGH | Based on codebase analysis + domain expertise; Game Programming Patterns data locality principles applied |
 
 **Overall confidence:** HIGH
 
 ### Gaps to Address
 
-| Gap | Resolution |
-|-----|------------|
-| Exact batch projection API shape | Profile during Phase 5 implementation; may need `ProjectedGeoSource` wrapper or simpler extension |
-| Performance thresholds for lazy vs eager | Test with 100k+ feature datasets during Phase 1 |
-| Sample data for examples | Generate minimal test GeoJSON or include in `data/` directory |
+1. **Cache size limits for 12GB GeoPackage:** What's the memory budget? Need to support partial caching only—determine threshold during Phase 3 implementation.
 
----
+2. **Multi-threading priority:** Is single-threaded caching sufficient for v1.3.0? Decision needed in Phase 2 planning—defer parallel projection if caching provides adequate gains.
 
-## Open Questions for User
+3. **Animation layer interaction:** v1.1.0 enables projection tweening. How does cache invalidation work during animation? Needs validation during Phase 3.
 
-1. **Batch projection priority:** Is Phase 5 (performance optimization) required for v1.2.0, or can it defer to v1.2.1?
-
-2. **Summary API naming:** Prefer `summary()`, `inspect()`, or `describe()`? (Research suggests `summary()` matches GeoPandas conventions)
-
-3. **Example data strategy:** Should examples include minimal sample data in repo, or generate programmatically?
-
-4. **Convenience API scope:** Which shortcuts are most valuable?
-   - `source.renderFit(drawer)` — auto-fit projection
-   - `Style.presets.redOutline` — common styles
-   - `geometry.draw(drawer, projection)` — method on geometry
-
-5. **Documentation depth:** Update README only, or add API guide document?
-
----
+4. **Real dataset validation:** Research used codebase analysis; actual 12GB Ordnance Survey data testing needed in Phase 1 benchmarking.
 
 ## Sources
 
 ### Primary (HIGH confidence)
-- OpenRNDR Shape API: https://api.openrndr.org/openrndr-shape/org.openrndr.shape/-shape/
-- OpenRNDR ShapeContour: https://api.openrndr.org/openrndr-shape/org.openrndr.shape/-shape-contour/
-- GeoJSON RFC 7946: https://tools.ietf.org/html/rfc7946
-- Existing codebase: `src/main/kotlin/geo/**/*.kt`
+- **Caffeine**: https://github.com/ben-manes/caffeine (v3.2.3, Oct 2025) — caching algorithms, TinyLFU eviction
+- **Aedile**: https://github.com/sksamuel/aedile (v3.0.2, Dec 2025) — Kotlin coroutine wrappers
+- **JMH**: https://github.com/openjdk/jmh — official OpenJDK benchmarking tool
+- **JMH Gradle Plugin**: https://github.com/melix/jmh-gradle-plugin (v0.7.3, Apr 2025) — Gradle integration
+- **kotlinx.coroutines**: https://github.com/Kotlin/kotlinx.coroutines (v1.10.2, Apr 2025) — structured concurrency
+- **OPENRNDR Concurrency**: https://guide.openrndr.org/drawing/concurrencyAndMultithreading.html — OpenGL context constraints
 
 ### Secondary (MEDIUM confidence)
-- Shapely documentation: https://shapely.readthedocs.io/
-- Turf.js meta functions: https://turfjs.org/
-- openrndr-examples: https://github.com/openrndr/openrndr-examples
+- **Existing codebase analysis** — `ScreenTransform.kt`, `ProjectionConfig.kt`, `Feature.kt`, `GeoSource.kt`, `DrawerGeoExtensions.kt`, `SpatialIndex.kt`
+- **Geospatial visualization patterns** — D3.js projection caching, MapLibre/deck.gl batch rendering approaches
+- **Game Programming Patterns** — Data Locality chapter (cache-friendly structures), Spatial Partition chapter
 
-### Tertiary (domain expertise)
-- GIS StackExchange: polygon hole rendering issues
-- Creative coding patterns: Processing, p5.js example conventions
+### Tertiary (LOW confidence)
+- **Memory optimization techniques** — Object pooling for Vector2, lazy sequences for large datasets (needs validation with actual 12GB data)
 
 ---
 
-*Research completed: 2026-02-26*
+*Research completed: 2026-03-05*  
+*Synthesized from: STACK.md, FEATURES.md, ARCHITECTURE.md, PITFALLS.md*  
 *Ready for roadmap: yes*

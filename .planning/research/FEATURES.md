@@ -1,321 +1,332 @@
-# Feature Landscape
+# Feature Landscape: Performance Optimization (Batch Projection & Geometry Caching)
 
-**Domain:** Geospatial visualization library (Kotlin/OPENRNDR)
-**Researched:** 2026-02-26
-**Focus:** v1.2.0 API improvements and examples
-
----
-
-## Scope Note
-
-This document focuses **only** on features proposed for v1.2.0. For the full v1.0 feature landscape, see git history.
+**Project:** openrndr-geo v1.3.0 Performance  
+**Domain:** Geospatial creative coding visualization  
+**Researched:** 2026-03-05  
+**Researcher Context:** Existing codebase analysis + geospatial visualization patterns
 
 ---
 
-## Table Stakes
+## Executive Summary
 
-Features users expect in geospatial libraries. Missing = product feels incomplete.
+This research focuses on performance optimization features for an existing geospatial visualization library. The codebase currently performs per-point projection in the render loop, which becomes a bottleneck with large datasets (10K+ features, 100K+ coordinates). The goal is to add:
 
-| Feature | Why Expected | Complexity | Dependencies | Notes |
-|---------|--------------|------------|--------------|-------|
-| **GeoSource summary/inspection** | Users need to understand data before rendering. Standard in Turf.js (`meta`), Shapely (`geom_type`, `bounds`), GeoPandas (`info()`). | Low | Existing: `features`, `totalBoundingBox()`, `crs` | Add: geometry type counts, property schema extraction, coordinate range stats |
-| **Polygon interior ring rendering** | GeoJSON RFC 7946 mandates holes (interior rings). Complex polygons (countries with lakes, buildings with courtyards) require this. | Medium | Existing: `Polygon.interiors` | `interiorsToScreen()` is TODO. Need to render as CompoundShape or subtractive mask |
-| **MultiPolygon bounds handling** | Large MultiPolygons may span dateline or exceed Mercator limits. Standard approach: clamp coordinates, not clip geometry. | Low | Existing: `clampToMercator()`, `clampAndNormalize()` | Current implementation is table stakes quality |
-| **Example file organization** | Educational libraries need discoverable examples. Pattern: `category_FeatureName.kt` is established in creative coding (Processing, p5.js, OPENRNDR). | Low | None | Current pattern is excellent: `anim_`, `render_`, `layer_`, `proj_`, `core_` prefixes |
+1. **Batch screen space projection** — transform all coordinates in bulk
+2. **Geometry caching** — cache projected coordinates across animation frames
+3. **Performance measurement** — quantify gains and identify bottlenecks
 
-## Differentiators
+The existing architecture provides excellent foundation: `GeoProjection` interface, `ProjectedGeometry` sealed class, `GeoSource.withProjection()` method, and Sequence-based lazy iteration.
 
-Features that set openrndr-geo apart from other geospatial libraries. Not expected, but valued.
+---
 
-| Feature | Value Proposition | Complexity | Dependencies | Notes |
-|---------|-------------------|------------|--------------|-------|
-| **Rendering boilerplate reduction** | Creative coding UX: one-liner rendering with smart defaults. D3.js, p5.js compete on this. | Medium | Existing: Style DSL, drawer extensions | Consider: `source.drawQuick(drawer)`, `polygon.withHoles()` helper, projection presets |
-| **Batch coordinate projection** | Performance optimization for large datasets. Project once, render many times (animation). Most libs project per-frame. | Medium | Existing: `GeoProjection.project()` | Add: `projectAll(points): List<Vector2>`, cached projection on GeoSource, lazy+memoized pattern |
+## Current State Analysis
 
-## Anti-Features
+### Existing Projection Pipeline
 
-Features to explicitly NOT build.
+```
+GeoSource.features
+  → Sequence<Feature>
+  → renderToDrawer() [PER FRAME]
+    → geometry.renderToDrawer() [PER GEOMETRY]
+      → projection.project(Vector2) [PER COORDINATE]
+        → Mercator math (trig functions) [PER COORDINATE]
+```
 
-| Anti-Feature | Why Avoid | What to Do Instead |
-|--------------|-----------|-------------------|
-| **Geometry clipping (vs clamping)** | Clipping (actual polygon cutting at dateline/Mercator bounds) is complex, changes topology, rarely needed for visualization. | Use clamping (`clampToMercator()`) which preserves geometry structure |
-| **Full GeoJSON validation** | Validation is slow, most data is valid, errors are edge cases. | Provide `validate()` as opt-in, not automatic |
-| **Property-based styling DSL** | Overly complex for creative coding use case. Declarative styling is better handled by user code. | Keep simple Style class, let users write `when` expressions on properties |
+**Current implementation:**
+- `ScreenTransform.kt` provides batch transforms: `toScreen(points: Sequence<Vector2>, projection)`
+- `Geometry.kt` has per-geometry `toScreen()` methods (line 66-70, 115-127)
+- `Feature.kt` defines `ProjectedGeometry` sealed class hierarchy (lines 112-139)
+- `GeoSource.kt` provides `withProjection()` returning `Sequence<ProjectedFeature>` (lines 274-297)
+
+**Performance bottleneck:** Every frame re-projects every coordinate, even when:
+- Camera is static (no zoom/pan changes)
+- Geometry hasn't changed
+- Projection parameters are identical
+
+---
+
+## Table Stakes (Must Have)
+
+Features users expect from a performance-oriented geospatial library.
+
+### 1. Batch Coordinate Projection
+**Why Expected:** Single-call projection of large coordinate arrays is standard in geospatial libs (D3, Mapbox, deck.gl). Per-point function call overhead accumulates.
+
+| Aspect | Details |
+|--------|---------|
+| **What** | Transform arrays of geographic coordinates to screen space in one operation |
+| **Complexity** | LOW — `toScreen()` variants already exist in `ScreenTransform.kt` (lines 33-47) |
+| **Current Gap** | Renderers call `map { projection.project(it) }` per-geometry (DrawerGeoExtensions.kt lines 278-304) |
+| **Implementation** | Extend existing `toScreen()` to use SIMD-friendly loops; integrate into render pipeline |
+
+**Key insight from existing code:** `ScreenTransform.kt` already has batch variants:
+```kotlin
+fun toScreen(points: Sequence<Vector2>, projection: GeoProjection): List<Vector2>
+fun toScreen(points: List<Vector2>, projection: GeoProjection): List<Vector2>
+```
+
+**What's missing:** These aren't used in the render pipeline; renderers still map individually.
+
+### 2. Projection State Detection
+**Why Expected:** Caching requires knowing when to invalidate. Users expect automatic cache invalidation when zoom/pan changes.
+
+| Aspect | Details |
+|--------|---------|
+| **What** | Detect when projection parameters change (center, zoom, viewport size) |
+| **Complexity** | MEDIUM — Requires `ProjectionConfig` equality checks |
+| **Current Gap** | `ProjectionConfig` is a data class (good!) but no change detection mechanism |
+| **Implementation** | Add `ProjectionState` wrapper with `hasChangedSince(lastConfig)` |
+
+**Dependencies:** `ProjectionConfig` (ProjectionConfig.kt lines 39-80) already immutable and comparable.
+
+### 3. Frame-Stable Caching
+**Why Expected:** Static maps shouldn't recompute every frame. Animation libraries (Lottie, GSAP) cache computed values.
+
+| Aspect | Details |
+|--------|---------|
+| **What** | Cache `ProjectedGeometry` per-feature when projection is stable |
+| **Complexity** | MEDIUM — Cache keyed by `(featureId, projectionHash)` |
+| **Current Gap** | `ProjectedGeometry` exists (Feature.kt lines 112-139) but not cached |
+| **Implementation** | `ProjectedGeometryCache` with LRU eviction, keyed by projection state |
+
+**Key insight:** `withProjection()` (GeoSource.kt lines 274-278) creates projected features lazily every call. This should cache results.
+
+### 4. Performance Benchmarking
+**Why Expected:** "Fast" is meaningless without metrics. Users need to measure before/after and identify bottlenecks.
+
+| Aspect | Details |
+|--------|---------|
+| **What** | Frame time tracking, projection time breakdown, memory profiling |
+| **Complexity** | LOW-MEDIUM — Simple nanosecond timers, optional JMH for micro-benchmarks |
+| **Current Gap** | No performance measurement exists |
+| **Implementation** | `PerformanceMonitor` with frame times, `ProjectionProfiler` for transform costs |
+
+---
+
+## Differentiators (Competitive Advantage)
+
+Features that set this library apart. Not expected, but valued.
+
+### 1. Lazy vs Eager Projection Strategy
+**Value Proposition:** Users choose memory vs compute tradeoff per-dataset. Large datasets use lazy streaming; small datasets use eager caching.
+
+| Aspect | Details |
+|--------|---------|
+| **What** | `ProjectionStrategy.LAZY` (Sequence-based, per-frame) vs `ProjectionStrategy.EAGER` (pre-computed cache) |
+| **Complexity** | MEDIUM — Requires strategy pattern in render pipeline |
+| **Dependency** | Builds on existing `GeoSource.materialize()` pattern (GeoSource.kt lines 127-133) |
+
+**Existing foundation:** `GeoSource.materialize()` shows the library already thinks about lazy vs eager tradeoffs:
+```kotlin
+fun materialize(): GeoSource {
+    val materializedFeatures = listFeatures()  // Eager
+    return object : GeoSource(crs) {
+        override val features: Sequence<Feature> = materializedFeatures.asSequence()
+    }
+}
+```
+
+### 2. Adaptive Level-of-Detail (LOD)
+**Value Proposition:** Simplify geometry when zoomed out (e.g., drop every Nth point). Standard in game engines, rare in geospatial libs.
+
+| Aspect | Details |
+|--------|---------|
+| **What** | Simplify geometries based on zoom level using Ramer-Douglas-Peucker or point decimation |
+| **Complexity** | HIGH — Requires simplification algorithm, zoom threshold config |
+| **Current Gap** | No simplification exists |
+| **Trade-off** | Pre-processing vs runtime simplification |
+
+### 3. Spatial Partitioning for Visibility
+**Value Proposition:** Skip projection entirely for off-screen geometries. Existing quadtree infrastructure enables this.
+
+| Aspect | Details |
+|--------|---------|
+| **What** | Cull geometries outside viewport before projection using spatial index |
+| **Complexity** | LOW-MEDIUM — `SpatialIndex` exists, integrate into render loop |
+| **Current Gap** | `featuresInBounds()` exists (GeoSource.kt lines 60-62) but not used in renderers |
+| **Implementation** | `GeoRenderer` checks bounds intersection before projection |
+
+**Existing foundation:**
+- `SpatialIndex` already implemented for efficient spatial queries
+- `featuresInBounds(bounds)` (GeoSource.kt line 60) filters by bounding box
+
+### 4. Multi-threaded Batch Projection
+**Value Proposition:** Leverage all CPU cores for large coordinate arrays. Kotlin coroutines make this idiomatic.
+
+| Aspect | Details |
+|--------|---------|
+| **What** | Parallel projection using `Dispatchers.Default` for coordinate batches |
+| **Complexity** | MEDIUM-HIGH — Thread-safety, batch sizing, coroutine overhead |
+| **Current Gap** | All projection is single-threaded |
+| **Implementation** | `asyncBatchProject()` splitting coordinates into chunks |
+
+---
+
+## Anti-Features (Explicitly NOT Building)
+
+Features to explicitly avoid. These are traps in geospatial perf optimization.
+
+### 1. Automatic Geometry Simplification (Always-On)
+**Why Avoid:** Silent data loss. Users expect the geometry they loaded to render exactly. Auto-simplification causes confusion when features "disappear" at certain zooms.
+
+**What to do instead:**
+- Explicit `simplify(epsilon)` API that users call intentionally
+- Visual indicator when simplification is active
+- Preserves original geometry, creates simplified copy
+
+### 2. GPU-Based Projection (Compute Shaders)
+**Why Avoid:** Massive complexity, limited platform support, overkill for creative coding use case. Current bottleneck is single-threaded CPU projection, not GPU throughput.
+
+**What to do instead:**
+- CPU multi-threading (simpler, portable)
+- Batch processing (amortizes function call overhead)
+- Caching (eliminates redundant work)
+
+### 3. Tile-Based Rendering Pyramid
+**Why Avoid:** Premature optimization for creative coding workflow. Adds complexity (tile generation, storage, LOD management) that conflicts with "rapid prototyping" goal.
+
+**What to do instead:**
+- Batch projection with caching
+- Spatial culling (existing quadtree)
+- Defer to v2 if needed for massive datasets
+
+### 4. Projected Geometry Persistence to Disk
+**Why Avoid:** Cache invalidation complexity (CRS changes, projection parameter changes). Disk I/O often slower than recomputing for typical dataset sizes.
+
+**What to do instead:**
+- In-memory LRU cache only
+- Application-lifetime cache (clear on projection change)
+- No persistence across app restarts
 
 ---
 
 ## Feature Dependencies
 
 ```
-Polygon interior rendering → MultiPolygon rendering (both need hole support)
-Batch projection → Animation performance (cache projected coords per-frame)
-GeoSource summary → Debug/inspection workflows (understand data before rendering)
+┌─────────────────────────────────────────────────────────────┐
+│                    DEPENDENCY GRAPH                          │
+└─────────────────────────────────────────────────────────────┘
+
+Batch Projection (Table Stakes #1)
+    ├─→ Uses: ScreenTransform.toScreen() [exists]
+    ├─→ Uses: GeoProjection.project() [exists]
+    └─→ Integrates with: renderToDrawer() [exists]
+
+Projection State Detection (Table Stakes #2)
+    ├─→ Uses: ProjectionConfig [exists, immutable data class]
+    ├─→ Uses: ProjectionConfig.equals() [auto-generated]
+    └─→ Enables: Cache invalidation
+
+Frame-Stable Caching (Table Stakes #3)
+    ├─→ Depends on: Projection State Detection
+    ├─→ Uses: ProjectedGeometry [exists]
+    ├─→ Uses: withProjection() [exists]
+    └─→ New: Cache keyed by (feature, projectionHash)
+
+Performance Benchmarking (Table Stakes #4)
+    ├─→ Independent
+    └─→ Integrates with: All render paths
+
+Lazy vs Eager Strategy (Differentiator #1)
+    ├─→ Depends on: Frame-Stable Caching
+    ├─→ Uses: materialize() pattern [exists]
+    └─→ New: ProjectionStrategy enum
+
+Spatial Culling (Differentiator #3)
+    ├─→ Uses: SpatialIndex [exists]
+    ├─→ Uses: featuresInBounds() [exists]
+    └─→ Integrates with: Render pipeline
+
+Multi-threaded Projection (Differentiator #4)
+    ├─→ Depends on: Batch Projection
+    └─→ New: Parallel coordinate transformation
 ```
 
 ---
 
-## Feature Details
+## Implementation Recommendations
 
-### 1. GeoSource Summary/Inspection Function
+### Phase 1: Foundation (Week 1)
 
-**What libraries provide:**
+1. **Batch Projection Integration**
+   - Modify `DrawerGeoExtensions.kt` renderers to use `toScreen(points: List, projection)`
+   - Single change eliminates per-point lambda allocation overhead
+   - **Estimated improvement:** 10-20% reduction in projection time
 
-| Library | Function | Returns |
-|---------|----------|---------|
-| Turf.js | `turf.meta.coordAll()` | All coordinates as flat array |
-| Turf.js | `turf.meta.featureEach()` | Iterator with index |
-| Shapely | `geom.geom_type` | String: "Point", "Polygon", etc. |
-| Shapely | `geom.bounds` | `(minx, miny, maxx, maxy)` |
-| GeoPandas | `gdf.info()` | Schema, row count, memory usage |
-| OpenLayers | `source.getFeatures()` | Feature array with `.getGeometry().getType()` |
+2. **Projection State Tracking**
+   - Add `ProjectionState` class wrapping `ProjectionConfig` with generation counter
+   - Hash code based on config values
+   - **Complexity:** 1 day
 
-**Recommended API for openrndr-geo:**
+### Phase 2: Caching (Week 1-2)
 
-```kotlin
-data class GeoSourceSummary(
-    val featureCount: Long,
-    val bounds: Bounds,
-    val crs: String,
-    val geometryTypes: Map<String, Int>,  // "Point" -> 5, "Polygon" -> 3
-    val propertyKeys: Set<String>,         // All unique property names
-    val coordinateCount: Long              // Total vertices
-)
+1. **ProjectedGeometryCache**
+   ```kotlin
+   class ProjectedGeometryCache {
+       private val cache = ConcurrentHashMap<CacheKey, ProjectedGeometry>()
+       private var currentGeneration: Long = 0
+       
+       fun getOrProject(feature: Feature, projection: GeoProjection): ProjectedGeometry
+       fun invalidateOnProjectionChange(newConfig: ProjectionConfig)
+   }
+   ```
 
-fun GeoSource.summarize(): GeoSourceSummary
-```
+2. **Integration Points**
+   - `GeoSource.withProjection()` → use cache
+   - `renderToDrawer()` → check cache before projecting
+   - **Estimated improvement:** 80-95% reduction for static camera
 
-**Complexity:** Low - iterate features once, aggregate stats.
+### Phase 3: Visibility & Metrics (Week 2)
 
----
+1. **Spatial Culling**
+   - In `DrawerGeoExtensions.kt`, filter `features` with `featuresInBounds(viewportBounds)`
+   - Apply before projection
+   - **Estimated improvement:** Variable (depends on viewport coverage)
 
-### 2. Polygon Interior/Exterior Ring Handling
-
-**GeoJSON RFC 7946 specification:**
-
-> For Polygons with more than one ring, the first MUST be the exterior ring, and any others MUST be interior rings. The exterior ring bounds the surface, and interior rings bound holes.
-
-**Winding order (right-hand rule):**
-- Exterior: counterclockwise (positive area)
-- Interior: clockwise (negative area)
-- Note: RFC says parsers SHOULD NOT reject non-compliant winding for backwards compatibility
-
-**How libraries render holes:**
-
-| Library | Approach |
-|---------|----------|
-| D3.js | `d3-path` with `moveTo`/`lineTo` + even-odd fill rule |
-| Canvas 2D | `context.fill('evenodd')` |
-| SVG | `fill-rule="evenodd"` |
-| OPENRNDR | `ShapeContour` + `CompositionNode` with subtractive blend, or `Shape` with holes |
-
-**Recommended implementation:**
-
-```kotlin
-// Option A: CompoundShape (multiple contours, even-odd fill)
-fun Polygon.toShape(projection: GeoProjection): Shape {
-    val exteriorContour = ShapeContour.fromPoints(
-        exterior.map { projection.project(it) }, 
-        closed = true
-    )
-    val holeContours = interiors.map { ring ->
-        ShapeContour.fromPoints(
-            ring.map { projection.project(it) },
-            closed = true
-        )
-    }
-    return Shape(listOf(exteriorContour) + holeContours)
-}
-
-// Option B: Keep current approach, add hole support to writePolygon
-fun writePolygonWithHoles(
-    drawer: Drawer,
-    exterior: List<Vector2>,
-    holes: List<List<Vector2>>,
-    style: Style
-) {
-    // Use OPENRNDR Shape with multiple contours
-}
-```
-
-**Complexity:** Medium - need to handle Shape/Composition API, test with complex polygons.
+2. **Performance Monitor**
+   - Frame time histogram
+   - Projection time breakdown
+   - Cache hit rate
 
 ---
 
-### 3. Rendering Boilerplate Reduction
+## Complexity Summary
 
-**Current pattern (already good):**
-
-```kotlin
-val source = geoSource("data.geojson")
-val projection = ProjectionMercator { width = 800; height = 600 }
-extend {
-    source.render(drawer, projection)
-}
-```
-
-**Potential improvements:**
-
-| Improvement | Example | Value |
-|-------------|---------|-------|
-| Quick render (auto-fit) | `source.renderQuick(drawer)` | Eliminates projection setup for simple cases |
-| Style presets | `Style.redOutline`, `Style.blueFill(alpha=0.5)` | Common styles without DSL |
-| Geometry helpers | `polygon.draw(drawer, projection)` | Method on geometry, not just GeoSource |
-
-**Recommended additions:**
-
-```kotlin
-// Already exists but could enhance
-fun GeoSource.render(drawer: Drawer, style: Style? = null)  // Auto-fits
-
-// New: style presets
-object StylePresets {
-    val redOutline get() = Style { stroke = ColorRGBa.RED; fill = null }
-    val blueFill get() = Style { fill = ColorRGBa.BLUE.withAlpha(0.5) }
-}
-
-// New: geometry extension
-fun Geometry.draw(drawer: Drawer, projection: GeoProjection, style: Style? = null)
-```
-
-**Complexity:** Low - mostly convenience extensions.
-
----
-
-### 4. MultiPolygon Bounds Handling
-
-**Clipping vs Clamping:**
-
-| Approach | What it does | When to use |
-|----------|--------------|-------------|
-| **Clamping** | Constrains coordinates to valid range, preserves topology | Visualization (almost always) |
-| **Clipping** | Cuts geometry at boundary, creates new polygons | GIS analysis, dateline crossing |
-
-**Current implementation (already correct):**
-
-```kotlin
-fun Geometry.clampToMercator(): Geometry
-fun Geometry.clampAndNormalize(): Geometry
-```
-
-**Recommendation:** Keep clamping approach. Add documentation that clipping is out of scope.
-
-**Complexity:** Already implemented. No new work needed.
-
----
-
-### 5. Batch Coordinate Projection
-
-**Current approach (per-point):**
-
-```kotlin
-features.forEach { feature ->
-    val screenPoints = feature.geometry.points.map { projection.project(it) }
-    // render
-}
-```
-
-**Problem:** In animation loops (60fps), projection is recalculated every frame for static data.
-
-**Optimization strategies:**
-
-| Strategy | Implementation | Tradeoff |
-|----------|----------------|----------|
-| **Pre-project GeoSource** | `source.projected(projection)` returns new GeoSource with cached screen coords | Memory for speed |
-| **Batch project function** | `projection.projectAll(points): List<Vector2>` | Single pass, no cache |
-| **Lazy + memoized** | Project on first access, cache result | Memory only for used coords |
-
-**Recommended API:**
-
-```kotlin
-// Batch projection (simple)
-fun GeoProjection.projectAll(points: List<Vector2>): List<Vector2> =
-    points.map { project(it) }
-
-// Cached projection on GeoSource
-fun GeoSource.withProjection(projection: GeoProjection): ProjectedGeoSource {
-    val projectedFeatures = features.map { it.project(projection) }.toList()
-    return ProjectedGeoSource(projectedFeatures)
-}
-
-// Or: extension on Geometry
-fun Geometry.projected(projection: GeoProjection): Geometry = when (this) {
-    is Point -> Point(projection.project(Vector2(x, y)).let { it.x to it.y })
-    is LineString -> LineString(points.map { projection.project(it) })
-    // ... etc
-}
-```
-
-**Complexity:** Medium - need new `ProjectedGeoSource` type or cache mechanism.
-
----
-
-### 6. Example File Organization
-
-**Current pattern (excellent):**
-
-```
-src/main/kotlin/geo/examples/
-├── anim_BasicAnimation.kt
-├── anim_ChainDemo.kt
-├── anim_TimelineDemo.kt
-├── anim_RippleDemo.kt
-├── core_CRSTransformTest.kt
-├── core_DataLoadingTest.kt
-├── layer_BlendModes.kt
-├── layer_Composition.kt
-├── layer_Graticule.kt
-├── proj_HaversineDemo.kt
-├── proj_ProjectionTest.kt
-├── render_BasicRendering.kt
-├── render_LiveRendering.kt
-```
-
-**Best practices from creative coding:**
-
-| Practice | Example | Reason |
-|----------|---------|--------|
-| Prefix by category | `anim_`, `render_`, `layer_` | Groups related examples |
-| Descriptive suffix | `BasicAnimation`, not `Demo1` | Self-documenting |
-| Single concept per file | One feature per example | Educational clarity |
-| Runnable standalone | `fun main() = application { }` | Copy-paste friendly |
-
-**Recommendation:** Keep current pattern. Add new examples following same convention:
-- `render_PolygonWithHoles.kt` - interior ring rendering
-- `data_SourceSummary.kt` - inspection API
-- `perf_BatchProjection.kt` - performance optimization demo
-
-**Complexity:** Low - organizational, not technical.
-
----
-
-## MVP Recommendation
-
-**Implement in v1.2.0:**
-
-| Priority | Feature | Rationale |
-|----------|---------|-----------|
-| P1 | GeoSource summary | Low complexity, high value for debugging/understanding data |
-| P1 | Polygon interior ring rendering | Table stakes, closes feature gap, TODO already exists |
-| P2 | Batch projection | Differentiator, enables animation performance |
-
-**Defer to later versions:**
-
-| Feature | Reason |
-|---------|--------|
-| Rendering boilerplate reduction | Current API is good enough |
-| Additional examples | Add organically as features land |
+| Feature | Complexity | Risk | Estimated Effort |
+|---------|------------|------|------------------|
+| Batch Projection Integration | LOW | Low | 2 days |
+| Projection State Detection | LOW | Low | 1 day |
+| Frame-Stable Caching | MEDIUM | Medium | 3-4 days |
+| Performance Benchmarking | LOW | Low | 2 days |
+| Lazy/Eager Strategy | MEDIUM | Low | 2 days |
+| Spatial Culling | LOW | Low | 1-2 days |
+| Multi-threaded Projection | MEDIUM-HIGH | Medium | 4-5 days |
+| Adaptive LOD | HIGH | High | 1-2 weeks |
 
 ---
 
 ## Sources
 
-- GeoJSON RFC 7946: https://tools.ietf.org/html/rfc7946 (HIGH confidence - official spec)
-- Shapely documentation: https://shapely.readthedocs.io/en/stable/manual.html (HIGH confidence - authoritative Python GIS)
-- D3-geo: https://github.com/d3/d3-geo (HIGH confidence - industry standard)
-- OPENRNDR guide: https://guide.openrndr.org (HIGH confidence - official docs)
-- Existing codebase analysis: GeoSource.kt, Geometry.kt, render.kt, PolygonRenderer.kt (HIGH confidence - primary source)
+- **Existing codebase analysis:**
+  - `ScreenTransform.kt` — batch transformation functions
+  - `ProjectionConfig.kt` — immutable configuration
+  - `Feature.kt` — `ProjectedGeometry` sealed class
+  - `GeoSource.kt` — `withProjection()` method, `materialize()` pattern
+  - `DrawerGeoExtensions.kt` — render pipeline
+  - `SpatialIndex.kt` — spatial query infrastructure
+
+- **Geospatial visualization patterns:**
+  - D3.js projection caching strategies
+  - MapLibre/deck.gl batch rendering approaches
+  - Game engine LOD systems (Unity, Unreal)
+
+- **Confidence:** HIGH — Based on direct codebase analysis and established patterns in geospatial visualization domain.
 
 ---
 
-*Feature research for: openrndr-geo v1.2.0*
-*Researched: 2026-02-26*
+## Open Questions for Phase Planning
+
+1. **Cache size limits:** What's the memory budget? (Need to support 12GB GeoPackage → partial caching only)
+2. **Multi-threading priority:** Is single-threaded caching sufficient for v1.3.0?
+3. **LOD scope:** Should adaptive simplification be deferred to v2?
+4. **Benchmarking depth:** Built-in metrics or external profiler integration?

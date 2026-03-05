@@ -1,477 +1,324 @@
-# Technology Stack — v1.2.0 API Improvements
+# Technology Stack: v1.3.0 Performance Additions
 
-**Project:** openrndr-geo
-**Milestone:** v1.2.0 - API improvements and examples
-**Researched:** 2026-02-26
-**Confidence:** HIGH (verified via OpenRNDR API docs, existing codebase, openrndr-examples)
-
----
+**Project:** openrndr-geo  
+**Milestone:** v1.3.0 Performance  
+**Researched:** 2026-03-05  
+**Confidence:** HIGH (verified with official sources)
 
 ## Executive Summary
 
-For v1.2.0, **no new dependencies are required**. The existing stack (OpenRNDR 0.4.5, proj4j, kotlinx-serialization) already supports all planned features. The focus is on leveraging **OpenRNDR's `Shape` API** for proper polygon hole rendering and establishing **consistent example patterns**.
+For the v1.3.0 performance milestone focusing on batch projection and geometry caching, the stack requires minimal additions to the existing Kotlin/JVM + OPENRNDR foundation. The core additions are: **Caffeine** for geometry caching, **JMH** for benchmarking, and **kotlinx.coroutines** for parallel batch processing. All choices prioritize compatibility with OPENRNDR's single-threaded OpenGL context constraint and the creative coding use case.
 
----
+## Existing Stack (Validated)
 
-## Feature-Specific Stack Recommendations
+| Technology | Version | Purpose | Status |
+|------------|---------|---------|--------|
+| Kotlin/JVM | 2.2.10 | Core language | ✓ Existing |
+| OPENRNDR | 0.4.5 | Creative coding framework | ✓ Existing |
+| JVM | 17 | Runtime | ✓ Existing |
+| proj4j | Latest | CRS transformations | ✓ Existing |
+| Gradle (KTS) | 8.x | Build system | ✓ Existing |
 
-### 1. GeoSource `summary()` Function
+## New Additions for v1.3.0
 
-**No new dependencies needed.** Implement as an extension function using existing Kotlin stdlib.
+### Core Caching
 
-**Recommended implementation pattern:**
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| **Caffeine** | 3.2.3 | High-performance geometry cache | Near-optimal caching with TinyLFU eviction. Used by Kafka, Cassandra, Neo4j. 6x faster than Guava Cache. |
+| **Aedile** | 3.0.2 | Kotlin coroutine wrapper for Caffeine | Provides `suspend` functions, Kotlin Duration support, and idiomatic Kotlin API. Eliminates Java Future boilerplate. |
+
+**Rationale:** Caffeine is the industry standard for JVM caching with peer-reviewed eviction algorithms (TinyLFU). Aedile provides a thin, idiomatic Kotlin wrapper that integrates with coroutines—critical for non-blocking cache operations in animation loops.
+
+**When to use Caffeine directly vs Aedile:**
+- Use **Aedile** for async cache loading with coroutines (animation frame cache misses)
+- Use **Caffeine directly** for simple synchronous caches (projected geometry store)
+
+### Benchmarking
+
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| **JMH (Java Microbenchmark Harness)** | 1.37 | Microbenchmark framework | Official OpenJDK tool. Eliminates JVM warmup, JIT, and GC noise for accurate measurements. |
+| **JMH Gradle Plugin** | 0.7.3 | Gradle integration | Community-standard plugin. Isolates benchmarks in `src/jmh` source set. |
+
+**Rationale:** JMH is the only reliable way to benchmark JVM code. Hand-rolled timing loops are unreliable due to JIT optimization, dead code elimination, and JVM warmup effects. The Gradle plugin provides clean separation from main/test sources.
+
+### Parallel Processing
+
+| Technology | Version | Purpose | Why |
+|------------|---------|---------|-----|
+| **kotlinx.coroutines** | 1.10.2 | Structured concurrency | Already available via OPENRNDR. Use `Dispatchers.Default` for CPU-bound batch projection work. |
+
+**Rationale:** Coroutines are already in the classpath via OPENRNDR. For batch coordinate projection (CPU-bound, not I/O-bound), `Dispatchers.Default` provides optimal thread pool sizing (cores + 2). No additional threading libraries needed.
+
+**Critical constraint:** OPENRNDR's OpenGL context is single-threaded. All `Drawer` operations must happen on the main thread. Parallel processing is ONLY for data transformation (coordinate projection), not rendering.
+
+## Integration Architecture
+
+### Geometry Caching Pipeline
+
+```
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  Raw Geometry   │────▶│  Projection Cache│────▶│  Screen Geometry│
+│  (Lat/Lng)      │     │  (Caffeine)      │     │  (Vector2)      │
+└─────────────────┘     └──────────────────┘     └─────────────────┘
+                                │
+                                ▼
+                       ┌──────────────────┐
+                       │  Cache Key:      │
+                       │  geometryId +    │
+                       │  viewportHash    │
+                       └──────────────────┘
+```
+
+### Batch Projection Flow
+
 ```kotlin
-fun GeoSource.summary(): GeoSourceSummary {
-    val featureList = features.toList()  // Materialize for analysis
-    val geometryTypes = featureList.map { it.geometry::class.simpleName }.distinct()
-    val propertyKeys = featureList.flatMap { it.properties.keys }.distinct()
-    
-    return GeoSourceSummary(
-        featureCount = featureList.size,
-        geometryTypes = geometryTypes,
-        propertyKeys = propertyKeys,
-        crs = crs,
-        bounds = totalBoundingBox()
-    )
-}
-
-data class GeoSourceSummary(
-    val featureCount: Int,
-    val geometryTypes: List<String?>,
-    val propertyKeys: List<String>,
-    val crs: String,
-    val bounds: Bounds
-) {
-    override fun toString(): String = buildString {
-        appendLine("GeoSource Summary")
-        appendLine("═".repeat(40))
-        appendLine("Features:    $featureCount")
-        appendLine("CRS:         $crs")
-        appendLine("Bounds:      $bounds")
-        appendLine("Geometry:    ${geometryTypes.joinToString()}")
-        appendLine("Properties:  ${propertyKeys.take(5).joinToString()}${if (propertyKeys.size > 5) "..." else ""}")
+// CPU-bound work on background threads
+val projected = withContext(Dispatchers.Default) {
+    geometries.parMap { geo ->
+        projectToScreen(geo, viewport)
     }
 }
+
+// Back to main thread for OpenGL rendering
+withContext(Dispatchers.Main) {
+    drawer.contours(projected)
+}
 ```
 
-**Integration points:**
-- Add to `GeoSource.kt` or create new `GeoSourceSummary.kt`
-- Print-friendly `toString()` for console debugging
+## Installation
 
----
+### build.gradle.kts
 
-### 2. Polygon Interior/Exterior Ring Handling
-
-**Key OpenRNDR APIs to use:**
-
-| API | Purpose | Source |
-|-----|---------|--------|
-| `Shape(contours: List<ShapeContour>)` | Compound shape with multiple contours (holes) | `org.openrndr.shape.Shape` |
-| `ShapeContour.fromPoints(points, closed, polarity)` | Create contour from point list | `org.openrndr.shape.ShapeContour.Companion` |
-| `ShapeContour.clockwise` | Get contour with clockwise winding | `org.openrndr.shape.ShapeContour` |
-| `ShapeContour.counterClockwise` | Get contour with counter-clockwise winding | `org.openrndr.shape.ShapeContour` |
-| `ShapeContour.winding` | Inspect winding order | `org.openrndr.shape.Winding` |
-| `drawer.shape(shape)` | Render compound shape with holes | `org.openrndr.draw.Drawer` |
-
-**Winding order convention (OpenRNDR uses Y-down screen coordinates):**
-- **CLOCKWISE** = Exterior ring (filled)
-- **COUNTER_CLOCKWISE** = Interior ring (hole)
-
-**Recommended implementation:**
 ```kotlin
-// In PolygonRenderer.kt or new CompoundShapeRenderer.kt
-
-import org.openrndr.shape.Shape
-import org.openrndr.shape.ShapeContour
-
-/**
- * Convert a Polygon (with holes) to an OpenRNDR Shape.
- * 
- * Uses winding order convention:
- * - Exterior ring: CLOCKWISE
- * - Interior rings: COUNTER_CLOCKWISE
- */
-fun Polygon.toShape(projection: GeoProjection): Shape {
-    // Project exterior ring to screen space, ensure clockwise
-    val exteriorContour = ShapeContour.fromPoints(
-        points = exterior.map { projection.project(it) },
-        closed = true
-    ).clockwise
+dependencies {
+    // Caching
+    implementation("com.github.ben-manes.caffeine:caffeine:3.2.3")
+    implementation("com.sksamuel.aedile:aedile-core:3.0.2")
     
-    // Project interior rings (holes), ensure counter-clockwise
-    val holeContours = interiors.map { hole ->
-        ShapeContour.fromPoints(
-            points = hole.map { projection.project(it) },
-            closed = true
-        ).counterClockwise
-    }
+    // Coroutines (usually already provided by OPENRNDR)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+}
+
+plugins {
+    // Benchmarking
+    id("me.champeau.jmh") version "0.7.3"
+}
+
+jmh {
+    jmhVersion = "1.37"
+    iterations = 5
+    warmupIterations = 3
+    fork = 2
+    benchmarkMode = listOf("avgt") // Average time
+    timeUnit = "ms"
+    includes = listOf(".*ProjectionBenchmark.*")
+}
+```
+
+## Usage Patterns
+
+### 1. Frame-Stable Geometry Cache
+
+Cache projected geometries keyed by viewport state. Invalidates when zoom/center changes.
+
+```kotlin
+import com.github.benmanes.caffeine.cache.Caffeine
+import java.util.concurrent.TimeUnit
+
+class GeometryCache {
+    private val cache = Caffeine.newBuilder()
+        .maximumSize(1000)
+        .expireAfterAccess(5, TimeUnit.MINUTES)
+        .recordStats() // For performance monitoring
+        .build<CacheKey, List<Vector2>>()
     
-    return Shape(listOf(exteriorContour) + holeContours)
-}
-
-/**
- * Draw a Polygon with proper hole handling.
- */
-fun drawPolygonWithHoles(
-    drawer: Drawer,
-    polygon: Polygon,
-    projection: GeoProjection,
-    style: Style? = null
-) {
-    val mergedStyle = mergeStyles(StyleDefaults.defaultPolygonStyle, style)
-    applyStyle(drawer, mergedStyle)
-    
-    val shape = polygon.toShape(projection)
-    drawer.shape(shape)
-}
-```
-
-**Files to modify:**
-- `src/main/kotlin/geo/render/PolygonRenderer.kt` — Add `writePolygonWithHoles()`
-- `src/main/kotlin/geo/Geometry.kt` — Implement `interiorsToScreen()` (currently `TODO`)
-- `src/main/kotlin/geo/render/MultiRenderer.kt` — Update `drawMultiPolygon()` to use holes
-
----
-
-### 3. Reducing Rendering Boilerplate
-
-**Current state:** `DrawerGeoExtensions.kt` already provides:
-- `drawer.geoJSON(path)` — One-line render
-- `drawer.geoSource(source)` — Load-once, draw-many
-- `source.render(drawer, projection)` — GeoSource render method
-
-**Recommended additions:**
-
-```kotlin
-// In GeoSourceConvenience.kt or new GeoSourceShortcuts.kt
-
-/**
- * Load and render in one call with auto-fit.
- */
-fun Drawer.drawGeo(path: String, style: Style? = null) {
-    geoJSON(path, style = style)
-}
-
-/**
- * Create projection from data bounds, then render.
- */
-fun GeoSource.drawFitted(drawer: Drawer, style: Style? = null, padding: Double = 0.9) {
-    val bounds = totalBoundingBox()
-    val projection = ProjectionFactory.fitBounds(
-        bounds = bounds,
-        width = drawer.width.toDouble(),
-        height = drawer.height.toDouble(),
-        padding = padding,
-        projection = ProjectionType.MERCATOR
-    )
-    render(drawer, projection, style)
-}
-```
-
-**Import consolidation:** Create `geo/api.kt` with star exports:
-```kotlin
-// src/main/kotlin/geo/api.kt
-package geo
-
-// Single import gets everything needed
-// import geo.*
-
-// Data types
-typealias GeoPoint = Point
-typealias GeoLineString = LineString
-typealias GeoPolygon = Polygon
-
-// Re-export commonly used functions
-fun loadGeo(path: String) = geoSource(path)
-```
-
----
-
-### 4. MultiPolygon Outside Projection Bounds
-
-**Current approach in `MultiRenderer.kt`:**
-```kotlin
-// Already clamps to MAX_MERCATOR_LAT
-val polygonsToRender = if (clampToMercatorBounds && projection is ProjectionMercator) {
-    multiPolygon.polygons.map { polygon ->
-        polygon.exterior.map { coord ->
-            Vector2(coord.x, coord.y.coerceIn(-MAX_MERCATOR_LAT, MAX_MERCATOR_LAT))
+    fun getProjected(geometry: Geometry, viewport: Viewport): List<Vector2> {
+        val key = CacheKey(geometry.id, viewport.hash())
+        return cache.get(key) { _ ->
+            projectGeometry(geometry, viewport)
         }
     }
-} else { ... }
+}
 ```
 
-**Issues with current approach:**
-1. Only handles exterior rings (ignores holes)
-2. Doesn't handle longitude wrapping (dateline crossing)
-3. Doesn't split geometries at projection boundaries
+### 2. Async Batch Projection with Aedile
 
-**Recommended improvements:**
+For expensive projections that shouldn't block the render thread:
 
 ```kotlin
-// In Geometry.kt - already exists, ensure it's used consistently
-fun Geometry.clampAndNormalize(): Geometry { ... }
+import com.sksamuel.aedile.core.asCache
+import kotlin.time.Duration.Companion.seconds
 
-// In MultiRenderer.kt
-fun drawMultiPolygon(
-    drawer: Drawer,
-    multiPolygon: MultiPolygon,
-    projection: GeoProjection,
-    userStyle: Style? = null,
-    boundsHandling: BoundsHandling = BoundsHandling.CLAMP
-) {
-    val processedMultiPolygon = when (boundsHandling) {
-        BoundsHandling.CLAMP -> multiPolygon.clampToMercator() as MultiPolygon
-        BoundsHandling.NORMALIZE -> multiPolygon.clampAndNormalize() as MultiPolygon
-        BoundsHandling.SKIP -> {
-            // Filter out polygons with out-of-bounds coordinates
-            MultiPolygon(multiPolygon.polygons.filter { it.validateMercatorBounds() })
-        }
-    }
+class AsyncProjectionCache {
+    private val cache = Caffeine.newBuilder()
+        .expireAfterWrite(10.seconds)
+        .asCache<CacheKey, List<Vector2>>()
     
-    processedMultiPolygon.polygons.forEach { poly ->
-        drawPolygonWithHoles(drawer, poly, projection, userStyle)
-    }
-}
-
-enum class BoundsHandling {
-    CLAMP,      // Clamp coordinates to valid range
-    NORMALIZE,  // Clamp + normalize longitude
-    SKIP        // Skip polygons outside bounds
-}
-```
-
----
-
-### 5. Batch Screen Space Projection
-
-**Problem:** Current API re-projects every frame. For static data, this is wasteful.
-
-**Recommended approach: Cached projection**
-
-```kotlin
-// In Geometry.kt or new ScreenSpace.kt
-
-/**
- * Projected geometry ready for rendering (no further projection needed).
- */
-sealed class ScreenGeometry {
-    abstract val screenPoints: List<Vector2>
-}
-
-data class ScreenPoint(val screen: Vector2) : ScreenGeometry() {
-    override val screenPoints = listOf(screen)
-}
-
-data class ScreenLineString(override val screenPoints: List<Vector2>) : ScreenGeometry()
-
-data class ScreenPolygon(
-    val exterior: List<Vector2>,
-    val interiors: List<List<Vector2>> = emptyList()
-) : ScreenGeometry() {
-    override val screenPoints = exterior
-    
-    fun toShape(): Shape {
-        val exteriorContour = ShapeContour.fromPoints(exterior, true).clockwise
-        val holeContours = interiors.map { 
-            ShapeContour.fromPoints(it, true).counterClockwise 
-        }
-        return Shape(listOf(exteriorContour) + holeContours)
-    }
-}
-
-/**
- * Project geometry to screen space once, cache for repeated rendering.
- */
-fun Geometry.projectToScreen(projection: GeoProjection): ScreenGeometry = when (this) {
-    is Point -> ScreenPoint(projection.project(Vector2(x, y)))
-    is LineString -> ScreenLineString(points.map { projection.project(it) })
-    is Polygon -> ScreenPolygon(
-        exterior = exterior.map { projection.project(it) },
-        interiors = interiors.map { ring -> ring.map { projection.project(it) } }
-    )
-    is MultiPoint -> TODO("MultiPoint batch projection")
-    is MultiLineString -> TODO("MultiLineString batch projection")
-    is MultiPolygon -> TODO("MultiPolygon batch projection")
-}
-
-/**
- * Pre-projected feature for efficient render loops.
- */
-data class ScreenFeature(
-    val geometry: ScreenGeometry,
-    val properties: Map<String, Any?>
-)
-
-/**
- * Pre-project entire source for render loop efficiency.
- */
-fun GeoSource.projectToScreen(projection: GeoProjection): Sequence<ScreenFeature> {
-    return features.map { feature ->
-        ScreenFeature(
-            geometry = feature.geometry.projectToScreen(projection),
-            properties = feature.properties
-        )
-    }
-}
-```
-
-**Usage in render loop:**
-```kotlin
-// In program setup
-val data = geoSource("world.json")
-val projection = ProjectionFactory.fitWorldMercator(width, height)
-val screenData = data.projectToScreen(projection).toList()  // Project once
-
-extend {
-    // No per-frame projection cost
-    screenData.forEach { feature ->
-        when (val geom = feature.geometry) {
-            is ScreenPoint -> drawPoint(drawer, geom.screen, style)
-            is ScreenLineString -> drawLineString(drawer, geom.screenPoints, style)
-            is ScreenPolygon -> {
-                drawer.shape(geom.toShape())  // Uses pre-projected points
+    suspend fun getProjectedAsync(geometry: Geometry, viewport: Viewport): List<Vector2> {
+        return cache.get(CacheKey(geometry.id, viewport.hash())) {
+            // Runs on caller's coroutine context
+            withContext(Dispatchers.Default) {
+                expensiveProjection(geometry, viewport)
             }
         }
     }
 }
 ```
 
----
+### 3. Benchmarking Projection Performance
 
-### 6. Example File Structure
-
-**Pattern from openrndr-examples:**
-- Location: `src/main/kotlin/examples/`
-- Naming: `{category}_{description}.kt` (e.g., `render_BasicRendering.kt`)
-- Run command: `./gradlew run -Popenrndr.application=geo.examples.BasicRenderingKt`
-
-**Recommended structure for openrndr-geo:**
-
-```
-src/main/kotlin/geo/examples/
-├── core/                          # Core functionality
-│   ├── DataLoading.kt             # GeoJSON/GeoPackage loading
-│   ├── CRSHandling.kt             # CRS detection and transformation
-│   └── GeometryTypes.kt           # All geometry types demo
-│
-├── render/                        # Rendering examples
-│   ├── BasicRendering.kt          # Simple load-and-render
-│   ├── PolygonWithHoles.kt        # Compound shape rendering
-│   ├── MultiGeometries.kt         # MultiPoint, MultiLineString, MultiPolygon
-│   ├── Styling.kt                 # Fill, stroke, styles
-│   └── OceanData.kt               # Large MultiPolygon handling
-│
-├── proj/                          # Projection examples
-│   ├── Projections.kt             # Mercator, Equirectangular
-│   ├── FitBounds.kt               # Auto-fit to data
-│   └── Haversine.kt               # Distance calculations
-│
-├── layer/                         # Layer system examples
-│   ├── Layers.kt                  # Basic layer usage
-│   ├── BlendModes.kt              # Layer compositing
-│   └── Graticule.kt               # Grid overlay
-│
-└── anim/                          # Animation examples
-    ├── BasicAnimation.kt          # Simple property animation
-    ├── Timeline.kt                # Keyframe sequences
-    └── GeoAnimation.kt            # Animating geo properties
-```
-
-**Example file template:**
 ```kotlin
-package geo.examples.render
+import org.openjdk.jmh.annotations.*
+import java.util.concurrent.TimeUnit
 
-import org.openrndr.application
-import org.openrndr.color.ColorRGBa
-import geo.geoSource
-import geo.projection.ProjectionFactory
-import geo.render.Style
-
-/**
- * Polygon with Holes Example
- * 
- * Demonstrates rendering polygons with interior rings (holes) using
- * OpenRNDR's compound Shape API.
- * 
- * Run: ./gradlew run -Popenrndr.application=geo.examples.render.PolygonWithHolesKt
- */
-fun main() = application {
-    configure {
-        width = 800
-        height = 600
-        title = "openrndr-geo: Polygon with Holes"
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
+@State(Scope.Benchmark)
+@Fork(2)
+@Warmup(iterations = 3)
+@Measurement(iterations = 5)
+class ProjectionBenchmark {
+    
+    @Benchmark
+    fun batchProject1000(): List<Vector2> {
+        return batchProject(geometries1000, viewport)
     }
     
-    program {
-        val data = geoSource("data/polygons-with-holes.geojson")
-        val projection = ProjectionFactory.fitBounds(
-            bounds = data.totalBoundingBox(),
-            width = width.toDouble(),
-            height = height.toDouble()
-        )
-        
-        extend {
-            drawer.clear(ColorRGBa.WHITE)
-            data.render(drawer, projection, Style {
-                fill = ColorRGBa.BLUE.withAlpha(0.3)
-                stroke = ColorRGBa.BLACK
-                strokeWeight = 1.0
-            })
+    @Benchmark
+    fun cachedProject1000(): List<Vector2> {
+        return cache.getProjected(geometries1000[0], viewport)
+    }
+}
+```
+
+### 4. Parallel Batch Processing
+
+```kotlin
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.Dispatchers
+
+suspend fun batchProjectParallel(
+    geometries: List<Geometry>, 
+    viewport: Viewport
+): List<List<Vector2>> = coroutineScope {
+    // Chunk geometries for optimal parallelism
+    val chunkSize = maxOf(1, geometries.size / Runtime.getRuntime().availableProcessors())
+    
+    geometries.chunked(chunkSize).map { chunk ->
+        async(Dispatchers.Default) {
+            chunk.map { projectGeometry(it, viewport) }
+        }
+    }.awaitAll().flatten()
+}
+```
+
+## Alternatives Considered
+
+| Category | Recommended | Alternative | Why Not |
+|----------|-------------|-------------|---------|
+| Caching | Caffeine + Aedile | Guava Cache | Guava is slower, less flexible, no coroutine support |
+| Caching | Caffeine | Custom map + synchronized | Cache eviction, statistics, expiration are non-trivial to implement correctly |
+| Benchmarking | JMH | Hand-rolled timing | JVM warmup, JIT dead code elimination make DIY unreliable |
+| Parallelism | Coroutines | Java parallelStream() | Less control, harder to integrate with suspend functions |
+| Parallelism | Coroutines | RxJava | Overkill for simple batch operations; coroutines already in classpath |
+
+## What NOT to Add
+
+### Overkill for Creative Coding
+
+| Technology | Why Not |
+|------------|---------|
+| **GraalVM Native Image** | Breaks OPENRNDR's dynamic classloading; adds 5+ min build times for minimal runtime benefit |
+| **Ehcache** | Distributed/clustering features irrelevant; Caffeine is simpler and faster |
+| **Redis/Memcached** | Network overhead exceeds benefit for single-process creative coding |
+| **Project Reactor/RxJava** | Coroutines handle all async needs; additional reactive streams complexity unnecessary |
+| ** Chronicle Queue/Map** | Persistence features not needed; creative coding is ephemeral |
+| **HPPC/Eclipse Collections** | Primitive collections add dependency weight; standard Kotlin collections + caching sufficient |
+
+### Incompatible with OPENRNDR
+
+| Technology | Problem |
+|------------|---------|
+| **Background thread drawing** | OpenGL context is bound to main thread; background rendering crashes JVM |
+| **GLFW/Vulkan threading** | Would require rewriting OPENRNDR's render loop |
+| **Compute shaders for projection** | proj4j is CPU-bound; moving to GPU requires rewriting CRS logic in GLSL |
+
+## Memory Optimization Techniques
+
+No additional libraries needed—use JVM features:
+
+### 1. Object Pooling for Vector2
+
+```kotlin
+// Reuse Vector2 arrays across frames to reduce GC pressure
+class Vector2Pool {
+    private val pool = ArrayDeque<List<Vector2>>()
+    
+    fun acquire(size: Int): List<Vector2> {
+        return pool.removeFirstOrNull()?.takeIf { it.size >= size }
+            ?: List(size) { Vector2.ZERO }
+    }
+    
+    fun release(vectors: List<Vector2>) {
+        if (pool.size < MAX_POOL_SIZE) {
+            pool.addLast(vectors)
         }
     }
 }
 ```
 
----
+### 2. Lazy Sequence for Large Datasets
 
-## Dependency Summary
-
-**No new dependencies for v1.2.0.** Existing stack is sufficient:
+Already used in v1.0-v1.2. Continue using `Sequence<Geometry>` to avoid loading full datasets:
 
 ```kotlin
-// build.gradle.kts - no changes needed
-
-// Already have:
-// - OpenRNDR 0.4.5 (includes Shape, ShapeContour APIs)
-// - orx-shapes (for advanced shape utilities if needed)
-// - kotlinx-serialization (for GeoJSON parsing)
-// - proj4j (for CRS transformations)
-// - mil.nga.geopackage (for GeoPackage reading)
+// Good: Processes one geometry at a time
+geoSource.geometries()
+    .filter { it.intersects(viewport.boundingBox) }
+    .map { cache.getProjected(it, viewport) }
+    .forEach { drawer.contour(it) }
 ```
 
----
+### 3. Weak Reference Caching
 
-## Integration Points
+For memory-constrained scenarios:
 
-| New Feature | File(s) to Modify | New File(s) |
-|-------------|-------------------|-------------|
-| `summary()` | `GeoSource.kt` | `GeoSourceSummary.kt` |
-| Polygon holes | `PolygonRenderer.kt`, `Geometry.kt` | — |
-| Boilerplate reduction | `GeoSourceConvenience.kt` | `geo/api.kt` |
-| Bounds handling | `MultiRenderer.kt`, `Geometry.kt` | — |
-| Batch projection | `Geometry.kt` | `ScreenSpace.kt` |
-| Examples | — | `geo/examples/**/*.kt` |
+```kotlin
+Caffeine.newBuilder()
+    .weakValues() // Allow GC when memory pressure
+    .maximumSize(10_000)
+    .build()
+```
 
----
+## Version Compatibility Matrix
 
-## Confidence Assessment
+| Component | Minimum | Recommended | Latest | Notes |
+|-----------|---------|-------------|--------|-------|
+| JVM | 11 | 17 | 23 | Caffeine 3.x requires Java 11+ |
+| Kotlin | 1.9.0 | 2.2.10 | 2.2.10 | Aedile 3.x requires Kotlin 2.0+ |
+| Caffeine | 3.0.0 | 3.2.3 | 3.2.3 | Use 2.x only if stuck on Java 8 |
+| kotlinx.coroutines | 1.7.0 | 1.10.2 | 1.10.2 | Match Kotlin version |
+| JMH | 1.35 | 1.37 | 1.37 | Plugin 0.7.3 uses 1.37 |
+| OPENRNDR | 0.4.5 | 0.4.5 | 0.4.5 | Verify before upgrading |
 
-| Area | Confidence | Source |
-|------|------------|--------|
-| OpenRNDR Shape API | HIGH | api.openrndr.org documentation |
-| Winding order for holes | HIGH | OpenRNDR ShapeContour.winding docs |
-| Example structure | HIGH | openrndr-examples repository |
-| No new deps needed | HIGH | Existing build.gradle.kts review |
-| Batch projection approach | MEDIUM | Standard pattern, needs performance testing |
+## Risk Assessment
 
----
+| Risk | Likelihood | Mitigation |
+|------|------------|------------|
+| Cache memory leaks | Low | Use size-based eviction + weak values |
+| Thread-safety bugs | Medium | Only access Drawer on main thread; use `Dispatchers.Default` only for math |
+| Benchmark inaccuracy | Low | Follow JMH best practices; isolate in `src/jmh` |
+| Coroutine context confusion | Medium | Document which dispatcher to use; provide examples |
 
 ## Sources
 
-- **OpenRNDR Shape API:** https://api.openrndr.org/openrndr-shape/org.openrndr.shape/-shape/index.html
-- **OpenRNDR ShapeContour:** https://api.openrndr.org/openrndr-shape/org.openrndr.shape/-shape-contour/index.html
-- **OpenRNDR Winding:** https://api.openrndr.org/openrndr-shape/org.openrndr.shape/-winding/index.html
-- **Drawer.shape():** https://api.openrndr.org/openrndr-draw/org.openrndr.draw/-drawer/shape.html
-- **openrndr-examples:** https://github.com/openrndr/openrndr-examples
-- **Existing codebase:** src/main/kotlin/geo/**/*.kt
+- **Caffeine**: https://github.com/ben-manes/caffeine (v3.2.3, Oct 2025) — HIGH confidence
+- **Aedile**: https://github.com/sksamuel/aedile (v3.0.2, Dec 2025) — HIGH confidence
+- **JMH**: https://github.com/openjdk/jmh — HIGH confidence
+- **JMH Gradle Plugin**: https://github.com/melix/jmh-gradle-plugin (v0.7.3, Apr 2025) — HIGH confidence
+- **kotlinx.coroutines**: https://github.com/Kotlin/kotlinx.coroutines (v1.10.2, Apr 2025) — HIGH confidence
+- **OPENRNDR Batched Drawing**: https://guide.openrndr.org/drawing/drawingPrimitivesBatched.html — HIGH confidence
+- **OPENRNDR Concurrency**: https://guide.openrndr.org/drawing/concurrencyAndMultithreading.html — HIGH confidence

@@ -924,5 +924,645 @@ Phase 5: Documentation
 - Example naming convention from `geo/examples/` directory
 
 ---
+
+# v1.3.0 Architecture: Batch Projection & Geometry Caching
+
+**Domain:** Geospatial visualization library (OpenRNDR-based)
+**Researched:** 2026-03-05
+**Confidence:** HIGH (based on existing codebase analysis + Kotlin patterns)
+
+## Executive Summary
+
+This research addresses integrating **batch projection** and **geometry caching** into the existing openrndr-geo architecture while maintaining the clean data/rendering separation and lazy Sequence patterns established in v1.2.0.
+
+**Key Decision:** Implement a **CachingGeoSource** wrapper that sits between the data layer (GeoSource) and rendering layer, with cache invalidation keyed by projection parameters. This preserves the existing API while adding performance optimizations behind the scenes.
+
+---
+
+## Current Architecture Baseline
+
+### Existing Layer Separation
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  RENDERING LAYER                                            │
+│  • Drawer extensions (drawer.geo(), drawer.geoJSON())       │
+│  • Individual renderers (drawPoint, drawLineString, etc.)   │
+│  • Style resolution chain (per-feature → by-type → global)  │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ projects coordinates
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  PROJECTION LAYER                                           │
+│  • GeoProjection interface                                  │
+│  • Real-time projection: geometry.toScreen(projection)      │
+│  • CRS transformations via CRSTransformer                   │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ provides projected geometry
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  DATA LAYER                                                 │
+│  • GeoSource abstract class                                 │
+│  • Lazy Sequence<Feature> for memory efficiency             │
+│  • withProjection() for per-feature projection              │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Current Data Flow (Per Frame)
+
+```kotlin
+// Current pattern - projection happens every frame
+source.features.forEach { feature ->           // 1. Iterate features
+    val screen = feature.geometry               // 2. Get geometry
+        .toScreen(projection)                   // 3. Project (every frame!)
+    drawPoint(drawer, screen, style)           // 4. Render
+}
+```
+
+**Performance Issue:** Every coordinate is projected every frame, even when:
+- Projection hasn't changed
+- Geometry hasn't changed
+- Only style/animation properties changed
+
+---
+
+## Recommended Architecture
+
+### New Component: `CachingGeoSource`
+
+A wrapper around GeoSource that maintains a projection cache with invalidation semantics.
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  RENDERING LAYER                                            │
+│  • Same API as before                                       │
+│  • Optionally receives pre-projected geometries             │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  CACHING LAYER (NEW)                                        │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ CachingGeoSource                                    │   │
+│  │ • Cache: Map<FeatureId, ProjectedGeometry>          │   │
+│  │ • CacheKey: projection + viewport params            │   │
+│  │ • Invalidation: on projection change                │   │
+│  └─────────────────────────────────────────────────────┘   │
+└──────────────────────┬──────────────────────────────────────┘
+                       │ delegates to
+                       ▼
+┌─────────────────────────────────────────────────────────────┐
+│  DATA LAYER (unchanged)                                     │
+│  • GeoSource with lazy Sequence<Feature>                    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Component Responsibilities
+
+| Component | Responsibility | Integration Point |
+|-----------|---------------|-------------------|
+| `CachingGeoSource` | Cache projected geometries, invalidation logic | Wraps any GeoSource |
+| `ProjectionCacheKey` | Immutable key for cache entries | Based on projection config |
+| `BatchProjector` | Efficient batch coordinate transformation | Used internally by cache |
+| `CacheStats` | Hit/miss metrics for performance tuning | Optional monitoring |
+
+---
+
+## Data Flow Changes
+
+### Before (v1.2.0)
+
+```
+Every Frame:
+  GeoSource.features ──► Feature.geometry ──► project() ──► render()
+  (Sequence)              (WGS84 coords)      (real-time)   (OpenRNDR)
+```
+
+### After (v1.3.0 with caching)
+
+```
+First Frame:
+  CachingGeoSource.features ──► Check cache ──► miss ──► BatchProjector.project() ──► cache ──► render()
+  
+Subsequent Frames (same projection):
+  CachingGeoSource.features ──► Check cache ──► hit ──► cached ProjectedGeometry ──► render()
+  
+Projection Change:
+  CachingGeoSource.features ──► cache invalidated ──► BatchProjector.project() ──► cache ──► render()
+```
+
+### Cache Invalidation Rules
+
+| Event | Action | Rationale |
+|-------|--------|-----------|
+| Projection config changes | Invalidate all | Screen coordinates differ |
+| Viewport size changes | Invalidate all | Scale/translation changes |
+| New features added | Add to cache | Incremental update |
+| Feature properties change | Keep cached | Geometry unchanged |
+| Manual invalidate() called | Invalidate all | Force refresh |
+
+---
+
+## New Components Required
+
+### 1. CachingGeoSource
+
+```kotlin
+/**
+ * GeoSource wrapper that caches projected geometries.
+ * Transparent to callers - implements same patterns as GeoSource.
+ */
+class CachingGeoSource(
+    private val source: GeoSource,
+    private val projection: GeoProjection
+) : GeoSource(source.crs) {
+    
+    private val cache = mutableMapOf<String, ProjectedGeometry>()
+    private var cacheKey: ProjectionCacheKey = ProjectionCacheKey(projection)
+    
+    override val features: Sequence<Feature>
+        get() = source.features  // Pass-through for feature iteration
+    
+    /**
+     * Get projected geometry from cache or compute.
+     */
+    fun getProjected(feature: Feature): ProjectedGeometry {
+        val currentKey = ProjectionCacheKey(projection)
+        if (currentKey != cacheKey) {
+            cache.clear()
+            cacheKey = currentKey
+        }
+        
+        return cache.getOrPut(feature.id) {
+            projectGeometry(feature.geometry, projection)
+        }
+    }
+    
+    /**
+     * Force cache invalidation.
+     */
+    fun invalidate() {
+        cache.clear()
+        cacheKey = ProjectionCacheKey(projection)
+    }
+    
+    val cacheStats: CacheStats
+        get() = CacheStats(cache.size, /* hits, misses */)
+}
+```
+
+### 2. BatchProjector
+
+```kotlin
+/**
+ * Batch projection for efficient coordinate transformation.
+ * Uses optimized bulk operations instead of per-point projection.
+ */
+object BatchProjector {
+    /**
+     * Project multiple points in a single batch.
+     * More efficient than iterative projection for large datasets.
+     */
+    fun projectPoints(
+        points: List<Vector2>,
+        projection: GeoProjection
+    ): List<Vector2> {
+        // Optimization: projection may have internal batching
+        return points.map { projection.project(it) }
+    }
+    
+    /**
+     * Project entire geometry hierarchy in batch.
+     */
+    fun projectGeometry(
+        geometry: Geometry,
+        projection: GeoProjection
+    ): ProjectedGeometry = when (geometry) {
+        is Point -> ProjectedPoint(projection.project(Vector2(geometry.x, geometry.y)))
+        is LineString -> ProjectedLineString(
+            projectPoints(geometry.points, projection)
+        )
+        is Polygon -> ProjectedPolygon(
+            exterior = projectPoints(geometry.exterior, projection),
+            holes = geometry.interiors.map { projectPoints(it, projection) }
+        )
+        // ... other geometry types
+    }
+}
+```
+
+### 3. ProjectionCacheKey
+
+```kotlin
+/**
+ * Immutable key for cache entries.
+ * Captures all projection parameters that affect screen coordinates.
+ */
+data class ProjectionCacheKey(
+    val projectionType: String,
+    val width: Double,
+    val height: Double,
+    val centerX: Double,
+    val centerY: Double,
+    val scale: Double
+) {
+    companion object {
+        fun from(projection: GeoProjection): ProjectionCacheKey {
+            // Extract parameters from projection
+            // Implementation depends on projection internals
+        }
+    }
+}
+```
+
+### 4. CacheStats (for performance monitoring)
+
+```kotlin
+/**
+ * Performance metrics for cache tuning.
+ */
+data class CacheStats(
+    val cachedEntries: Int,
+    val hitCount: Long,
+    val missCount: Long,
+    val invalidationCount: Long
+) {
+    val hitRate: Double
+        get() = if (hitCount + missCount > 0) {
+            hitCount.toDouble() / (hitCount + missCount)
+        } else 0.0
+}
+```
+
+---
+
+## Integration Points
+
+### With Existing Code
+
+| Existing Component | Integration | Change Type |
+|-------------------|-------------|-------------|
+| `GeoSource` | `CachingGeoSource` wraps any GeoSource | New wrapper |
+| `withProjection()` | Returns cached projection if available | Modified |
+| `Drawer.geo()` | Optionally uses CachingGeoSource internally | Modified |
+| `Geometry.toScreen()` | No change - point projection still works | Unchanged |
+| `ProjectedGeometry` | Used as cache value type | Unchanged |
+
+### API Compatibility
+
+```kotlin
+// Existing code continues to work (no caching)
+source.features.forEach { feature ->
+    val screen = feature.geometry.toScreen(projection)
+    drawPoint(drawer, screen, style)
+}
+
+// New opt-in caching API
+val cached = source.cached(projection)
+cached.features.forEach { feature ->
+    val projected = cached.getProjected(feature)  // From cache
+    drawProjected(drawer, projected, style)
+}
+
+// Or use higher-level API
+drawer.geo(source) {
+    this.projection = projection
+    cache = true  // New option
+}
+```
+
+---
+
+## Build Order (Dependencies)
+
+### Phase 1: Foundation (Week 1)
+
+**Goal:** Batch projection infrastructure
+
+1. **BatchProjector** 
+   - Batch coordinate transformation
+   - Geometry hierarchy projection
+   - Tests for correctness
+
+2. **ProjectionCacheKey**
+   - Immutable key generation
+   - Captures all projection params
+   - Hash/equals for Map keys
+
+**Dependencies:** None (uses existing projection API)
+
+**Outputs:**
+- `geo.cache.BatchProjector`
+- `geo.cache.ProjectionCacheKey`
+- Unit tests
+
+### Phase 2: Caching Layer (Week 2)
+
+**Goal:** CachingGeoSource implementation
+
+1. **CachingGeoSource**
+   - Wrap GeoSource
+   - Cache with invalidation
+   - CacheStats monitoring
+
+2. **Integration with withProjection()**
+   - Optional caching path
+   - Backwards compatible
+
+**Dependencies:** Phase 1 components
+
+**Outputs:**
+- `geo.cache.CachingGeoSource`
+- `geo.cache.CacheStats`
+- Integration tests
+
+### Phase 3: Rendering Integration (Week 3)
+
+**Goal:** Higher-level API integration
+
+1. **Drawer extension updates**
+   - Optional `cache = true` parameter
+   - Automatic CachingGeoSource wrapping
+
+2. **Performance benchmarks**
+   - Before/after measurements
+   - Cache hit rate reporting
+
+**Dependencies:** Phase 2
+
+**Outputs:**
+- Updated `Drawer.geo()` with caching option
+- Performance benchmark suite
+- Example: `perf_CachingDemo.kt`
+
+### Phase 4: Optimization (Week 4)
+
+**Goal:** Advanced cache strategies
+
+1. **LRU eviction** (optional)
+2. **Memory-bounded cache**
+3. **Multi-level cache** (feature-level + geometry-level)
+
+**Dependencies:** Phase 3
+
+**Outputs:**
+- Advanced cache strategies
+- Memory profiling
+- Documentation
+
+---
+
+## Data Flow Diagrams
+
+### Detailed Cache Flow
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│ Render Loop (extend block)                                         │
+└────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌────────────────────────────────────────────────────────────────────┐
+│ drawer.geo(source) { cache = true }                                │
+│ • Checks if source is CachingGeoSource                             │
+│ • Wraps if needed                                                  │
+└────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌────────────────────────────────────────────────────────────────────┐
+│ CachingGeoSource.withProjection(projection)                        │
+│ • Create cache key from projection                                 │
+│ • Check: key matches current?                                      │
+│   ├── NO: Clear cache, update key                                  │
+│   └── YES: Continue                                                │
+└────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌────────────────────────────────────────────────────────────────────┐
+│ For each feature in source.features:                               │
+│ • Check cache[feature.id]                                          │
+│   ├── HIT: Return cached ProjectedGeometry                         │
+│   └── MISS: BatchProjector.project() → Store → Return              │
+└────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌────────────────────────────────────────────────────────────────────┐
+│ Render with cached ProjectedGeometry                               │
+│ • Skip projection step                                             │
+│ • Direct to OpenRNDR drawing                                       │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+### Cache Invalidation Flow
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│ Projection Change Detected                                         │
+│ (width, height, center, scale changed)                             │
+└────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌────────────────────────────────────────────────────────────────────┐
+│ CachingGeoSource.getProjected()                                    │
+│ • New ProjectionCacheKey(projection)                               │
+│ • Compare with stored key                                          │
+│   ├── EQUAL: Use cache                                             │
+│   └── NOT EQUAL: Invalidate and reproject                          │
+└────────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼ (if not equal)
+┌────────────────────────────────────────────────────────────────────┐
+│ cache.clear()                                                      │
+│ storedKey = newKey                                                 │
+│ Reproject all visible features                                     │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Memory Considerations
+
+### Cache Size Estimation
+
+```
+Per geometry memory:
+- Point: ~24 bytes (Vector2)
+- LineString (100 pts): ~2,400 bytes  
+- Polygon (ext 100 pts + 1 hole 50 pts): ~3,600 bytes
+
+For 10K features:
+- Average 500 bytes/feature = 5MB cache
+- Acceptable for desktop JVM (available: GBs)
+```
+
+### Memory Management Strategy
+
+1. **Default:** Unbounded cache (for v1.3.0)
+   - Simple, predictable
+   - Suitable for prototyping workloads
+
+2. **Future:** Bounded cache with LRU eviction
+   - Configurable max size
+   - Eviction callbacks
+
+### Lazy Sequence Compatibility
+
+The cache preserves lazy evaluation:
+
+```kotlin
+// Features are still lazy at the source level
+source.features  // Sequence<Feature> - not loaded yet
+    .filter { it.boundingBox.intersects(viewport) }  // Spatial filter
+    .map { cached.getProjected(it) }  // Cache lookup (or project)
+    .forEach { render(it) }
+```
+
+Only features that pass through the pipeline are cached, maintaining memory efficiency for large datasets.
+
+---
+
+## Performance Expectations
+
+### Scenarios
+
+| Scenario | Without Cache | With Cache | Improvement |
+|----------|--------------|------------|-------------|
+| Static map, 60fps | Project every frame | Cache hit every frame | ~10-50x |
+| Animation (zoom) | Project every frame | Invalidate + project | ~1x (expected) |
+| Pan without zoom | Project every frame | Reuse cache | ~10-50x |
+| Style-only animation | Project every frame | Cache hit | ~10-50x |
+
+### Cache Hit Rate Targets
+
+- **Animation with fixed projection:** >95%
+- **Pan without zoom change:** >95%
+- **Zoom animation:** 0% (intentional invalidation)
+
+---
+
+## Anti-Patterns to Avoid
+
+### ❌ Don't: Cache at wrong granularity
+
+```kotlin
+// BAD: Caching raw coordinates loses type information
+val cache = mutableMapOf<String, List<Vector2>>()  // Don't do this
+```
+
+### ✅ Do: Cache ProjectedGeometry
+
+```kotlin
+// GOOD: Preserves geometry type for type-safe rendering
+val cache = mutableMapOf<String, ProjectedGeometry>()
+```
+
+### ❌ Don't: Cache unbounded without consideration
+
+```kotlin
+// BAD: For 1M features, this is 500MB+
+val cache = mutableMapOf<String, ProjectedGeometry>()  // Unbounded
+```
+
+### ✅ Do: Consider spatial indexing for large datasets
+
+```kotlin
+// GOOD: Only cache visible features
+source.featuresInBounds(viewport)
+    .map { cache.getOrPut(it.id) { project(it) } }
+```
+
+### ❌ Don't: Mix caching with mutation
+
+```kotlin
+// BAD: Mutating cached geometry corrupts cache
+val projected = cache[feature.id]
+projected.screenPoints[0] = Vector2.ZERO  // Mutates cache!
+```
+
+### ✅ Do: Immutable cache values
+
+```kotlin
+// GOOD: ProjectedGeometry uses immutable Lists
+data class ProjectedLineString(
+    override val screenPoints: List<Vector2>  // Immutable
+) : ProjectedGeometry()
+```
+
+---
+
+## Testing Strategy
+
+### Unit Tests
+
+```kotlin
+@Test
+fun `cache returns same projection for same key`() {
+    val cache = CachingGeoSource(source, projection)
+    val p1 = cache.getProjected(feature)
+    val p2 = cache.getProjected(feature)
+    assertSame(p1, p2)  // Same instance
+}
+
+@Test
+fun `cache invalidates on projection change`() {
+    val cache = CachingGeoSource(source, projection)
+    val p1 = cache.getProjected(feature)
+    
+    cache.updateProjection(newProjection)
+    val p2 = cache.getProjected(feature)
+    
+    assertNotSame(p1, p2)  // Different instance
+}
+```
+
+### Integration Tests
+
+```kotlin
+@Test
+fun `caching improves performance`() {
+    val uncachedTime = measureTime {
+        repeat(100) { renderWithoutCache() }
+    }
+    val cachedTime = measureTime {
+        repeat(100) { renderWithCache() }
+    }
+    assertTrue(cachedTime < uncachedTime / 10)
+}
+```
+
+---
+
+## Summary
+
+| Aspect | Decision |
+|--------|----------|
+| Cache Location | `CachingGeoSource` wrapper between data/rendering |
+| Cache Key | `ProjectionCacheKey` capturing all projection params |
+| Invalidation | Automatic on projection change, manual option |
+| API Impact | Opt-in via `cache = true`, backwards compatible |
+| Memory Strategy | Unbounded for v1.3.0, bounded for future |
+| Build Order | BatchProjector → CachingGeoSource → Rendering integration |
+
+**Confidence Level:** HIGH
+- Pattern is established (wrapper/proxy pattern)
+- Kotlin collections provide efficient Map-based caching
+- Existing ProjectedGeometry types are immutable
+- Lazy Sequence pattern is preserved
+
+**Risk Areas:**
+- Feature ID stability (need consistent ID generation)
+- Memory pressure with very large datasets (mitigation: spatial filtering)
+- Thread safety (OpenRNDR is single-threaded for rendering)
+
+---
+
+## Sources
+
+- Existing codebase analysis (Geometry.kt, GeoSource.kt, Feature.kt)
+- Kotlin best practices (immutable data classes, sealed classes)
+- Cache design patterns (wrapper invalidation strategy)
+- OpenRNDR rendering lifecycle (single-threaded extend block)
+
+---
 *Architecture research for: openrndr-geo geospatial visualization library*
-*Researched: 2026-02-21 (general), 2026-02-26 (v1.2.0 integration)*
+*Researched: 2026-02-21 (general), 2026-02-26 (v1.2.0 integration), 2026-03-05 (v1.3.0 performance)*
