@@ -7,8 +7,8 @@
 
 ### Performance — Batch Projection
 
-- [ ] **PERF-01**: Library can batch-transform coordinate arrays efficiently instead of per-point projection
-- [ ] **PERF-02**: Rendering pipeline uses batch projection for all geometry types (Point, LineString, Polygon, Multi*)
+- [x] **PERF-01**: Library can batch-transform coordinate arrays efficiently instead of per-point projection
+- [x] **PERF-02**: Rendering pipeline uses batch projection for all geometry types (Point, LineString, Polygon, Multi*)
 - [ ] **PERF-03**: Batch projection preserves existing API contracts (no signature changes to public methods)
 
 ### Performance — Viewport Caching
@@ -54,8 +54,8 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PERF-01 | Phase 11 | Pending |
-| PERF-02 | Phase 11 | Pending |
+| PERF-01 | Phase 11 | Complete |
+| PERF-02 | Phase 11 | Complete |
 | PERF-03 | Phase 11 | Pending |
 | PERF-04 | Phase 12 | Pending |
 | PERF-05 | Phase 12 | Pending |

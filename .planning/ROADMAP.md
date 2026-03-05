@@ -7,7 +7,7 @@
 
 ## Phases
 
-- [ ] **Phase 11: Batch Projection** - Transform coordinate arrays efficiently
+- [~] **Phase 11: Batch Projection** - Transform coordinate arrays efficiently (1/2 plans complete)
 - [ ] **Phase 12: Viewport Caching** - Simple cache with clear-on-change semantics
 - [ ] **Phase 13: Integration & Validation** - Verify all v1.2.0 examples work unchanged
 
@@ -15,7 +15,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 11. Batch Projection | 0/2 | Ready | - |
+| 11. Batch Projection | 1/2 | In Progress | 2026-03-05 |
 | 12. Viewport Caching | 0/2 | Not started | - |
 | 13. Integration & Validation | 0/2 | Not started | - |
 
@@ -40,7 +40,7 @@
 
 **Plans:** 2 plans
 
-- [ ] `11-01-PLAN.md` — Core batch infrastructure (CoordinateBatch, optimized geometries)
+- [x] `11-01-PLAN.md` — Core batch infrastructure (CoordinateBatch, optimized geometries) — Completed 2026-03-05
 - [ ] `11-02-PLAN.md` — API integration & validation (opt-in parameter, warnings, benchmarks)
 
 ---

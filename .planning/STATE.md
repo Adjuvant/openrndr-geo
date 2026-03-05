@@ -1,7 +1,8 @@
 # Project State: openrndr-geo
 
 **Current Milestone:** v1.3.0 Performance  
-**Phase:** Starting Phase 11  
+**Phase:** 11-batch-projection  
+**Current Plan:** 11-02  
 **Last Updated:** 2026-03-05
 
 ## Project Reference
@@ -19,14 +20,14 @@
 | v1.0.0 Foundation | ✓ Complete | 100% |
 | v1.1.0 API Improvements | ✓ Complete | 100% |
 | v1.2.0 API & Examples | ✓ Complete | 100% |
-| **v1.3.0 Performance** | 🔄 Ready | 0% |
+| **v1.3.0 Performance** | 🔄 In Progress | 17% |
 | v1.4.0 Advanced Features | ⏳ Pending | 0% |
 
 ### Phase Status
 
 | Phase | Name | Status | Plans | Blocked By |
 |-------|------|--------|-------|------------|
-| 11 | Batch Projection | ⏳ Ready | 0/2 | - |
+| 11 | Batch Projection | 🔄 In Progress | 1/2 | - |
 | 12 | Viewport Caching | ⏳ Pending | 0/2 | Phase 11 |
 | 13 | Integration & Validation | ⏳ Pending | 0/2 | Phase 12 |
 
@@ -56,6 +57,10 @@
 | No Caffeine/Aedile | Overkill for viewport-based geometry | ✓ Agreed |
 | No LRU/LFU | Web-style optimization not needed | ✓ Agreed |
 | Batch before caching | Prerequisite dependency | ✓ Logical |
+| Optimized geometries don't extend Geometry | Sealed class package restriction - only extendable in same package | ✓ Implemented |
+| Geometry.toOptimized() returns Any | Heterogeneous return types (OptimizedPoint, OptimizedLineString, etc.) | ✓ Implemented |
+| Use inline for batch transformation | Eliminate lambda allocation overhead in hot paths | ✓ Implemented |
+| Phase 11-batch-projection P01 | 7min | 3 tasks | 5 files |
 
 ### Active Requirements (v1.3.0)
 
@@ -82,15 +87,15 @@ None currently.
 ## Session Continuity
 
 ### Last Actions
-- Created simplified ROADMAP.md for v1.3.0 with 3 phases (11-13)
-- Mapped 10 PERF requirements to phases (reduced from 14)
-- Validated 100% coverage
-- Removed Caffeine/Aedile dependencies
-- Simplified caching to clear-on-change semantics
+- ✅ Completed Plan 11-01: Core batch projection infrastructure
+- Created CoordinateBatch with DoubleArray storage
+- Implemented optimized geometry subclasses (all 6 types)
+- Migrated ProjectionExtensions to batch projection internally
+- All code compiles and tests pass
 
 ### Next Actions
-1. Run `/gsd-execute-phase 11` to start Batch Projection
-2. Or `/gsd-discuss-phase 11` to clarify approach first
+1. Run next plan: Phase 11 Plan 02 (batch integration)
+2. Or `/gsd-discuss-phase 11` to review approach first
 
 ## Files
 
@@ -101,6 +106,13 @@ None currently.
 | ROADMAP.md | Phase structure and success criteria | 2026-03-05 |
 | MILESTONES.md | Milestone completion tracking | 2026-03-05 |
 | research/SUMMARY.md | Research findings (superseded by simplification) | 2026-03-05 |
+| 11-01-SUMMARY.md | Core batch projection infrastructure | 2026-03-05 |
+
+### Session Continuity
+
+**Last Session:** 2026-03-05  
+**Stopped At:** Completed 11-01-PLAN.md  
+**Duration:** 7 minutes
 
 ---
 *State file for project continuity across sessions*
