@@ -1,5 +1,12 @@
 package geo
 
+import geo.internal.batch.CoordinateBatch
+import geo.internal.geometry.OptimizedLineString
+import geo.internal.geometry.OptimizedMultiLineString
+import geo.internal.geometry.OptimizedMultiPoint
+import geo.internal.geometry.OptimizedMultiPolygon
+import geo.internal.geometry.OptimizedPoint
+import geo.internal.geometry.OptimizedPolygon
 import geo.projection.CRSTransformer
 import geo.projection.GeoProjection
 import geo.projection.MAX_MERCATOR_LAT
@@ -439,4 +446,63 @@ fun Geometry.clampAndNormalize(): Geometry {
             }
         )
     }
+}
+
+// ============================================================================
+// Optimized Geometry Conversion
+// ============================================================================
+
+/**
+ * Converts a standard Geometry to its optimized variant using CoordinateBatch storage.
+ * 
+ * This enables efficient batch projection by storing coordinates as DoubleArray pairs
+ * instead of List<Vector2>. The optimized geometry maintains the same API but uses
+ * batch operations internally for projection.
+ * 
+ * Per RESEARCH.md Pattern 3: Geometry-type-agnostic approach
+ * 
+ * Note: Optimized geometries are internal implementation details and do not extend
+ * the Geometry sealed class. They provide batch projection capabilities while
+ * maintaining API compatibility through consistent method signatures.
+ * 
+ * @return An optimized geometry wrapper (OptimizedPoint, OptimizedLineString, etc.)
+ */
+fun Geometry.toOptimized(): Any = when (this) {
+    is Point -> OptimizedPoint(
+        coord = CoordinateBatch.fromPoint(Vector2(x, y))
+    )
+
+    is LineString -> OptimizedLineString(
+        coords = CoordinateBatch.fromPoints(points)
+    )
+
+    is Polygon -> OptimizedPolygon(
+        rings = listOf(
+            CoordinateBatch.fromPoints(exterior)
+        ) + interiors.map { ring ->
+            CoordinateBatch.fromPoints(ring)
+        }
+    )
+
+    is MultiPoint -> OptimizedMultiPoint(
+        coords = CoordinateBatch.fromPoints(
+            points.map { Vector2(it.x, it.y) }
+        )
+    )
+
+    is MultiLineString -> OptimizedMultiLineString(
+        lines = lineStrings.map { line ->
+            CoordinateBatch.fromPoints(line.points)
+        }
+    )
+
+    is MultiPolygon -> OptimizedMultiPolygon(
+        polygons = polygons.map { poly ->
+            listOf(
+                CoordinateBatch.fromPoints(poly.exterior)
+            ) + poly.interiors.map { ring ->
+                CoordinateBatch.fromPoints(ring)
+            }
+        }
+    )
 }
