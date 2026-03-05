@@ -8,6 +8,15 @@ A Kotlin/OpenRNDR prototyping library for creative geospatial visualization. It 
 
 An expressive, well-architected API that makes exploring intersections of geo datasets feel fluid and creative — decoupling data operations from rendering so new visual ideas can be prototyped quickly.
 
+## Current Milestone: v1.3.0 Performance
+
+**Goal:** Optimize rendering performance for large datasets through batch projection and geometry caching.
+
+**Target features:**
+- Batch screen space projection for coordinate transforms
+- Cache projected geometries across animation frames
+- Performance benchmarking and measurement tools
+
 ## Requirements
 
 ### Validated
@@ -45,12 +54,14 @@ An expressive, well-architected API that makes exploring intersections of geo da
 
 ### Active
 
-**v1.3.0 Focus:**
+**v1.3.0 Focus (Performance):**
 - [ ] Batch screen space projection — performance optimization (PERF-01)
 - [ ] Cache projected geometries across frames (PERF-02)
-- [ ] Graticule layer improvements — support for zoomed-in maps
+
+**v1.4.0 Focus (Advanced Features):**
 - [ ] Clip geometries at projection bounds (vs current clamp) (ADV-01)
 - [ ] Configurable bounds handling strategy (ADV-02)
+- [ ] Graticule layer improvements — support for zoomed-in maps
 
 **Deferred:**
 - [ ] Documentation — guide for exploring available functions, organized by visual intent (deferred from v1.0)
@@ -128,4 +139,4 @@ An expressive, well-architected API that makes exploring intersections of geo da
 | @file:JvmName for examples | Kotlin naming with numbered files | ✓ Shipped in v1.2.0 — valid class names |
 
 ---
-*Last updated: 2026-02-27 after v1.2.0 milestone, planning v1.3.0*
+*Last updated: 2026-03-05 after starting v1.3.0 milestone*
