@@ -65,11 +65,18 @@ abstract class GeoSource(
      * Returns the bounding box of all features in this source.
      * Returns empty bounds if there are no features.
      */
-    fun totalBoundingBox(): Bounds {
+    open fun totalBoundingBox(): Bounds {
         return features.fold(Bounds.empty()) { acc, feature ->
             acc.expandToInclude(feature.boundingBox)
         }
     }
+
+    /**
+     * Returns the bounding box of all features.
+     * Default implementation delegates to totalBoundingBox().
+     * Subclasses may provide more efficient implementations.
+     */
+    open fun boundingBox(): Bounds = totalBoundingBox()
 
     /**
      * Transforms this data source to a different CRS.

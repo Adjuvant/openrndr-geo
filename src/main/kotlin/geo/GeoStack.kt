@@ -1,6 +1,14 @@
 package geo
 
 import geo.crs.CRS
+import geo.internal.OptimizedFeature
+import geo.internal.OptimizedGeoSource
+import geo.internal.geometry.OptimizedLineString
+import geo.internal.geometry.OptimizedMultiLineString
+import geo.internal.geometry.OptimizedMultiPoint
+import geo.internal.geometry.OptimizedMultiPolygon
+import geo.internal.geometry.OptimizedPoint
+import geo.internal.geometry.OptimizedPolygon
 import org.openrndr.draw.Drawer
 import org.openrndr.math.Vector2
 
@@ -193,8 +201,21 @@ class GeoStack(
      * Render all features in the stack with the given projection.
      */
     fun render(drawer: Drawer, projection: geo.projection.GeoProjection) {
-        features.forEach { feature ->
-            feature.geometry.renderToDrawer(drawer, projection, null)
+        sources.forEach { source ->
+            when (source) {
+                is OptimizedGeoSource -> {
+                    // Use batch projection for optimized geometries
+                    source.optimizedFeatureSequence.forEach { optFeature ->
+                        optFeature.renderOptimizedToDrawer(drawer, projection, null)
+                    }
+                }
+                else -> {
+                    // Standard per-point projection
+                    source.features.forEach { feature ->
+                        feature.geometry.renderToDrawer(drawer, projection, null)
+                    }
+                }
+            }
         }
     }
     
@@ -286,6 +307,63 @@ private fun Geometry.renderToDrawer(drawer: Drawer, projection: geo.projection.G
             polygons.forEach { poly ->
                 val screenPoints = poly.exterior.map { projection.project(it) }
                 geo.render.drawPolygon(drawer, screenPoints, style)
+            }
+        }
+    }
+}
+
+/**
+ * Render an optimized feature to the given Drawer using batch projection.
+ */
+private fun OptimizedFeature.renderOptimizedToDrawer(
+    drawer: Drawer,
+    projection: geo.projection.GeoProjection,
+    style: geo.render.Style?
+) {
+    when (val geom = optimizedGeometry) {
+        is OptimizedPoint -> {
+            val screen = geom.toScreenCoordinates(projection).first()
+            geo.render.drawPoint(drawer, screen, style)
+        }
+        is OptimizedLineString -> {
+            val screenPoints = geom.toScreenCoordinatesList(projection)
+            geo.render.drawLineString(drawer, screenPoints, style)
+        }
+        is OptimizedPolygon -> {
+            val (exterior, interiors) = geom.toScreenCoordinates(projection)
+            if (interiors.isEmpty()) {
+                geo.render.drawPolygon(drawer, exterior.toList(), style)
+            } else {
+                geo.render.writePolygonWithHoles(
+                    drawer,
+                    exterior.toList(),
+                    interiors.map { it.toList() },
+                    style ?: geo.render.StyleDefaults.defaultPolygonStyle
+                )
+            }
+        }
+        is OptimizedMultiPoint -> {
+            geom.toScreenCoordinates(projection).forEach { pt ->
+                geo.render.drawPoint(drawer, pt, style)
+            }
+        }
+        is OptimizedMultiLineString -> {
+            geom.toScreenCoordinatesList(projection).forEach { line ->
+                geo.render.drawLineString(drawer, line, style)
+            }
+        }
+        is OptimizedMultiPolygon -> {
+            geom.toScreenCoordinates(projection).forEach { (exterior, interiors) ->
+                if (interiors.isEmpty()) {
+                    geo.render.drawPolygon(drawer, exterior.toList(), style)
+                } else {
+                    geo.render.writePolygonWithHoles(
+                        drawer,
+                        exterior.toList(),
+                        interiors.map { it.toList() },
+                        style ?: geo.render.StyleDefaults.defaultPolygonStyle
+                    )
+                }
             }
         }
     }
