@@ -2,13 +2,11 @@ package geo.examples
 
 import geo.Feature
 import geo.GeoJSON
-import geo.GeoJSONSource
 import geo.GeoPackage
-import geo.GeoPackageSource
 import geo.GeoSource
 
 fun main(){
-    val jsonDataSource: GeoJSONSource = try {
+    val jsonDataSource: GeoSource = try {
         GeoJSON.load("data/sample.geojson")
     } catch (e: Exception) {
         println("✗ Failed to load file: ${e.message}")
@@ -18,7 +16,7 @@ fun main(){
 
     println("✓ GeoJson Data inspection completed successfully")
 
-    val gpkgDataSource: GeoPackageSource = try{
+    val gpkgDataSource: GeoSource = try{
         GeoPackage.load("data/geo/ness-vectors.gpkg")
     } catch (e: Exception){
         println("x Failed to load file: ${e.message}")

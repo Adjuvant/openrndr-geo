@@ -1,7 +1,7 @@
 package geo.examples
 
 import geo.GeoJSON
-import geo.GeoJSONSource
+import geo.GeoSource
 import geo.Point
 import geo.LineString
 
@@ -22,7 +22,7 @@ fun main() {
 
     // Test 1: Load sample GeoJSON file
     println("\n[Test 1] Loading GeoJSON file...")
-    val dataSource: GeoJSONSource = try {
+    val dataSource: GeoSource = try {
         GeoJSON.load("data/sample.geojson")
     } catch (e: Exception) {
         println("✗ Failed to load file: ${e.message}")

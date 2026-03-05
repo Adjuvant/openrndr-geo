@@ -2,7 +2,7 @@
 package examples.core
 
 import geo.GeoJSON
-import geo.GeoJSONSource
+import geo.GeoSource
 
 /**
  * ## 01 - Load GeoJSON
@@ -11,7 +11,7 @@ import geo.GeoJSONSource
  *
  * ### Concepts
  * - Loading GeoJSON files with GeoJSON.load()
- * - Working with GeoJSONSource to access features
+ * - Working with GeoSource to access features
  * - Iterating over features in a FeatureCollection
  *
  * ### To Run
@@ -21,7 +21,7 @@ import geo.GeoJSONSource
  */
 fun main() {
     // Load GeoJSON from file using the GeoJSON loader
-    val source: GeoJSONSource = GeoJSON.load("examples/data/geo/sample.geojson")
+    val source: GeoSource = GeoJSON.load("examples/data/geo/sample.geojson")
 
     // Get the sequence of features
     val features = source.features
