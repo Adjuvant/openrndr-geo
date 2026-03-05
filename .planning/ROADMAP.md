@@ -15,7 +15,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 11. Batch Projection | 1/2 | In Progress | 2026-03-05 |
+| 11. Batch Projection | 2/2 | Complete   | 2026-03-05 |
 | 12. Viewport Caching | 0/2 | Not started | - |
 | 13. Integration & Validation | 0/2 | Not started | - |
 
@@ -38,7 +38,7 @@
 4. Batch projection is transparent to existing code (no changes required to use)
 5. Internal timing confirms measurable improvement over per-point projection
 
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 - [x] `11-01-PLAN.md` — Core batch infrastructure (CoordinateBatch, optimized geometries) — Completed 2026-03-05
 - [ ] `11-02-PLAN.md` — API integration & validation (opt-in parameter, warnings, benchmarks)

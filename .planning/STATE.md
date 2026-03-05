@@ -27,8 +27,8 @@
 
 | Phase | Name | Status | Plans | Blocked By |
 |-------|------|--------|-------|------------|
-| 11 | Batch Projection | 🔄 In Progress | 1/2 | - |
-| 12 | Viewport Caching | ⏳ Pending | 0/2 | Phase 11 |
+| 11 | Batch Projection | ✓ Complete | 2/2 | - |
+| 12 | Viewport Caching | 🔄 Ready | 0/2 | Phase 11 |
 | 13 | Integration & Validation | ⏳ Pending | 0/2 | Phase 12 |
 
 ## Performance Metrics
@@ -61,6 +61,7 @@
 | Geometry.toOptimized() returns Any | Heterogeneous return types (OptimizedPoint, OptimizedLineString, etc.) | ✓ Implemented |
 | Use inline for batch transformation | Eliminate lambda allocation overhead in hot paths | ✓ Implemented |
 | Phase 11-batch-projection P01 | 7min | 3 tasks | 5 files |
+| Phase 11-batch-projection P02 | 16min | 3 tasks | 8 files |
 
 ### Active Requirements (v1.3.0)
 
@@ -87,15 +88,17 @@ None currently.
 ## Session Continuity
 
 ### Last Actions
-- ✅ Completed Plan 11-01: Core batch projection infrastructure
-- Created CoordinateBatch with DoubleArray storage
-- Implemented optimized geometry subclasses (all 6 types)
-- Migrated ProjectionExtensions to batch projection internally
-- All code compiles and tests pass
+- ✅ Completed Plan 11-02: Batch integration and benchmarks
+- Added opt-in optimization with `loadGeoJSON(path, optimize = true)`
+- Created OptimizationWarnings for large geometry guidance
+- Implemented OptimizedGeoSource wrapper for optimized data
+- Integrated batch projection into GeoStack rendering pipeline
+- Created micro-benchmarks showing 1.1-1.5x speedup
+- All existing tests pass, backward compatible
 
 ### Next Actions
-1. Run next plan: Phase 11 Plan 02 (batch integration)
-2. Or `/gsd-discuss-phase 11` to review approach first
+1. Move to Phase 12: Viewport Caching (`/gsd-plan-phase 12`)
+2. Or review Phase 11 completion (`/gsd-verify-work 11`)
 
 ## Files
 
@@ -107,12 +110,13 @@ None currently.
 | MILESTONES.md | Milestone completion tracking | 2026-03-05 |
 | research/SUMMARY.md | Research findings (superseded by simplification) | 2026-03-05 |
 | 11-01-SUMMARY.md | Core batch projection infrastructure | 2026-03-05 |
+| 11-02-SUMMARY.md | Batch integration and benchmarks | 2026-03-05 |
 
 ### Session Continuity
 
-**Last Session:** 2026-03-05  
-**Stopped At:** Completed 11-01-PLAN.md  
-**Duration:** 7 minutes
+**Last Session:** 2026-03-05T22:48:00.555Z
+**Stopped At:** Completed 11-02-PLAN.md
+**Duration:** 16 minutes
 
 ---
 *State file for project continuity across sessions*
