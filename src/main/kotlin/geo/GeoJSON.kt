@@ -1,5 +1,6 @@
 package geo
 
+import geo.internal.checkOptimizationRecommendation
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -47,28 +48,30 @@ object GeoJSON {
      * Loads a GeoJSON file from the given path and returns a GeoJSONSource.
      *
      * @param path The file path to the GeoJSON file
+     * @param optimize Whether to enable batch projection optimization (default: false)
      * @return A GeoJSONSource containing the parsed features
      * @throws FileNotFoundException if the file doesn't exist
      * @throws IllegalArgumentException if the JSON is not a valid FeatureCollection
      */
-    fun load(path: String): GeoJSONSource {
+    fun load(path: String, optimize: Boolean = false): GeoJSONSource {
         val file = File(path)
         if (!file.exists()) {
             throw FileNotFoundException("GeoJSON file not found: $path")
         }
 
         val content = file.readText()
-        return loadString(content)
+        return loadString(content, optimize)
     }
 
     /**
      * Parses a GeoJSON string and returns a GeoJSONSource.
      *
      * @param content The GeoJSON string content
+     * @param optimize Whether to enable batch projection optimization (default: false)
      * @return A GeoJSONSource containing the parsed features
      * @throws IllegalArgumentException if the JSON is not a valid FeatureCollection
      */
-    fun loadString(content: String): GeoJSONSource {
+    fun loadString(content: String, optimize: Boolean = false): GeoJSONSource {
         val root = json.parseToJsonElement(content)
         val rootObject = root.jsonObject
         val type = rootObject["type"]?.jsonPrimitive?.content
@@ -90,7 +93,43 @@ object GeoJSON {
             else -> throw IllegalArgumentException("Expected FeatureCollection or Feature, got: ${type ?: "unknown"}")
         }
 
-        return GeoJSONSource(features.asSequence(), bbox = bbox)
+        // Count coordinates and check optimization recommendation
+        val featureList = features.toList()
+        val coordinateCount = featureList.sumOf { countCoordinates(it.geometry) }
+        checkOptimizationRecommendation(
+            featureCount = featureList.size,
+            coordinateCount = coordinateCount,
+            optimizeFlag = optimize
+        )
+
+        // Apply optimization if requested
+        val optimizedFeatures = if (optimize) {
+            featureList.map { feature ->
+                Feature(
+                    geometry = feature.geometry.toOptimized() as geo.Geometry,
+                    properties = feature.properties
+                )
+            }
+        } else {
+            featureList
+        }
+
+        return GeoJSONSource(optimizedFeatures.asSequence(), bbox = bbox)
+    }
+
+    /**
+     * Counts the total number of coordinates in a geometry.
+     * Used for optimization warning threshold checking.
+     */
+    private fun countCoordinates(geometry: Geometry): Int = when (geometry) {
+        is Point -> 1
+        is LineString -> geometry.points.size
+        is Polygon -> geometry.exterior.size + geometry.interiors.sumOf { it.size }
+        is MultiPoint -> geometry.points.size
+        is MultiLineString -> geometry.lineStrings.sumOf { it.points.size }
+        is MultiPolygon -> geometry.polygons.sumOf { poly ->
+            poly.exterior.size + poly.interiors.sumOf { it.size }
+        }
     }
 
     /**

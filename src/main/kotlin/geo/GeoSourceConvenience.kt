@@ -32,48 +32,51 @@ import java.io.File
 
 /**
  * Load a GeoJSON file and return a GeoJSONSource.
- * 
+ *
  * This is a convenience wrapper around [GeoJSON.load] that provides a consistent
  * API for loading geospatial data.
- * 
+ *
  * ## Auto-detection
  * Currently detects GeoJSON files. Future versions will auto-detect format
  * from file extension (.json, .geojson, .gpkg).
- * 
+ *
  * ## Usage
  * ```kotlin
  * val source = geoSource("data.json")
  * source.features.forEach { println(it.properties) }
  * ```
- * 
+ *
  * @param path Path to the geospatial data file
+ * @param optimize Whether to enable batch projection optimization (default: false)
  * @return A GeoSource implementation for the loaded data
  * @throws FileNotFoundException if the file doesn't exist
  */
-fun geoSource(path: String): GeoJSONSource {
-    return GeoJSON.load(path)
+fun geoSource(path: String, optimize: Boolean = false): GeoJSONSource {
+    return GeoJSON.load(path, optimize)
 }
 
 /**
  * Load a GeoJSON file from a File object.
- * 
+ *
  * @param file File object pointing to the geospatial data
+ * @param optimize Whether to enable batch projection optimization (default: false)
  * @return A GeoSource implementation for the loaded data
  * @throws FileNotFoundException if the file doesn't exist
  */
-fun geoSource(file: File): GeoJSONSource {
-    return GeoJSON.load(file.absolutePath)
+fun geoSource(file: File, optimize: Boolean = false): GeoJSONSource {
+    return GeoJSON.load(file.absolutePath, optimize)
 }
 
 /**
  * Load a GeoJSON from a string content.
- * 
+ *
  * @param content GeoJSON string content
+ * @param optimize Whether to enable batch projection optimization (default: false)
  * @return A GeoSource implementation for the parsed data
  * @throws IllegalArgumentException if the content is not valid GeoJSON
  */
-fun geoSourceFromString(content: String): GeoJSONSource {
-    return GeoJSON.loadString(content)
+fun geoSourceFromString(content: String, optimize: Boolean = false): GeoJSONSource {
+    return GeoJSON.loadString(content, optimize)
 }
 
 /**
