@@ -2,7 +2,7 @@
 
 **Current Milestone:** v1.3.0 Performance  
 **Phase:** 11-batch-projection  
-**Current Plan:** 11-02  
+**Current Plan:** Not started
 **Last Updated:** 2026-03-05
 
 ## Project Reference
