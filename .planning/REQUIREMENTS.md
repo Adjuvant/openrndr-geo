@@ -16,7 +16,7 @@
 - [x] **PERF-04**: Library caches projected geometries for current viewport state
 - [x] **PERF-05**: Cache invalidates when viewport changes (zoom, pan, viewport size)
 - [x] **PERF-06**: Cache bounded by simple size limit (clear-on-change, not LRU/LFU)
-- [ ] **PERF-07**: Caching is transparent to existing code (no API changes required)
+- [x] **PERF-07**: Caching is transparent to existing code (no API changes required)
 
 ### Performance — Measurement
 
@@ -60,7 +60,7 @@
 | PERF-04 | Phase 12 | Complete |
 | PERF-05 | Phase 12 | Complete |
 | PERF-06 | Phase 12 | Complete |
-| PERF-07 | Phase 12 | Pending |
+| PERF-07 | Phase 12 | Complete |
 | PERF-08 | Phase 13 | Pending |
 | PERF-09 | Phase 13 | Pending |
 | PERF-10 | Phase 13 | Pending |

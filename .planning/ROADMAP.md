@@ -8,7 +8,7 @@
 ## Phases
 
 - [x] **Phase 11: Batch Projection** - Transform coordinate arrays efficiently (2/2 plans complete)
-- [ ] **Phase 12: Viewport Caching** - Simple cache with clear-on-change semantics
+- [x] **Phase 12: Viewport Caching** - Simple cache with clear-on-change semantics (completed 2026-03-06)
 - [ ] **Phase 13: Integration & Validation** - Verify all v1.2.0 examples work unchanged
 
 ## Progress
@@ -16,7 +16,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 11. Batch Projection | 2/2 | Complete    | 2026-03-05 |
-| 12. Viewport Caching | 2/2 | In Progress | 2026-03-06 |
+| 12. Viewport Caching | 3/3 | Complete   | 2026-03-06 |
 | 13. Integration & Validation | 0/2 | Not started | - |
 
 **Coverage:** 10/10 v1.3.0 requirements mapped ✓
@@ -60,7 +60,7 @@
 4. Caching is transparent to existing code (no API changes required)
 5. Simple Kotlin `MutableMap` implementation (no external caching libraries)
 
-**Plans:** 2/2 plans complete
+**Plans:** 3/3 plans complete
 
 - [x] `12-01-PLAN.md` — Core cache infrastructure (ViewportState, CacheKey, ViewportCache) — Completed 2026-03-06
 - [x] `12-02-PLAN.md` — Geometry dirty flag integration (reactive invalidation) — Completed 2026-03-06
