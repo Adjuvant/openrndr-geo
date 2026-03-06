@@ -68,6 +68,9 @@ class GeoStack(
     /** Current view bounds, or null to show all data */
     private var viewBounds: Bounds? = null
     
+    /** Viewport cache for projected geometry coordinates */
+    private val viewportCache = geo.internal.cache.ViewportCache()
+    
     /**
      * The unified CRS used by this stack.
      * This is the CRS of the first source - all others are transformed to match.
@@ -103,10 +106,25 @@ class GeoStack(
     
     /**
      * Get the unified bounding box of all features in the stack.
+     * Handles both standard and optimized GeoSources.
      */
     fun totalBoundingBox(): Bounds {
-        return features.fold(Bounds.empty()) { acc, feature ->
-            acc.expandToInclude(feature.boundingBox)
+        return sources.fold(Bounds.empty()) { acc, source ->
+            when (source) {
+                is OptimizedGeoSource -> {
+                    // For optimized sources, compute bounds directly from optimized geometries
+                    val sourceBounds = source.optimizedFeatureSequence.fold(Bounds.empty()) { bounds, feature ->
+                        bounds.expandToInclude(feature.boundingBox())
+                    }
+                    acc.expandToInclude(sourceBounds)
+                }
+                else -> {
+                    // For standard sources, use the features sequence
+                    source.features.fold(acc) { bounds, feature ->
+                        bounds.expandToInclude(feature.boundingBox)
+                    }
+                }
+            }
         }
     }
     
@@ -201,6 +219,8 @@ class GeoStack(
      * Render all features in the stack with the given projection.
      */
     fun render(drawer: Drawer, projection: geo.projection.GeoProjection) {
+        val viewportState = geo.internal.cache.ViewportState.fromProjection(projection)
+
         sources.forEach { source ->
             when (source) {
                 is OptimizedGeoSource -> {
@@ -210,13 +230,51 @@ class GeoStack(
                     }
                 }
                 else -> {
-                    // Standard per-point projection
+                    // Standard per-point projection with viewport caching
                     source.features.forEach { feature ->
-                        feature.geometry.renderToDrawer(drawer, projection, null)
+                        renderWithCache(feature.geometry, drawer, projection, viewportState)
                     }
                 }
             }
         }
+    }
+    
+    /**
+     * Render geometry with viewport caching.
+     * Uses cache to avoid redundant projection calculations.
+     */
+    private fun renderWithCache(
+        geometry: Geometry,
+        drawer: Drawer,
+        projection: geo.projection.GeoProjection,
+        viewportState: geo.internal.cache.ViewportState
+    ) {
+        val projectedCoords = viewportCache.getProjectedCoordinates(
+            geometry = geometry,
+            viewportState = viewportState
+        ) {
+            // Projector lambda - only called on cache miss
+            projectGeometryToArray(geometry, projection)
+        }
+
+        // Render using cached coordinates
+        renderProjectedCoordinates(geometry, projectedCoords, drawer)
+    }
+    
+    /**
+     * Project a geometry to screen coordinates as an Array<Vector2>.
+     * Used by the viewport cache to store projected coordinates.
+     */
+    private fun projectGeometryToArray(
+        geometry: Geometry,
+        projection: geo.projection.GeoProjection
+    ): Array<Vector2> = when (geometry) {
+        is geo.Point -> arrayOf(projection.project(Vector2(geometry.x, geometry.y)))
+        is geo.LineString -> geometry.points.map { projection.project(it) }.toTypedArray()
+        is geo.Polygon -> geometry.exterior.map { projection.project(it) }.toTypedArray()
+        is geo.MultiPoint -> geometry.points.map { projection.project(Vector2(it.x, it.y)) }.toTypedArray()
+        is geo.MultiLineString -> geometry.lineStrings.flatMap { it.points.map { pt -> projection.project(pt) } }.toTypedArray()
+        is geo.MultiPolygon -> geometry.polygons.flatMap { it.exterior.map { pt -> projection.project(pt) } }.toTypedArray()
     }
     
     /**
@@ -275,7 +333,49 @@ fun geoStack(sources: List<GeoSource>): GeoStack {
 }
 
 /**
- * Render this geometry to the given Drawer.
+ * Render pre-projected coordinates for a geometry.
+ */
+private fun renderProjectedCoordinates(
+    geometry: Geometry,
+    projectedCoords: Array<Vector2>,
+    drawer: Drawer
+) {
+    when (geometry) {
+        is geo.Point -> {
+            geo.render.drawPoint(drawer, projectedCoords[0], null)
+        }
+        is geo.LineString -> {
+            geo.render.drawLineString(drawer, projectedCoords.toList(), null)
+        }
+        is geo.Polygon -> {
+            geo.render.drawPolygon(drawer, projectedCoords.toList(), null)
+        }
+        is geo.MultiPoint -> {
+            projectedCoords.forEach { pt ->
+                geo.render.drawPoint(drawer, pt, null)
+            }
+        }
+        is geo.MultiLineString -> {
+            // MultiLineString flattens all points, need to reconstruct line segments
+            var idx = 0
+            geometry.lineStrings.forEach { line ->
+                val linePoints = Array(line.points.size) { projectedCoords[idx++] }
+                geo.render.drawLineString(drawer, linePoints.toList(), null)
+            }
+        }
+        is geo.MultiPolygon -> {
+            // MultiPolygon flattens all exterior points
+            var idx = 0
+            geometry.polygons.forEach { poly ->
+                val polyPoints = Array(poly.exterior.size) { projectedCoords[idx++] }
+                geo.render.drawPolygon(drawer, polyPoints.toList(), null)
+            }
+        }
+    }
+}
+
+/**
+ * Render this geometry to the given Drawer (legacy method, used when cache is not needed).
  */
 private fun Geometry.renderToDrawer(drawer: Drawer, projection: geo.projection.GeoProjection, style: geo.render.Style?) {
     when (this) {
