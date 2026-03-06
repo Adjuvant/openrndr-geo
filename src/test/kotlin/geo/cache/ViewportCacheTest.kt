@@ -218,6 +218,83 @@ class ViewportCacheTest {
         assertEquals(3, cache.size)
     }
 
+    @Test
+    fun testCachingIsTransparent() {
+        // This test verifies PERF-07: Caching is transparent to existing code
+        // Users don't need to know caching exists - it just makes things faster
+
+        val cache = ViewportCache()
+        val viewportState = createViewportState()
+
+        // Simulate user code that doesn't know about caching
+        val geometry1 = Point(10.0, 20.0)
+        val geometry2 = LineString(listOf(Vector2(0.0, 0.0), Vector2(1.0, 1.0)))
+
+        // User calls getProjectedCoordinates just like they would call projection directly
+        // No special setup, no configuration, no API changes
+        val result1 = cache.getProjectedCoordinates(geometry1, viewportState) {
+            // This is the user's projection logic
+            arrayOf(Vector2(100.0, 200.0))
+        }
+
+        val result2 = cache.getProjectedCoordinates(geometry2, viewportState) {
+            arrayOf(Vector2(0.0, 0.0), Vector2(10.0, 10.0))
+        }
+
+        // Results are exactly what user expects
+        assertEquals(1, result1.size)
+        assertEquals(100.0, result1[0].x, 0.0001)
+
+        assertEquals(2, result2.size)
+
+        // Second call with same geometry returns same result (from cache)
+        // User doesn't need to know it's cached - it just works faster
+        val cachedResult = cache.getProjectedCoordinates(geometry1, viewportState) {
+            fail("This should not be called - cache should be transparent")
+            arrayOf(Vector2(999.0, 999.0))
+        }
+
+        assertEquals(result1[0].x, cachedResult[0].x, 0.0001)
+    }
+
+    @Test
+    fun testCachePerformanceBenefit() {
+        // This test demonstrates the performance benefit of caching (PERF-04)
+        // It doesn't measure absolute time but verifies the caching mechanism works
+
+        val cache = ViewportCache()
+        val viewportState = createViewportState()
+
+        // Create a geometry that would be expensive to project
+        val manyPoints = (1..1000).map { Vector2(it.toDouble(), it.toDouble() * 2) }
+        val lineString = LineString(manyPoints)
+
+        var projectionCount = 0
+
+        // Simulate multiple renders of the same scene (static camera)
+        repeat(100) {
+            cache.getProjectedCoordinates(lineString, viewportState) {
+                projectionCount++
+                manyPoints.map { Vector2(it.x * 10, it.y * 10) }.toTypedArray()
+            }
+        }
+
+        // Projection should only happen once (first render)
+        // All subsequent renders use cached coordinates
+        assertEquals(1, projectionCount)
+
+        // Change viewport (simulate zoom/pan)
+        val newViewportState = ViewportState(2.0, 0.0, 0.0, 800.0, 600.0)
+
+        // This call should trigger re-projection (cache cleared)
+        cache.getProjectedCoordinates(lineString, newViewportState) {
+            projectionCount++
+            manyPoints.map { Vector2(it.x * 20, it.y * 20) }.toTypedArray()
+        }
+
+        assertEquals(2, projectionCount)
+    }
+
     /**
      * Helper to create a consistent viewport state for tests
      */
