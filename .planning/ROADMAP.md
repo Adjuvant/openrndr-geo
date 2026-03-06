@@ -3,7 +3,7 @@
 **Milestone:** v1.3.0 Performance  
 **Goal:** Optimize rendering performance through batch projection and simple viewport caching.  
 **Target:** 10x+ improvement for static camera scenarios.  
-**Last Updated:** 2026-03-06
+**Last Updated:** 2026-03-06 (Phase 13 plans created)
 
 ## Phases
 
@@ -17,7 +17,7 @@
 |-------|----------------|--------|-----------|
 | 11. Batch Projection | 2/2 | Complete    | 2026-03-05 |
 | 12. Viewport Caching | 3/3 | Complete   | 2026-03-06 |
-| 13. Integration & Validation | 0/2 | Not started | - |
+| 13. Integration & Validation | 0/2 | Ready to execute | Plans created |
 
 **Coverage:** 10/10 v1.3.0 requirements mapped ✓
 
@@ -82,7 +82,14 @@
 4. Memory usage remains bounded during extended creative sessions
 5. Pan operations show measurable improvement from batch projection
 
-**Plans:** TBD
+**Plans:** 2 plans created
+
+- [ ] `13-01-PLAN.md` — Performance benchmarking infrastructure and tests (PERF-08, PERF-09)
+- [ ] `13-02-PLAN.md` — Regression testing all 16 v1.2.0 examples (PERF-10)
+
+**Wave Structure:**
+- Wave 1: Plan 13-01 (performance benchmarks - can run independently)
+- Wave 2: Plan 13-02 (regression tests - depends on benchmarks)
 
 ---
 
