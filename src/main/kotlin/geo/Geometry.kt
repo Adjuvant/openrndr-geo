@@ -30,6 +30,17 @@ sealed class Geometry {
      * Computed lazily since it may be expensive to calculate.
      */
     abstract val boundingBox: Bounds
+
+    /**
+     * Dirty flag for viewport cache invalidation.
+     * Set to true when geometry coordinates change.
+     * Cleared by viewport cache after reading cached value.
+     *
+     * Note: Geometries are typically immutable, so this defaults to true
+     * and is cleared after first cache access.
+     */
+    var isDirty: Boolean = true
+        internal set
 }
 
 /**
