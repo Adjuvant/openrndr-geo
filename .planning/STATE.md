@@ -67,6 +67,10 @@
 | MAX_CACHE_ENTRIES = 1000 | Upper end of suggested range for typical scenes | ✓ Implemented |
 | Phase 12-viewport-caching P02 | 1min | 3 tasks | 1 files |
 | Phase 12-viewport-caching P03 | 4min | 3 tasks | 2 files |
+| Simple timing-based benchmarks | Not JMH — creative coding doesn't need rigorous statistical analysis | ✓ Decided |
+| Synthetic datasets for benchmarking | Consistent, controllable test data | ✓ Decided |
+| 8x-15x acceptable range | 10x ± variation based on dataset characteristics | ✓ Decided |
+| PerformanceBenchmark test class | Run via `./gradlew test` or standalone | ✓ Decided |
 
 ### Active Requirements (v1.3.0)
 
