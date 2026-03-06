@@ -1,9 +1,9 @@
 # Project State: openrndr-geo
 
 **Current Milestone:** v1.3.0 Performance  
-**Phase:** 11-batch-projection  
-**Current Plan:** Not started
-**Last Updated:** 2026-03-05
+**Phase:** 12-viewport-caching  
+**Current Plan:** 01
+**Last Updated:** 2026-03-06
 
 ## Project Reference
 
@@ -28,7 +28,7 @@
 | Phase | Name | Status | Plans | Blocked By |
 |-------|------|--------|-------|------------|
 | 11 | Batch Projection | ✓ Complete | 2/2 | - |
-| 12 | Viewport Caching | 🔄 Ready | 0/2 | Phase 11 |
+| 12 | Viewport Caching | 🔄 In Progress | 1/2 | - |
 | 13 | Integration & Validation | ⏳ Pending | 0/2 | Phase 12 |
 
 ## Performance Metrics
@@ -62,6 +62,9 @@
 | Use inline for batch transformation | Eliminate lambda allocation overhead in hot paths | ✓ Implemented |
 | Phase 11-batch-projection P01 | 7min | 3 tasks | 5 files |
 | Phase 11-batch-projection P02 | 16min | 3 tasks | 8 files |
+| Phase 12-viewport-caching P01 | 2min | 3 tasks | 4 files |
+| Identity equality for cache keys | Avoid O(n) content hashing on large geometries | ✓ Implemented |
+| MAX_CACHE_ENTRIES = 1000 | Upper end of suggested range for typical scenes | ✓ Implemented |
 
 ### Active Requirements (v1.3.0)
 
@@ -97,8 +100,8 @@ None currently.
 - All existing tests pass, backward compatible
 
 ### Next Actions
-1. Move to Phase 12: Viewport Caching (`/gsd-plan-phase 12`)
-2. Or review Phase 11 completion (`/gsd-verify-work 11`)
+1. Continue Phase 12: Plan 02 - Integration and dirty flag implementation (`/gsd-plan-phase 12`)
+2. Or review Phase 12 progress (`/gsd-verify-work 12`)
 
 ## Files
 
@@ -111,11 +114,12 @@ None currently.
 | research/SUMMARY.md | Research findings (superseded by simplification) | 2026-03-05 |
 | 11-01-SUMMARY.md | Core batch projection infrastructure | 2026-03-05 |
 | 11-02-SUMMARY.md | Batch integration and benchmarks | 2026-03-05 |
+| 12-01-SUMMARY.md | Viewport caching infrastructure | 2026-03-06 |
 
 ### Session Continuity
 
-**Last Session:** 2026-03-06T22:46:01.323Z
-**Stopped At:** Phase 12 context gathered
+**Last Session:** 2026-03-06T23:05:57.399Z
+**Stopped At:** Completed 12-01-PLAN.md
 **Duration:** 16 minutes
 
 ---

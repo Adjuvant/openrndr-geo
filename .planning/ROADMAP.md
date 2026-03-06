@@ -3,7 +3,7 @@
 **Milestone:** v1.3.0 Performance  
 **Goal:** Optimize rendering performance through batch projection and simple viewport caching.  
 **Target:** 10x+ improvement for static camera scenarios.  
-**Last Updated:** 2026-03-05
+**Last Updated:** 2026-03-06
 
 ## Phases
 
@@ -16,7 +16,7 @@
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 11. Batch Projection | 2/2 | Complete    | 2026-03-05 |
-| 12. Viewport Caching | 0/3 | Not started | - |
+| 12. Viewport Caching | 1/3 | In Progress | 2026-03-06 |
 | 13. Integration & Validation | 0/2 | Not started | - |
 
 **Coverage:** 10/10 v1.3.0 requirements mapped ✓
@@ -60,9 +60,9 @@
 4. Caching is transparent to existing code (no API changes required)
 5. Simple Kotlin `MutableMap` implementation (no external caching libraries)
 
-**Plans:** 0/3 plans created
+**Plans:** 1/3 plans complete
 
-- [ ] `12-01-PLAN.md` — Core cache infrastructure (ViewportState, CacheKey, ViewportCache)
+- [x] `12-01-PLAN.md` — Core cache infrastructure (ViewportState, CacheKey, ViewportCache) — Completed 2026-03-06
 - [ ] `12-02-PLAN.md` — Geometry dirty flag integration (reactive invalidation)
 - [ ] `12-03-PLAN.md` — GeoStack integration and validation tests
 
