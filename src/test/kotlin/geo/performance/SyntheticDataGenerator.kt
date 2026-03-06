@@ -32,15 +32,16 @@ object SyntheticDataGenerator {
      */
     fun createPointDataset(count: Int, seed: Long = DEFAULT_SEED): GeoSource {
         val random = Random(seed)
-        val features = generateSequence {
+        // Materialize to list so features can be consumed multiple times
+        val features = List(count) {
             Feature(
                 geometry = createRandomPoint(random),
                 properties = createRandomProperties(random)
             )
-        }.take(count)
+        }
         
         return object : GeoSource("EPSG:4326") {
-            override val features: Sequence<Feature> = features
+            override val features: Sequence<Feature> = features.asSequence()
         }
     }
     
@@ -61,15 +62,16 @@ object SyntheticDataGenerator {
         seed: Long = DEFAULT_SEED
     ): GeoSource {
         val random = Random(seed)
-        val features = generateSequence {
+        // Materialize to list so features can be consumed multiple times
+        val features = List(count) {
             Feature(
                 geometry = createRandomLineString(random, pointsPerLine),
                 properties = createRandomProperties(random)
             )
-        }.take(count)
+        }
         
         return object : GeoSource("EPSG:4326") {
-            override val features: Sequence<Feature> = features
+            override val features: Sequence<Feature> = features.asSequence()
         }
     }
     
@@ -91,15 +93,16 @@ object SyntheticDataGenerator {
         seed: Long = DEFAULT_SEED
     ): GeoSource {
         val random = Random(seed)
-        val features = generateSequence {
+        // Materialize to list so features can be consumed multiple times
+        val features = List(count) {
             Feature(
                 geometry = createRandomPolygon(random, pointsPerPolygon),
                 properties = createRandomProperties(random)
             )
-        }.take(count)
+        }
         
         return object : GeoSource("EPSG:4326") {
-            override val features: Sequence<Feature> = features
+            override val features: Sequence<Feature> = features.asSequence()
         }
     }
     
@@ -118,20 +121,23 @@ object SyntheticDataGenerator {
         val lineCount = (count * 0.3).toInt()
         val polygonCount = count - pointCount - lineCount
         
-        val pointFeatures = generateSequence {
+        // Materialize to list so features can be consumed multiple times
+        val pointFeatures = List(pointCount) {
             Feature(geometry = createRandomPoint(random), properties = createRandomProperties(random))
-        }.take(pointCount)
+        }
         
-        val lineFeatures = generateSequence {
+        val lineFeatures = List(lineCount) {
             Feature(geometry = createRandomLineString(random, 15), properties = createRandomProperties(random))
-        }.take(lineCount)
+        }
         
-        val polygonFeatures = generateSequence {
+        val polygonFeatures = List(polygonCount) {
             Feature(geometry = createRandomPolygon(random, 20), properties = createRandomProperties(random))
-        }.take(polygonCount)
+        }
+        
+        val allFeatures = pointFeatures + lineFeatures + polygonFeatures
         
         return object : GeoSource("EPSG:4326") {
-            override val features: Sequence<Feature> = pointFeatures + lineFeatures + polygonFeatures
+            override val features: Sequence<Feature> = allFeatures.asSequence()
         }
     }
     
@@ -155,10 +161,10 @@ object SyntheticDataGenerator {
         val x = clusterCenterX + distance * kotlin.math.cos(angle)
         val y = clusterCenterY + distance * kotlin.math.sin(angle)
         
-        // Clamp to world bounds
+        // Clamp to world bounds, avoiding poles (±90°) for Mercator compatibility
         return Point(
             x = x.coerceIn(-180.0, 180.0),
-            y = y.coerceIn(-90.0, 90.0)
+            y = y.coerceIn(-85.0, 85.0)
         )
     }
     
@@ -177,8 +183,9 @@ object SyntheticDataGenerator {
             val stepX = random.nextDouble(-5.0, 5.0)
             val stepY = random.nextDouble(-5.0, 5.0)
             
+            // Clamp to world bounds, avoiding poles (±90°) for Mercator compatibility
             val newX = (lastPoint.x + stepX).coerceIn(-180.0, 180.0)
-            val newY = (lastPoint.y + stepY).coerceIn(-90.0, 90.0)
+            val newY = (lastPoint.y + stepY).coerceIn(-85.0, 85.0)
             
             points.add(Vector2(newX, newY))
         }
@@ -205,7 +212,7 @@ object SyntheticDataGenerator {
             
             Vector2(
                 x.coerceIn(-180.0, 180.0),
-                y.coerceIn(-90.0, 90.0)
+                y.coerceIn(-85.0, 85.0)
             )
         }
         
