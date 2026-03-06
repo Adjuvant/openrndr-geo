@@ -48,6 +48,9 @@ sealed class Geometry {
  *
  * @property x The X coordinate
  * @property y The Y coordinate
+ *
+ * Note: Instances start with [isDirty] = true. The viewport cache manages this flag
+ * automatically - it is cleared after the first cached projection.
  */
 data class Point(val x: Double, val y: Double) : Geometry() {
     override val boundingBox: Bounds = Bounds(x, y, x, y)
@@ -79,6 +82,9 @@ data class Point(val x: Double, val y: Double) : Geometry() {
  * Represents a line string (polyline) - a sequence of connected points.
  *
  * @property points The list of points defining the line string
+ *
+ * Note: Instances start with [isDirty] = true. The viewport cache manages this flag
+ * automatically - it is cleared after the first cached projection.
  */
 data class LineString(val points: List<Vector2>) : Geometry() {
     fun toScreen(projection: GeoProjection): List<Vector2> {
@@ -110,6 +116,9 @@ data class LineString(val points: List<Vector2>) : Geometry() {
  *
  * @property exterior The exterior ring (outer boundary) as a list of points
  * @property interiors List of interior rings (holes), each as a list of points
+ *
+ * Note: Instances start with [isDirty] = true. The viewport cache manages this flag
+ * automatically - it is cleared after the first cached projection.
  */
 data class Polygon(
     val exterior: List<Vector2>,
@@ -149,6 +158,9 @@ data class Polygon(
  * Represents a collection of points.
  *
  * @property points The list of points
+ *
+ * Note: Instances start with [isDirty] = true. The viewport cache manages this flag
+ * automatically - it is cleared after the first cached projection.
  */
 data class MultiPoint(val points: List<Point>) : Geometry() {
     init {
@@ -172,6 +184,9 @@ data class MultiPoint(val points: List<Point>) : Geometry() {
  * Represents a collection of line strings.
  *
  * @property lineStrings The list of line strings
+ *
+ * Note: Instances start with [isDirty] = true. The viewport cache manages this flag
+ * automatically - it is cleared after the first cached projection.
  */
 data class MultiLineString(val lineStrings: List<LineString>) : Geometry() {
     init {
@@ -195,6 +210,9 @@ data class MultiLineString(val lineStrings: List<LineString>) : Geometry() {
  * Represents a collection of polygons.
  *
  * @property polygons The list of polygons
+ *
+ * Note: Instances start with [isDirty] = true. The viewport cache manages this flag
+ * automatically - it is cleared after the first cached projection.
  */
 data class MultiPolygon(val polygons: List<Polygon>) : Geometry() {
     init {
