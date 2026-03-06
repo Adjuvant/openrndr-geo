@@ -2,7 +2,7 @@
 
 **Current Milestone:** v1.3.0 Performance  
 **Phase:** 12-viewport-caching  
-**Current Plan:** 01
+**Current Plan:** 02
 **Last Updated:** 2026-03-06
 
 ## Project Reference
@@ -28,7 +28,7 @@
 | Phase | Name | Status | Plans | Blocked By |
 |-------|------|--------|-------|------------|
 | 11 | Batch Projection | ✓ Complete | 2/2 | - |
-| 12 | Viewport Caching | 🔄 In Progress | 1/2 | - |
+| 12 | Viewport Caching | 🔄 In Progress | 2/2 | - |
 | 13 | Integration & Validation | ⏳ Pending | 0/2 | Phase 12 |
 
 ## Performance Metrics
@@ -65,6 +65,7 @@
 | Phase 12-viewport-caching P01 | 2min | 3 tasks | 4 files |
 | Identity equality for cache keys | Avoid O(n) content hashing on large geometries | ✓ Implemented |
 | MAX_CACHE_ENTRIES = 1000 | Upper end of suggested range for typical scenes | ✓ Implemented |
+| Phase 12-viewport-caching P02 | 1min | 3 tasks | 1 files |
 
 ### Active Requirements (v1.3.0)
 
@@ -91,16 +92,13 @@ None currently.
 ## Session Continuity
 
 ### Last Actions
-- ✅ Completed Plan 11-02: Batch integration and benchmarks
-- Added opt-in optimization with `loadGeoJSON(path, optimize = true)`
-- Created OptimizationWarnings for large geometry guidance
-- Implemented OptimizedGeoSource wrapper for optimized data
-- Integrated batch projection into GeoStack rendering pipeline
-- Created micro-benchmarks showing 1.1-1.5x speedup
-- All existing tests pass, backward compatible
+- ✅ Completed Plan 12-02: Geometry dirty flag integration and documentation
+- Verified isDirty property and ViewportCache integration (completed in 12-01)
+- Added KDoc documentation to all 6 geometry types explaining dirty flag lifecycle
+- All tests pass, compilation successful
 
 ### Next Actions
-1. Continue Phase 12: Plan 02 - Integration and dirty flag implementation (`/gsd-plan-phase 12`)
+1. Start Phase 13: Integration & Validation (`/gsd-plan-phase 13`)
 2. Or review Phase 12 progress (`/gsd-verify-work 12`)
 
 ## Files
@@ -118,9 +116,9 @@ None currently.
 
 ### Session Continuity
 
-**Last Session:** 2026-03-06T23:05:57.399Z
-**Stopped At:** Completed 12-01-PLAN.md
-**Duration:** 16 minutes
+**Last Session:** 2026-03-06T23:10:19Z
+**Stopped At:** Completed 12-02-PLAN.md
+**Duration:** 1 minute
 
 ---
 *State file for project continuity across sessions*
