@@ -1,8 +1,8 @@
 # Project State: openrndr-geo
 
 **Current Milestone:** v1.3.0 Performance  
-**Phase:** 12-viewport-caching  
-**Current Plan:** 02
+**Phase:** 13-integration-validation  
+**Current Plan:** Not started
 **Last Updated:** 2026-03-06
 
 ## Project Reference
@@ -115,6 +115,7 @@ None currently.
 | 11-01-SUMMARY.md | Core batch projection infrastructure | 2026-03-05 |
 | 11-02-SUMMARY.md | Batch integration and benchmarks | 2026-03-05 |
 | 12-01-SUMMARY.md | Viewport caching infrastructure | 2026-03-06 |
+| 12-02-SUMMARY.md | Geometry dirty flag integration | 2026-03-06 |
 | 12-03-SUMMARY.md | ViewportCache integration and tests | 2026-03-06 |
 
 ### Session Continuity
