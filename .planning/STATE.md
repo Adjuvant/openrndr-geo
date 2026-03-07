@@ -104,6 +104,12 @@
 
 None currently.
 
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 10 | Fix viewport cache bypass in Drawer.geo() extension | 2026-03-07 | 23f762b | [10-fix-viewport-cache-bypass-in-drawer-geo-](./quick/10-fix-viewport-cache-bypass-in-drawer-geo-/) |
+
 ## Session Continuity
 
 ### Last Actions
