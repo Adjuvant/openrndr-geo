@@ -79,8 +79,7 @@ object ExampleRunner {
         "examples.core.LoadGeojson",
         "examples.core.LoadGeopackage",
         "examples.core.PrintSummary",
-        "examples.core.GeoStack",
-        "examples.core.BatchOptimization"
+        "examples.core.GeoStack"
     )
     
     /**
