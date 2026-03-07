@@ -6,11 +6,27 @@ import geo.GeoJSON
 import geo.GeoJSONSource
 import geo.GeoSource
 import geo.Geometry
+import geo.internal.OptimizedFeature
+import geo.internal.OptimizedGeoSource
+import geo.internal.cache.ViewportCache
+import geo.internal.cache.ViewportState
+import geo.internal.geometry.OptimizedLineString
+import geo.internal.geometry.OptimizedMultiLineString
+import geo.internal.geometry.OptimizedMultiPoint
+import geo.internal.geometry.OptimizedMultiPolygon
+import geo.internal.geometry.OptimizedPoint
+import geo.internal.geometry.OptimizedPolygon
 import geo.projection.GeoProjection
 import geo.projection.ProjectionFactory
 import geo.projection.ProjectionType
 import org.openrndr.draw.Drawer
 import org.openrndr.math.Vector2
+
+/**
+ * Viewport cache for Drawer.geo() extension function.
+ * Shared across all calls to Drawer.geo() for performance optimization.
+ */
+private val drawerViewportCache = ViewportCache()
 
 /**
  * Extension functions for Drawer providing simplified GeoJSON rendering.
@@ -105,7 +121,10 @@ fun Drawer.geoSource(
 
 /**
  * Draw a geometry with automatic projection creation.
- * 
+ *
+ * Uses viewport caching to avoid redundant coordinate projection
+ * when rendering the same geometry with unchanged viewport state.
+ *
  * @param geometry The geometry to render
  * @param projection Optional projection (defaults to Mercator fitted to geometry bounds)
  * @param style Optional rendering style
@@ -123,7 +142,19 @@ fun Drawer.geo(
         padding = 0.9,
         projection = ProjectionType.MERCATOR
     )
-    geometry.renderToDrawer(this, proj, style)
+
+    // Use viewport caching for coordinate projection
+    val viewportState = ViewportState.fromProjection(proj)
+    val projectedCoords = drawerViewportCache.getProjectedCoordinates(
+        geometry = geometry,
+        viewportState = viewportState
+    ) {
+        // Projector lambda - only called on cache miss
+        projectGeometryToArray(geometry, proj)
+    }
+
+    // Render using cached coordinates
+    renderProjectedCoordinates(geometry, projectedCoords, this, style)
 }
 
 /**
@@ -246,7 +277,7 @@ fun Drawer.geoFeatures(
  */
 fun Drawer.geo(source: GeoSource, block: (GeoRenderConfig.() -> Unit)? = null) {
     val config = block?.let { GeoRenderConfig().apply(it) } ?: GeoRenderConfig()
-    
+
     // Auto-fit projection if not specified (beginner-friendly default)
     val proj = config.projection ?: ProjectionFactory.fitBounds(
         bounds = source.totalBoundingBox(),
@@ -255,14 +286,28 @@ fun Drawer.geo(source: GeoSource, block: (GeoRenderConfig.() -> Unit)? = null) {
         padding = 0.9,
         projection = ProjectionType.MERCATOR
     )
-    
+
     // Snapshot config for safe iteration
     val resolved = config.snapshot()
-    
+
     // Render each feature with style resolution
-    source.features.forEach { feature ->
-        val style = resolveStyle(feature, resolved)
-        feature.geometry.renderToDrawer(this, proj, style)
+    // Handle optimized sources specially since they don't support standard Feature access
+    when (source) {
+        is OptimizedGeoSource -> {
+            // For optimized sources, render directly without Feature conversion
+            // Apply style configuration (style, styleByType) but not styleByFeature (no Feature objects)
+            source.optimizedFeatureSequence.forEach { optFeature ->
+                val style = resolveOptimizedStyle(optFeature, resolved)
+                optFeature.renderOptimizedToDrawer(this, proj, style)
+            }
+        }
+        else -> {
+            // Standard per-feature rendering
+            source.features.forEach { feature ->
+                val style = resolveStyle(feature, resolved)
+                feature.geometry.renderToDrawer(this, proj, style)
+            }
+        }
     }
 }
 
@@ -299,6 +344,158 @@ private fun Geometry.renderToDrawer(drawer: Drawer, projection: GeoProjection, s
             polygons.forEach { poly ->
                 val screenPoints = poly.exterior.map { projection.project(it) }
                 drawPolygon(drawer, screenPoints, style)
+            }
+        }
+    }
+}
+
+/**
+ * Resolve style for an optimized feature using precedence chain:
+ * 1. By-type map (styleByType) — Keyed by geometry type name
+ * 2. Global style (style) — Applied to all features if specified
+ * 3. Geometry-type default (StyleDefaults) — Fallback
+ */
+private fun resolveOptimizedStyle(optFeature: OptimizedFeature, config: GeoRenderConfig): Style {
+    // 1. Determine geometry type from optimized geometry
+    val typeName = when (val geom = optFeature.optimizedGeometry) {
+        is OptimizedPoint -> "Point"
+        is OptimizedLineString -> "LineString"
+        is OptimizedPolygon -> "Polygon"
+        is OptimizedMultiPoint -> "MultiPoint"
+        is OptimizedMultiLineString -> "MultiLineString"
+        is OptimizedMultiPolygon -> "MultiPolygon"
+        else -> "Unknown"
+    }
+
+    // 2. By-type map
+    config.styleByType[typeName]?.let { return it }
+
+    // 3. Global style
+    config.style?.let { return it }
+
+    // 4. Default based on geometry type
+    return when (optFeature.optimizedGeometry) {
+        is OptimizedPoint -> StyleDefaults.defaultPointStyle
+        is OptimizedLineString -> StyleDefaults.defaultLineStyle
+        is OptimizedPolygon -> StyleDefaults.defaultPolygonStyle
+        is OptimizedMultiPoint -> StyleDefaults.defaultPointStyle
+        is OptimizedMultiLineString -> StyleDefaults.defaultLineStyle
+        is OptimizedMultiPolygon -> StyleDefaults.defaultPolygonStyle
+        else -> StyleDefaults.defaultLineStyle
+    }
+}
+
+/**
+ * Render an optimized feature to the given Drawer using batch projection.
+ */
+internal fun OptimizedFeature.renderOptimizedToDrawer(
+    drawer: Drawer,
+    projection: GeoProjection,
+    style: Style?
+) {
+    when (val geom = optimizedGeometry) {
+        is OptimizedPoint -> {
+            val screen = geom.toScreenCoordinates(projection).first()
+            drawPoint(drawer, screen, style)
+        }
+        is OptimizedLineString -> {
+            val screenPoints = geom.toScreenCoordinatesList(projection)
+            drawLineString(drawer, screenPoints, style)
+        }
+        is OptimizedPolygon -> {
+            val (exterior, interiors) = geom.toScreenCoordinates(projection)
+            if (interiors.isEmpty()) {
+                drawPolygon(drawer, exterior.toList(), style)
+            } else {
+                writePolygonWithHoles(
+                    drawer,
+                    exterior.toList(),
+                    interiors.map { it.toList() },
+                    style ?: StyleDefaults.defaultPolygonStyle
+                )
+            }
+        }
+        is OptimizedMultiPoint -> {
+            geom.toScreenCoordinates(projection).forEach { pt ->
+                drawPoint(drawer, pt, style)
+            }
+        }
+        is OptimizedMultiLineString -> {
+            geom.toScreenCoordinatesList(projection).forEach { line ->
+                drawLineString(drawer, line, style)
+            }
+        }
+        is OptimizedMultiPolygon -> {
+            geom.toScreenCoordinates(projection).forEach { (exterior, interiors) ->
+                if (interiors.isEmpty()) {
+                    drawPolygon(drawer, exterior.toList(), style)
+                } else {
+                    writePolygonWithHoles(
+                        drawer,
+                        exterior.toList(),
+                        interiors.map { it.toList() },
+                        style ?: StyleDefaults.defaultPolygonStyle
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Project a geometry to screen coordinates as an Array<Vector2>.
+ * Used by the viewport cache to store projected coordinates.
+ */
+private fun projectGeometryToArray(
+    geometry: Geometry,
+    projection: GeoProjection
+): Array<Vector2> = when (geometry) {
+    is geo.Point -> arrayOf(projection.project(Vector2(geometry.x, geometry.y)))
+    is geo.LineString -> geometry.points.map { projection.project(it) }.toTypedArray()
+    is geo.Polygon -> geometry.exterior.map { projection.project(it) }.toTypedArray()
+    is geo.MultiPoint -> geometry.points.map { projection.project(Vector2(it.x, it.y)) }.toTypedArray()
+    is geo.MultiLineString -> geometry.lineStrings.flatMap { it.points.map { pt -> projection.project(pt) } }.toTypedArray()
+    is geo.MultiPolygon -> geometry.polygons.flatMap { it.exterior.map { pt -> projection.project(pt) } }.toTypedArray()
+}
+
+/**
+ * Render pre-projected coordinates for a geometry.
+ */
+private fun renderProjectedCoordinates(
+    geometry: Geometry,
+    projectedCoords: Array<Vector2>,
+    drawer: Drawer,
+    style: Style?
+) {
+    when (geometry) {
+        is geo.Point -> {
+            drawPoint(drawer, projectedCoords[0], style)
+        }
+        is geo.LineString -> {
+            drawLineString(drawer, projectedCoords.toList(), style)
+        }
+        is geo.Polygon -> {
+            drawPolygon(drawer, projectedCoords.toList(), style)
+        }
+        is geo.MultiPoint -> {
+            projectedCoords.forEach { pt ->
+                drawPoint(drawer, pt, style)
+            }
+        }
+        is geo.MultiLineString -> {
+            // MultiLineString flattens all points, need to reconstruct line segments
+            var idx = 0
+            geometry.lineStrings.forEach { line ->
+                val linePoints = Array(line.points.size) { projectedCoords[idx++] }
+                drawLineString(drawer, linePoints.toList(), style)
+            }
+        }
+        is geo.MultiPolygon -> {
+            // MultiPolygon flattens all exterior points
+            var idx = 0
+            geometry.polygons.forEach { poly ->
+                val polyPoints = Array(poly.exterior.size) { projectedCoords[idx++] }
+                drawPolygon(drawer, polyPoints.toList(), style)
             }
         }
     }
