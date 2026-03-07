@@ -117,41 +117,33 @@ None currently.
 
 - Phase 14 added: 14 refactoring and cleanup, clearing todos
 
-### Pending Todos (0 total)
+### Pending Todos (11 total)
 
 | Area | Count | Latest |
 |------|-------|--------|
-| - | 0 | Zero TODOs remaining in codebase |
+| tooling | 3 | 2026-03-07 |
+| api | 3 | 2026-03-07 |
+| rendering | 2 | 2026-03-07 |
+| performance | 1 | 2026-02-25 |
+| layer | 1 | 2026-02-27 |
+| docs | 1 | 2026-02-27 |
 
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 10 | Fix viewport cache bypass in Drawer.geo() extension | 2026-03-07 | 23f762b | [10-fix-viewport-cache-bypass-in-drawer-geo-](./quick/10-fix-viewport-cache-bypass-in-drawer-geo-/) |
+| 11 | Mark batch screen space projection todo as done | 2026-03-07 | e11e25d | [11-mark-todo-as-done-batch-screen-space-pro](./quick/11-mark-todo-as-done-batch-screen-space-pro/) |
 
 ## Session Continuity
 
 ### Last Actions
-- ✅ Completed Plan 14-04: Final cleanup sweep and verification
-- Comprehensive TODO sweep: Zero TODOs, FIXMEs, XXXs, or HACKs found
-- Build verification: `./gradlew clean compileKotlin compileTestKotlin` passes
-- All 278 tests pass with 0 failures (100% success rate)
-- Created CHANGELOG.md documenting Phase 14 completion
-- CLEANUP-04 requirement satisfied
-- Phase 14 complete: 4/4 plans done
-- ✅ Completed Plan 14-05: Restore App.kt as canonical entry point
-- Created App.kt (54 lines) as clean, minimal entry point
-- TemplateProgram.kt (147 lines) preserved as comprehensive template
-- Gap from UAT.md Test 4 resolved - App.kt restored per user expectation
-- CLEANUP-01 requirement satisfied
-- Phase 14 complete: 5/5 plans done
-- ✅ Completed Plan 14-06: Move render_FeatureIteration.kt to examples/render/
-- Moved file from src/main/kotlin/geo/examples/ to examples/render/08-feature-iteration.kt
-- Updated package declaration, data path, and header format
-- Build verification: `./gradlew compileKotlin` passes
-- Gap from UAT.md Test 6 resolved - example follows numbered naming convention
-- CLEANUP-03 requirement satisfied
-- Phase 14 complete: 6/6 plans done
+- ✅ Completed Quick Task 11: Mark batch screen space projection todo as done
+- Moved 2026-02-25-batch-screen-space-projection.md from pending/ to done/
+- Updated todo frontmatter with completion info (Phases 11-12)
+- Added completion notes documenting 1533x speedup results
+- Updated STATE.md pending todos count from 0 to 11 (actual count)
+- Quick Task 11 complete: 2/2 tasks done
 
 ### Next Actions
 1. Phase 14 complete with 6/6 plans - ready for v1.3.0 milestone completion
