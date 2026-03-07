@@ -20,8 +20,8 @@
 
 ### Performance — Measurement
 
-- [ ] **PERF-08**: Static camera scenarios show 10x+ improvement over v1.2.0 baseline
-- [ ] **PERF-09**: Performance validated with realistic datasets
+- [x] **PERF-08**: Static camera scenarios show 10x+ improvement over v1.2.0 baseline — **ACHIEVED: 1533x**
+- [x] **PERF-09**: Performance validated with realistic datasets (10k, 50k, 100k, 250k features)
 - [x] **PERF-10**: All 16 v1.2.0 examples continue to work unchanged (regression test)
 
 ## v2+ Requirements (Deferred)
@@ -61,8 +61,8 @@
 | PERF-05 | Phase 12 | Complete |
 | PERF-06 | Phase 12 | Complete |
 | PERF-07 | Phase 12 | Complete |
-| PERF-08 | Phase 13 | Pending |
-| PERF-09 | Phase 13 | Pending |
+| PERF-08 | Phase 13 | Complete |
+| PERF-09 | Phase 13 | Complete |
 | PERF-10 | Phase 13 | Complete |
 
 **Coverage:**
@@ -80,4 +80,4 @@
 
 ---
 *Requirements defined: 2026-03-05*
-*Last updated: 2026-03-06 after Phase 12 Plan 01 completion*
+*Last updated: 2026-03-07 — v1.3.0 milestone complete — PERF-08/09/10 verified*
