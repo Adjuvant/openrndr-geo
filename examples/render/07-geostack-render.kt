@@ -46,9 +46,9 @@ fun main() = application {
     program {
         // Load multiple GeoJSON datasets with different geometry types
         println("Loading datasets...")
-        val coastline = GeoJSON.load("examples/data/geo/coastline.geojson")
-        val cities = GeoJSON.load("examples/data/geo/populated_places.geojson")
-        val riversLakes = GeoJSON.load("examples/data/geo/rivers_lakes.geojson")
+        val coastline = GeoJSON.load("examples/data/geo/coastline.geojson",optimize = true)
+        val cities = GeoJSON.load("examples/data/geo/populated_places.geojson",optimize = true)
+        val riversLakes = GeoJSON.load("examples/data/geo/rivers_lakes.geojson",optimize = true)
 
         // Create a GeoStack combining all sources
         // Automatically unifies CRS across all datasets
@@ -124,7 +124,7 @@ fun main() = application {
         extend {
             // Clear with black background
             drawer.clear(ColorRGBa.BLACK)
-
+            drawer.text("${frameCount} :: ${frameCount/seconds} FPS", 20.0, 20.0)
             // Render all features with current view
             // Projection automatically uses current view bounds
             stack.render(drawer)

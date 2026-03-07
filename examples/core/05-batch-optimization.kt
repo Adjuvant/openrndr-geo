@@ -73,17 +73,17 @@ fun main() = application {
 
         extend {
             drawer.clear(ColorRGBa.BLACK)
-
+            drawer.text("${frameCount} :: ${frameCount/seconds} FPS", 20.0, 20.0)
             // LEFT SIDE: Standard source in BLUE
-            drawer.geo(standardSource) {
-                projection = leftProjection
-                style = standardStyle
-            }
+//            drawer.geo(standardSource) {
+//                projection = leftProjection
+//                style = standardStyle
+//            }
 
             // RIGHT SIDE: Optimized source in RED
             // Shift to right half of screen by translating the drawer
             val t = frameCount % 60.0 / 60.0
-            drawer.translate((width / 2.0) * t, 0.0)
+            drawer.translate((width / 2.0), 0.0)
             drawer.geo(optimizedSource) {
                 projection = rightProjection
                 style = optimizedStyle

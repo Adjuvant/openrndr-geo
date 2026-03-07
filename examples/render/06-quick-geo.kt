@@ -17,6 +17,7 @@ fun main() = application {
 
         extend {
             // Draw geo data with the default style
+            drawer.text("${frameCount/seconds} FPS", 20.0, 20.0)
             drawer.geo(data)
         }
     }
