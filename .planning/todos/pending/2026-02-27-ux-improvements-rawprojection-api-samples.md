@@ -2,6 +2,8 @@
 created: 2026-02-27T14:51:54.184Z
 title: Add UX improvements for RawProjection and API samples
 area: api
+status: scheduled
+roadmap_phase: 15
 files:
   - src/main/kotlin/geo/projection/RawProjection.kt
   - src/main/kotlin/geo/render/DrawerGeoExtensions.kt
@@ -20,3 +22,10 @@ Two nice-to-have UX improvements identified during Phase 9 UAT:
 1. **RawProjection warning**: Add a console warning when RawProjection is used that explains coordinates pass through unchanged and suggests checking if data appears off-screen. Could check coordinate magnitude (>10000 for typical screen coords) and warn proactively.
 
 2. **Improve sample code**: Update test examples and documentation to use correct syntax `ProjectionMercator { }`. Consider adding a compiler error or alias if `Mercator()` is used.
+
+## Roadmap
+
+**Status:** Scheduled for Phase 15 (API Ergonomics) — v1.4.0 Developer Experience milestone
+
+**ROADMAP.md:** See Phase 15: API Ergonomics — Reduce Boilerplate
+**Requirements:** API-03

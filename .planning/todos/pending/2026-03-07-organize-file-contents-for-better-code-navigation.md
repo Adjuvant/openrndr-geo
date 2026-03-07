@@ -2,6 +2,8 @@
 created: 2026-03-07T01:27:20.473Z
 title: Organize file contents for better code navigation
 area: tooling
+status: scheduled
+roadmap_phase: 18
 files:
   - src/main/kotlin/geo/
 ---
@@ -89,3 +91,10 @@ Priority order (most impactful first):
 - [ ] Navigation requires less jumping around when reading
 - [ ] New users can understand architecture from file structure alone
 - [ ] No functionality changes (pure refactoring)
+
+## Roadmap
+
+**Status:** Scheduled for Phase 18 (Code Organization) — v1.4.0 Developer Experience milestone
+
+**ROADMAP.md:** See Phase 18: Code Organization — File Organization
+**Requirements:** ORG-03

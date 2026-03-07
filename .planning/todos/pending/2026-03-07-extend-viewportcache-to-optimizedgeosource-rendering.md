@@ -2,6 +2,8 @@
 created: 2026-03-07T01:06:49.242Z
 title: Extend ViewportCache to OptimizedGeoSource rendering
 area: performance
+status: scheduled
+roadmap_phase: 17
 files:
   - src/main/kotlin/geo/render/DrawerGeoExtensions.kt:272-279
   - src/main/kotlin/geo/internal/geometry/OptimizedGeometries.kt
@@ -56,3 +58,11 @@ Integrate ViewportCache into the optimized rendering pipeline:
 - Quick task 10 fixed standard geometries in Drawer.geo()
 - This todo covers the remaining optimized path
 - PERF-04 and PERF-07 requirements partially unfulfilled without this fix
+
+## Roadmap
+
+**Status:** Scheduled for Phase 17 (Performance Fixes) — v1.4.0 Developer Experience milestone
+
+**ROADMAP.md:** See Phase 17: Performance Fixes — ViewportCache for OptimizedGeoSource
+**Requirements:** PERF-11
+**Critical:** This fixes a major performance gap where optimized rendering bypasses all caching

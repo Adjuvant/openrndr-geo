@@ -2,6 +2,8 @@
 created: 2026-02-27T21:30:51.608Z
 title: Graticule layer for zoomed-in maps
 area: layer
+status: scheduled
+roadmap_phase: 20
 files:
   - examples/layer/01-graticule.kt
 ---
@@ -27,3 +29,11 @@ Approach considerations:
 - Research how other mapping libraries handle this (Leaflet, Mapbox, etc.)
 
 This is related to the layer composition feature area and will need API design work.
+
+## Roadmap
+
+**Status:** Scheduled for Phase 20 (Layer Features) — v1.4.0 Developer Experience milestone
+
+**ROADMAP.md:** See Phase 20: Layer Features — Graticule Improvements
+**Requirements:** LAYER-01
+**Note:** Requires research on how other libraries handle graticules

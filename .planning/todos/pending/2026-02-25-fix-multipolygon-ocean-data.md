@@ -2,6 +2,8 @@
 created: 2026-02-25T01:23
 title: Fix MultiPolygon rendering for ocean/whole-world data
 area: rendering
+status: scheduled
+roadmap_phase: 16
 files:
   - src/main/kotlin/geo/render/MultiRenderer.kt:132-141
   - src/main/kotlin/geo/examples/render_BasicRendering.kt:131-134
@@ -29,3 +31,10 @@ TBD - Likely needs:
 ## Context
 
 From commit 19bbdfd: "MultiPolygon not working as hoped."
+
+## Roadmap
+
+**Status:** Scheduled for Phase 16 (Rendering Improvements) — v1.4.0 Developer Experience milestone
+
+**ROADMAP.md:** See Phase 16: Rendering Improvements — Fix MultiPolygon and polygon ring handling
+**Requirements:** RENDER-01

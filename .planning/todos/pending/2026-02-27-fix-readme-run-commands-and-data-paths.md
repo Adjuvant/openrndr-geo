@@ -2,6 +2,8 @@
 created: 2026-02-27T21:33:11.455Z
 title: Fix README run commands and data paths
 area: docs
+status: scheduled
+roadmap_phase: 19
 files:
   - examples/README.md:39
   - examples/proj/README.md
@@ -31,3 +33,11 @@ Fix the README files:
    - Change `data/geo/` to `examples/data/geo/`
 
 This is a quick fix - no research needed.
+
+## Roadmap
+
+**Status:** Scheduled for Phase 19 (Documentation Fixes) — v1.4.0 Developer Experience milestone
+
+**ROADMAP.md:** See Phase 19: Documentation Fixes
+**Requirements:** DOCS-01
+**Note:** Can be executed as quick task or short phase

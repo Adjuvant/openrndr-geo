@@ -2,6 +2,8 @@
 created: 2026-02-27T14:50:25.690Z
 title: Fix filter comparison operators for property()
 area: api
+status: scheduled
+roadmap_phase: 15
 files:
   - src/main/kotlin/geo/Feature.kt:property()
 ---
@@ -19,3 +21,10 @@ Option 2: Make filter predicate receive typed property accessors directly
 Option 3: Document workaround: use `feature.doubleProperty("key") > value` instead
 
 Related: This was noted in original Phase 9 planning as needing typed property accessors.
+
+## Roadmap
+
+**Status:** Scheduled for Phase 15 (API Ergonomics) — v1.4.0 Developer Experience milestone
+
+**ROADMAP.md:** See Phase 15: API Ergonomics — Reduce Boilerplate
+**Requirements:** API-02

@@ -2,6 +2,8 @@
 created: 2026-02-26T17:23
 title: Improve polygon interior/exterior ring handling
 area: rendering
+status: scheduled
+roadmap_phase: 16
 files:
   - src/main/kotlin/geo/render/
 ---
@@ -21,3 +23,10 @@ TBD - Leverage OpenRNDR's shape construction capabilities which are well-suited 
 ## Context
 
 Current implementation only renders exterior rings, causing visual artifacts with ocean data. OpenRNDR provides robust shape construction primitives that should handle this more elegantly than the current workaround.
+
+## Roadmap
+
+**Status:** Scheduled for Phase 16 (Rendering Improvements) — v1.4.0 Developer Experience milestone
+
+**ROADMAP.md:** See Phase 16: Rendering Improvements — Fix MultiPolygon and polygon ring handling
+**Requirements:** RENDER-02

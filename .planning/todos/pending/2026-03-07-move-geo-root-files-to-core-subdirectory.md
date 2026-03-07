@@ -2,6 +2,8 @@
 created: 2026-03-07T01:21:32.962Z
 title: Move geo root files to core subdirectory
 area: tooling
+status: scheduled
+roadmap_phase: 18
 files:
   - src/main/kotlin/geo/Bounds.kt
   - src/main/kotlin/geo/Feature.kt
@@ -71,3 +73,10 @@ Core domain files that could be grouped:
 - [ ] Verify build compiles successfully
 - [ ] Run full test suite
 - [ ] Update any documentation references
+
+## Roadmap
+
+**Status:** Scheduled for Phase 18 (Code Organization) — v1.4.0 Developer Experience milestone
+
+**ROADMAP.md:** See Phase 18: Code Organization — Directory Structure
+**Requirements:** ORG-02

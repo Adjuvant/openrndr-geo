@@ -2,6 +2,8 @@
 created: 2026-03-07T01:11:50.977Z
 title: Clean up necro examples from src/main/kotlin/geo/examples
 area: tooling
+status: scheduled
+roadmap_phase: 18
 files:
   - src/main/kotlin/geo/examples/core_CRSTransformTest.kt
   - src/main/kotlin/geo/examples/core_DataLoadingTest.kt
@@ -91,3 +93,10 @@ The necro examples in src/main/kotlin/geo/examples/:
 - [ ] Fix any outdated data paths
 - [ ] Delete src/main/kotlin/geo/examples/ directory when empty
 - [ ] Update any references in README or documentation
+
+## Roadmap
+
+**Status:** Scheduled for Phase 18 (Code Organization) — v1.4.0 Developer Experience milestone
+
+**ROADMAP.md:** See Phase 18: Code Organization — Example Cleanup and Directory Structure
+**Requirements:** ORG-01
