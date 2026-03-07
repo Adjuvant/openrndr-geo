@@ -3,25 +3,22 @@ package examples.render
 
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import geo.GeoJSON
-import geo.MultiPolygon
-import geo.render.Style
-import geo.render.drawMultiPolygon
-import geo.projection.ProjectionFactory
-import org.openrndr.extra.color.presets.DEEP_SKY_BLUE
+import org.openrndr.extra.color.presets.*
+import geo.*
+import geo.render.*
 
 /**
  * ## 04 - MultiPolygons
  *
- * Demonstrates rendering MultiPolygon geometries using drawMultiPolygon().
+ * Demonstrates rendering MultiPolygon geometries using the streamlined API.
  * MultiPolygons are used for collections of polygons, such as country boundaries
  * with separate land masses or islands.
  *
  * ### Concepts
- * - Loading GeoJSON with MultiPolygon geometries
- * - Rendering multiple polygons as a single feature
- * - Styling complex geometry collections
- * - Understanding when to use MultiPolygon vs Polygon
+ * - Loading data with loadGeo()
+ * - Rendering MultiPolygons with inline style DSL
+ * - Handling complex geometry collections
+ * - Three-line workflow
  *
  * ### To Run
  * ```
@@ -35,36 +32,19 @@ fun main() = application {
     }
 
     program {
-        // Load MultiPolygon data from GeoJSON (e.g., world ocean)
-        val data = GeoJSON.load("examples/data/geo/ocean.geojson")
-
-        // Create a projection that fits the data to the window
-        val projection = ProjectionFactory.fitBounds(
-            data.boundingBox(),
-            width.toDouble(),
-            height.toDouble(),
-            padding = 0.9
-        )
-
-        // Define polygon styling using the Style DSL
-        val oceanStyle = Style {
-            fill = ColorRGBa.DEEP_SKY_BLUE
-            stroke = ColorRGBa(0.0, 0.3, 0.6)
-            strokeWeight = 0.5
-        }
+        // Three-line workflow
+        val data = loadGeo("examples/data/geo/ocean.geojson")
+        val projection = data.projectToFit(width, height)
 
         extend {
             // Clear with white background
             drawer.clear(ColorRGBa.WHITE)
 
-            // Iterate over features and render MultiPolygons
-            data.features.forEach { feature ->
-                if (feature.geometry is MultiPolygon) {
-                    val multiPolygon = feature.geometry as MultiPolygon
-
-                    // Render all polygons in the MultiPolygon - handles holes and clamping automatically
-                    drawMultiPolygon(drawer, multiPolygon, projection, oceanStyle)
-                }
+            // Draw multipolygons with inline style DSL
+            drawer.geo(data, projection) {
+                fill = ColorRGBa.DEEP_SKY_BLUE
+                stroke = ColorRGBa(0.0, 0.3, 0.6)
+                strokeWeight = 0.5
             }
         }
     }

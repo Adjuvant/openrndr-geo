@@ -1,8 +1,7 @@
 @file:JvmName("PrintSummary")
 package examples.core
 
-import geo.GeoJSON
-import geo.GeoPackage
+import geo.*
 
 /**
  * ## 03 - Print Summary
@@ -15,6 +14,7 @@ import geo.GeoPackage
  * - Using printSummary() for data inspection
  * - Understanding GeoSource metadata
  * - Console output for non-visual examples
+ * - Both loadGeo() and geoSource() work with printSummary()
  *
  * ### To Run
  * ```
@@ -24,15 +24,19 @@ import geo.GeoPackage
 fun main() {
     println("=== Data Inspection Example ===\n")
 
-    // Load GeoJSON and print summary
-    println("Loading GeoJSON...")
-    val geojsonSource = GeoJSON.load("examples/data/geo/sample.geojson")
-    geojsonSource.printSummary()
+    // Load GeoJSON using auto-magic loader and print summary
+    println("Loading GeoJSON with loadGeo()...")
+    val geojsonData = loadGeo("examples/data/geo/sample.geojson")
+    geojsonData.printSummary()
 
     println("\n")
 
     // Load GeoPackage and print summary
-    println("Loading GeoPackage...")
-    val gpkgSource = GeoPackage.load("examples/data/geo/ness-vectors.gpkg")
-    gpkgSource.printSummary()
+    println("Loading GeoPackage with loadGeo()...")
+    val gpkgData = loadGeo("examples/data/geo/ness-vectors.gpkg")
+    gpkgData.printSummary()
+    
+    println("\n--- Using geoSource() for explicit control ---")
+    val explicitData = geoSource("examples/data/geo/sample.geojson")
+    explicitData.printSummary()
 }

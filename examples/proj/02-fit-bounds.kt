@@ -1,30 +1,23 @@
 @file:JvmName("FitBounds")
 package examples.proj
 
-import geo.GeoJSON
-import geo.Point
-import geo.projection.ProjectionFactory
-import geo.projection.ProjectionType
-import geo.projection.toScreen
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import geo.render.Style
-import geo.render.drawPoint
-import geo.render.Shape
-import org.openrndr.extra.color.presets.ORANGE
-// CYAN is available via ColorRGBa directly
+import org.openrndr.extra.color.presets.*
+import geo.*
+import geo.render.*
 
 /**
- * ## 02 - Fit Bounds Projection
+ * ## 02 - Fit Bounds
  *
- * Demonstrates using ProjectionFactory.fitBounds() to automatically fit
- * a projection to the geographic extent of your data.
+ * Demonstrates using projectToFit() to automatically fit geographic data
+ * to the available screen space with the three-line workflow.
  *
  * ### Concepts
- * - Automatic projection fitting to data bounds
- * - Padding parameter for margin around the viewport
- * - Equirectangular vs Mercator projection types
- * - How fitBounds calculates zoom level from data extent
+ * - Three-line workflow: loadGeo() → projectToFit() → drawer.geo()
+ * - Automatic fitting without manual ProjectionFactory configuration
+ * - Tight fit (100% of viewport)
+ * - Equirectangular projection option
  *
  * ### To Run
  * ```
@@ -38,32 +31,15 @@ fun main() = application {
     }
 
     program {
-        // Load populated places data
-        val data = GeoJSON.load("examples/data/geo/populated_places.geojson")
+        // Load data
+        val data = loadGeo("examples/data/geo/populated_places.geojson")
 
-        // Get the bounding box of the data
+        // Get bounds info for display
         val dataBounds = data.boundingBox()
-
         println("Data bounds: min(${dataBounds.minX}, ${dataBounds.minY}) max(${dataBounds.maxX}, ${dataBounds.maxY})")
 
-        // Create a projection that fits the data to the viewport
-        // Using padding to leave some margin around the edges
-        val projection = ProjectionFactory.fitBounds(
-            bounds = dataBounds,
-            width = width.toDouble(),
-            height = height.toDouble(),
-            padding = 40.0,
-            projection = ProjectionType.EQUIRECTANGULAR
-        )
-
-        // Style for points
-        val pointStyle = Style {
-            fill = ColorRGBa.ORANGE
-            stroke = ColorRGBa(0.0, 1.0, 1.0)  // Cyan
-            strokeWeight = 1.0
-            size = 6.0
-            shape = Shape.Circle
-        }
+        // Create projection using projectToFit
+        val projection = data.projectToFit(width, height)
 
         extend {
             // Clear background
@@ -71,17 +47,17 @@ fun main() = application {
 
             // Draw title
             drawer.fill = ColorRGBa.WHITE
-            drawer.text("Equirectangular Projection", 20.0, 30.0)
-            drawer.text("Data bounds fitted to viewport (padding=40px)", 20.0, 50.0)
-            drawer.text("Points: ${data.features.count()}", 20.0, 70.0)
+            drawer.text("Fit Bounds with Three-line Workflow", 20.0, 30.0)
+            drawer.text("Tight fit (100% of viewport)", 20.0, 50.0)
+            drawer.text("Points: ${data.countFeatures()}", 20.0, 70.0)
 
-            // Render points
-            data.features.take(500).forEach { feature ->
-                if (feature.geometry is Point) {
-                    val point = feature.geometry as Point
-                    val screenPoint = point.toScreen(projection)
-                    drawPoint(drawer, screenPoint, pointStyle)
-                }
+            // Render points with inline style DSL
+            drawer.geo(data, projection) {
+                fill = ColorRGBa.ORANGE
+                stroke = ColorRGBa(0.0, 1.0, 1.0)  // Cyan
+                strokeWeight = 1.0
+                size = 6.0
+                shape = Shape.Circle
             }
         }
     }

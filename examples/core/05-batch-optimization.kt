@@ -1,13 +1,10 @@
 @file:JvmName("BatchOptimization")
 package examples.core
 
-import geo.geoSource
-import geo.projection.ProjectionFactory
-import geo.projection.ProjectionType
-import geo.render.Style
-import geo.render.geo
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
+import geo.*
+import geo.render.*
 
 /**
  * ## 05 - Batch Projection Optimization
@@ -15,16 +12,16 @@ import org.openrndr.color.ColorRGBa
  * Demonstrates the batch projection optimization feature for improved rendering performance.
  *
  * ### Concepts
- * - Loading data with `optimize=true` for batch projection
- * - Side-by-side comparison of standard vs optimized rendering
+ * - Loading data with optimize=true for batch projection
+ * - Using loadGeo(optimize=true) for automatic optimization
  * - Visual proof that optimized sources render identically
- * - Using styleByType to color different geometry types
+ * - Three-line workflow with optimized data
  *
  * ### Key Benefits
  * - Reduced GC pressure from fewer object allocations
  * - Better cache locality with DoubleArray storage
  * - Measurable performance improvements on large datasets
- * - 100% backward compatible - opt-in optimization
+ * - Automatic viewport caching
  *
  * ### To Run
  * ```
@@ -45,56 +42,46 @@ fun main() = application {
         val standardSource = geoSource("examples/data/geo/catchment-topo.geojson")
         println("✓ Standard source loaded: ${standardSource.countFeatures()} features")
 
-        // 2. Optimized loading (new feature) - RIGHT SIDE
-        val optimizedSource = geoSource("examples/data/geo/catchment-topo.geojson", optimize = true)
-        println("✓ Optimized source loaded: ${optimizedSource.countFeatures()} features")
-        println("  Bounds: ${optimizedSource.boundingBox()}")
+        // 2. Optimized loading using loadGeo with caching
+        val optimizedData = loadGeo("examples/data/geo/catchment-topo.geojson")
+        println("✓ Optimized source loaded: ${optimizedData.countFeatures()} features")
+        println("  Bounds: ${optimizedData.boundingBox()}")
 
-        // Create projections for left and right halves of the screen
-        val leftProjection = ProjectionFactory.fitBounds(
-            bounds = standardSource.boundingBox(),
-            width = width / 2.0,
-            height = height.toDouble(),
-            padding = 50.0,
-            projection = ProjectionType.MERCATOR
-        )
-
-        val rightProjection = ProjectionFactory.fitBounds(
-            bounds = optimizedSource.boundingBox(),
-            width = width / 2.0,
-            height = height.toDouble(),
-            padding = 50.0,
-            projection = ProjectionType.MERCATOR
-        )
-
-        // Define styles - Standard in BLUE, Optimized in RED
-        val standardStyle = Style { stroke = ColorRGBa.BLUE; strokeWeight = 1.5 }
-        val optimizedStyle = Style { stroke = ColorRGBa.RED; strokeWeight = 1.5 }
+        // Create projections for left and right halves
+        val leftProjection = standardSource.projectToFit(width / 2, height)
+        val rightProjection = optimizedData.projectToFit(width / 2, height)
 
         extend {
             drawer.clear(ColorRGBa.BLACK)
-            drawer.text("${frameCount} :: ${frameCount/seconds} FPS", 20.0, 20.0)
+            drawer.text("${frameCount} :: ${(frameCount/seconds).toInt()} FPS", 20.0, 20.0)
+            
             // LEFT SIDE: Standard source in BLUE
-//            drawer.geo(standardSource) {
-//                projection = leftProjection
-//                style = standardStyle
-//            }
+            drawer.geo(standardSource, leftProjection) {
+                stroke = ColorRGBa.BLUE
+                strokeWeight = 1.5
+                fill = null
+            }
 
             // RIGHT SIDE: Optimized source in RED
-            // Shift to right half of screen by translating the drawer
-            val t = frameCount % 60.0 / 60.0
             drawer.translate((width / 2.0), 0.0)
-            drawer.geo(optimizedSource) {
-                projection = rightProjection
-                style = optimizedStyle
+            drawer.geo(optimizedData, rightProjection) {
+                stroke = ColorRGBa.RED
+                strokeWeight = 1.5
+                fill = null
             }
+            
             // Reset translation
             drawer.translate(-width / 2.0, 0.0)
 
-            // Draw dividing line between the two views
+            // Draw dividing line
             drawer.stroke = ColorRGBa.WHITE
             drawer.strokeWeight = 2.0
             drawer.lineSegment(width / 2.0, 0.0, width / 2.0, height.toDouble())
+            
+            // Labels
+            drawer.fill = ColorRGBa.WHITE
+            drawer.text("Standard (geoSource)", 20.0, 550.0)
+            drawer.text("Cached (loadGeo)", width / 2.0 + 20.0, 550.0)
         }
     }
 }

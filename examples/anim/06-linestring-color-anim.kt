@@ -1,17 +1,31 @@
 @file:JvmName("LineStringColorAnim")
 package examples.anim
 
-import geo.geoSource
-import geo.projection.ProjectionFactory
-import geo.projection.ProjectionType
-import geo.render.Style
-import geo.render.geo
-import geo.animation.animator
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.color.mix
 import org.openrndr.draw.loadFont
+import geo.*
+import geo.animation.*
+import geo.render.*
 
+/**
+ * ## 06 - LineString Color Animation
+ *
+ * Demonstrates animating LineString colors based on feature properties
+ * using the streamlined API with inline style DSL.
+ *
+ * ### Concepts
+ * - Property-based styling with animation
+ * - Three-line workflow
+ * - Inline style DSL with dynamic values
+ * - Color interpolation with mix()
+ *
+ * ### To Run
+ * ```
+ * ./gradlew run -Popenrndr.application=examples.anim.LineStringColorAnimKt
+ * ```
+ */
 fun main() = application {
     configure {
         width = 800
@@ -20,15 +34,10 @@ fun main() = application {
 
     program {
         val font = loadFont("data/fonts/default.otf", 22.0)
-        val data = geoSource("examples/data/geo/catchment-topo.geojson")
-
-        val projection = ProjectionFactory.fitBounds(
-            data.boundingBox(),
-            width.toDouble(),
-            height.toDouble(),
-            padding = 50.0,
-            projection = ProjectionType.MERCATOR
-        )
+        
+        // Three-line workflow
+        val data = loadGeo("examples/data/geo/catchment-topo.geojson")
+        val projection = data.projectToFit(width, height)
 
         // Property range for stroke weight
         val values = data.features.mapNotNull { it.doubleProperty("property_value") }
@@ -51,9 +60,10 @@ fun main() = application {
 
             val currentColor = mix(startColor, endColor, animator.progress)
 
+            // Draw with styleByFeature in config block
             drawer.geo(data) {
                 this.projection = projection
-                styleByFeature = { feature: geo.Feature ->
+                styleByFeature = { feature: Feature ->
                     val v = feature.doubleProperty("property_value") ?: minValue
                     val t = if (range > 0.0) (v - minValue) / range else 0.0
                     Style(stroke = currentColor, strokeWeight = 0.05 + t * 0.45)

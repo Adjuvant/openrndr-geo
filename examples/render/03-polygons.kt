@@ -3,23 +3,20 @@ package examples.render
 
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import geo.GeoJSON
-import geo.Polygon
-import geo.render.Style
-import geo.render.drawPolygon
-import geo.projection.ProjectionFactory
+import geo.*
+import geo.render.*
 
 /**
  * ## 03 - Polygons
  *
- * Demonstrates rendering Polygon geometries using drawPolygon().
+ * Demonstrates rendering Polygon geometries using the streamlined API.
  * Shows both exterior rings and interior holes (rings).
  *
  * ### Concepts
- * - Loading GeoJSON polygon data
- * - Rendering polygons with fill and stroke
+ * - Loading data with loadGeo()
+ * - Rendering polygons with inline style DSL
  * - Handling interior rings (holes) in polygons
- * - Projecting polygon coordinates to screen space
+ * - Three-line workflow
  *
  * ### To Run
  * ```
@@ -33,36 +30,19 @@ fun main() = application {
     }
 
     program {
-        // Load polygon data from GeoJSON
-        val data = GeoJSON.load("examples/data/geo/sample.geojson")
-
-        // Create a projection that fits the data to the window
-        val projection = ProjectionFactory.fitBounds(
-            data.boundingBox(),
-            width.toDouble(),
-            height.toDouble(),
-            padding = 0.9
-        )
-
-        // Define polygon styling using the Style DSL
-        val polygonStyle = Style {
-            fill = ColorRGBa(0.2, 0.6, 0.3, 0.7)  // Green with transparency
-            stroke = ColorRGBa(0.1, 0.3, 0.1)     // Dark green stroke
-            strokeWeight = 1.0
-        }
+        // Three-line workflow
+        val data = loadGeo("examples/data/geo/sample.geojson")
+        val projection = data.projectToFit(width, height)
 
         extend {
             // Clear with light gray background
             drawer.clear(ColorRGBa(0.95, 0.95, 0.95))
 
-            // Iterate over features and render Polygons
-            data.features.forEach { feature ->
-                if (feature.geometry is Polygon) {
-                    val polygon = feature.geometry as Polygon
-
-                    // Render the polygon - handles holes automatically
-                    drawPolygon(drawer, polygon, projection, polygonStyle)
-                }
+            // Draw polygons with inline style DSL
+            drawer.geo(data, projection) {
+                fill = ColorRGBa(0.2, 0.6, 0.3, 0.7)  // Green with transparency
+                stroke = ColorRGBa(0.1, 0.3, 0.1)     // Dark green stroke
+                strokeWeight = 1.0
             }
         }
     }

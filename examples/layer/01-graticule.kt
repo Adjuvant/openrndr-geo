@@ -3,18 +3,11 @@ package examples.layer
 
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import geo.GeoJSON
-import geo.LineString
-import geo.Point
-import geo.Polygon
-import geo.projection.ProjectionFactory
-import geo.projection.toScreen
-import geo.layer.generateGraticuleSource
-import geo.render.Style
-import geo.render.drawLineString
-import geo.render.drawPolygon
-import geo.render.withAlpha
-import org.openrndr.extra.color.presets.CORNFLOWER_BLUE
+import org.openrndr.extra.color.presets.*
+import geo.*
+import geo.layer.*
+import geo.projection.*
+import geo.render.*
 
 /**
  * ## 01 - Graticule Layer
@@ -24,6 +17,7 @@ import org.openrndr.extra.color.presets.CORNFLOWER_BLUE
  *
  * ### Concepts
  * - Graticule generation using generateGraticuleSource()
+ * - Three-line workflow with graticule layers
  * - Drawing geographic reference grids
  * - Configuring graticule spacing for different zoom levels
  * - Layer rendering with geographic data
@@ -40,9 +34,9 @@ fun main() = application {
     }
 
     program {
-        // Load coastline data for background reference
+        // Load coastline data using three-line workflow
         val coastline = try {
-            GeoJSON.load("examples/data/geo/coastline.geojson")
+            loadGeo("examples/data/geo/coastline.geojson")
         } catch (e: Exception) {
             println("Could not load coastline: ${e.message}")
             null
@@ -51,17 +45,16 @@ fun main() = application {
         // Define geographic bounds for the graticule
         val bounds = geo.Bounds(-180.0, -90.0, 180.0, 90.0)
 
-        // Create projections with different zoom levels
+        // Create projection
         val projection = ProjectionFactory.fitWorldMercator(
             width = width.toDouble(),
             height = height.toDouble()
         )
 
         // Generate graticule sources with different spacing
-        val graticule10 = generateGraticuleSource(10.0, bounds)  // 10-degree spacing
-        val graticule30 = generateGraticuleSource(30.0, bounds)  // 30-degree spacing
+        val graticule10 = generateGraticuleSource(10.0, bounds)
+        val graticule30 = generateGraticuleSource(30.0, bounds)
 
-        // Count features
         println("Graticule (10deg): ${graticule10.countFeatures()} points")
         println("Graticule (30deg): ${graticule30.countFeatures()} points")
 
@@ -74,29 +67,12 @@ fun main() = application {
             drawer.text("Graticule Layer Example", 20.0, 30.0)
             drawer.text("Geographic reference grid (lat/lng lines)", 20.0, 50.0)
 
-            // Draw coastline if available
-            coastline?.features?.forEach { feature ->
-                when (val geometry = feature.geometry) {
-                    is LineString -> {
-                        val screenPoints = geometry.toScreen(projection)
-                        drawLineString(drawer, screenPoints, Style {
-                            fill = null
-                            stroke = ColorRGBa.CORNFLOWER_BLUE.withAlpha(0.5)
-                            strokeWeight = 1.0
-                        })
-                    }
-                    is Polygon -> {
-                        // Render polygon - handles exterior and interior rings automatically
-                        drawPolygon(drawer, geometry, projection, Style {
-                            fill = ColorRGBa.CORNFLOWER_BLUE.withAlpha(0.2)
-                            stroke = ColorRGBa.CORNFLOWER_BLUE.withAlpha(0.5)
-                            strokeWeight = 1.0
-                        })
-                    }
-                    is Point -> { /* Skip individual points */ }
-                    is geo.MultiPoint -> { /* Skip */ }
-                    is geo.MultiLineString -> { /* Skip */ }
-                    is geo.MultiPolygon -> { /* Skip */ }
+            // Draw coastline if available using inline style DSL
+            coastline?.let { data ->
+                drawer.geo(data, projection) {
+                    fill = ColorRGBa.CORNFLOWER_BLUE.withAlpha(0.2)
+                    stroke = ColorRGBa.CORNFLOWER_BLUE.withAlpha(0.5)
+                    strokeWeight = 1.0
                 }
             }
 
@@ -106,23 +82,18 @@ fun main() = application {
             drawer.strokeWeight = 1.5
 
             graticule30.features.forEach { feature ->
-                if (feature.geometry is geo.Point) {
-                    val point = feature.geometry as geo.Point
-
-                    // Determine if this is a major line
+                if (feature.geometry is Point) {
+                    val point = feature.geometry as Point
                     val isLatitude = point.x == 0.0 || point.x == 180.0 || point.x == -180.0
                     val isLongitude = point.y == 0.0 || point.y == 90.0 || point.y == -90.0
 
                     if (isLatitude || isLongitude) {
-                        // Draw lines through this point
                         if (isLongitude) {
-                            // Vertical line (longitude)
                             val top = toScreen(-90.0, point.x, projection)
                             val bottom = toScreen(90.0, point.x, projection)
                             drawer.lineSegment(top.x, top.y, bottom.x, bottom.y)
                         }
                         if (isLatitude) {
-                            // Horizontal line (latitude)
                             val left = toScreen(point.y, -180.0, projection)
                             val right = toScreen(point.y, 180.0, projection)
                             drawer.lineSegment(left.x, left.y, right.x, right.y)
@@ -136,11 +107,9 @@ fun main() = application {
             drawer.stroke = null
 
             graticule10.features.forEach { feature ->
-                if (feature.geometry is geo.Point) {
-                    val point = feature.geometry as geo.Point
+                if (feature.geometry is Point) {
+                    val point = feature.geometry as Point
                     val screen = point.toScreen(projection)
-
-                    // Only draw points at intersections
                     val isGridIntersection =
                         (point.x.toInt() % 10 == 0) && (point.y.toInt() % 10 == 0)
 
@@ -155,7 +124,6 @@ fun main() = application {
             drawer.fill = ColorRGBa.WHITE.withAlpha(0.7)
             drawer.stroke = null
 
-            // Longitude labels
             listOf(-180, -120, -60, 0, 60, 120, 180).forEach { lng ->
                 val screen = toScreen(0.0, lng.toDouble(), projection)
                 if (screen.x > 50 && screen.x < width - 50) {
@@ -163,7 +131,6 @@ fun main() = application {
                 }
             }
 
-            // Latitude labels
             listOf(-90, -60, -30, 0, 30, 60, 90).forEach { lat ->
                 val screen = toScreen(lat.toDouble(), -175.0, projection)
                 if (screen.y > 30 && screen.y < height - 50) {

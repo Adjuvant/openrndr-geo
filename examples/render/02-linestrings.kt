@@ -3,22 +3,19 @@ package examples.render
 
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import geo.GeoJSON
-import geo.LineString
-import geo.render.Style
-import geo.render.drawLineString
-import geo.projection.ProjectionFactory
+import geo.*
+import geo.render.*
 
 /**
  * ## 02 - LineStrings
  *
- * Demonstrates rendering LineString geometries using drawLineString().
+ * Demonstrates rendering LineString geometries using the streamlined API.
  *
  * ### Concepts
- * - Loading GeoJSON line data
- * - Projecting LineString coordinates to screen space
- * - Styling lines with stroke color and weight
- * - Understanding coordinate transformations
+ * - Loading data with loadGeo()
+ * - Creating a projection with projectToFit()
+ * - Rendering lines with inline style DSL
+ * - Three-line workflow: loadGeo() → projectToFit() → drawer.geo()
  *
  * ### To Run
  * ```
@@ -32,36 +29,19 @@ fun main() = application {
     }
 
     program {
-        // Load line data from GeoJSON
-        val data = GeoJSON.load("examples/data/geo/rivers_lakes.geojson")
-
-        // Create a projection that fits the data to the window
-        val projection = ProjectionFactory.fitBounds(
-            data.boundingBox(),
-            width.toDouble(),
-            height.toDouble(),
-            padding = 0.9
-        )
-
-        // Define line styling using the Style DSL
-        val lineStyle = Style {
-            stroke = ColorRGBa(0.0, 0.4, 0.8)  // Blue color
-            strokeWeight = 1.5
-        }
+        // Three-line workflow
+        val data = loadGeo("examples/data/geo/rivers_lakes.geojson")
+        val projection = data.projectToFit(width, height)
 
         extend {
             // Clear with white background
             drawer.clear(ColorRGBa.WHITE)
 
-            // Iterate over features and render LineStrings
-            data.features.forEach { feature ->
-                if (feature.geometry is LineString) {
-                    val line = feature.geometry as LineString
-                    // Project all coordinates in the LineString to screen space
-                    val screenLine = line.toScreen(projection)
-                    // Render the LineString
-                    drawLineString(drawer, screenLine, lineStyle)
-                }
+            // Draw linestrings with inline style DSL
+            drawer.geo(data, projection) {
+                stroke = ColorRGBa(0.0, 0.4, 0.8)  // Blue color
+                strokeWeight = 1.5
+                fill = null  // Lines don't need fill
             }
         }
     }

@@ -3,25 +3,20 @@ package examples.render
 
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import geo.GeoJSON
-import geo.Point
-import geo.render.Style
-import geo.render.Shape
-import geo.render.drawPoint
-import geo.projection.ProjectionFactory
-import org.openrndr.extra.color.presets.ORANGE
-import org.openrndr.extra.color.presets.DODGER_BLUE
+import org.openrndr.extra.color.presets.*
+import geo.*
+import geo.render.*
 
 /**
  * ## 01 - Points
  *
- * Demonstrates rendering Point geometries using drawPoint().
+ * Demonstrates rendering Point geometries using the streamlined API.
  *
  * ### Concepts
- * - Loading GeoJSON data
- * - Creating a projection with ProjectionFactory.fitBounds()
- * - Rendering points with drawPoint()
- * - Basic point styling (color, size, shape)
+ * - Loading data with loadGeo()
+ * - Creating a projection with projectToFit()
+ * - Rendering points with inline style DSL
+ * - Three-line workflow: loadGeo() → projectToFit() → drawer.geo()
  *
  * ### To Run
  * ```
@@ -35,39 +30,21 @@ fun main() = application {
     }
 
     program {
-        // Load point data from GeoJSON
-        val data = GeoJSON.load("examples/data/geo/populated_places.geojson")
-
-        // Create a projection that fits the data to the window
-        val projection = ProjectionFactory.fitBounds(
-            data.boundingBox(),
-            width.toDouble(),
-            height.toDouble(),
-            padding = 0.9
-        )
-
-        // Define point styling using the Style DSL
-        val pointStyle = Style {
-            fill = ColorRGBa.ORANGE
-            stroke = ColorRGBa.DODGER_BLUE
-            strokeWeight = 1.0
-            size = 8.0
-            shape = Shape.Circle
-        }
+        // Three-line workflow
+        val data = loadGeo("examples/data/geo/populated_places.geojson")
+        val projection = data.projectToFit(width, height)
 
         extend {
             // Clear with white background
             drawer.clear(ColorRGBa.WHITE)
 
-            // Iterate over features and render points
-            data.features.forEach { feature ->
-                if (feature.geometry is Point) {
-                    val point = feature.geometry as Point
-                    // Project geographic coordinates to screen coordinates
-                    val screenPoint = point.toScreen(projection)
-                    // Render the point
-                    drawPoint(drawer, screenPoint, pointStyle)
-                }
+            // Draw points with inline style DSL
+            drawer.geo(data, projection) {
+                fill = ColorRGBa.ORANGE
+                stroke = ColorRGBa.DODGER_BLUE
+                strokeWeight = 1.0
+                size = 8.0
+                shape = Shape.Circle
             }
         }
     }

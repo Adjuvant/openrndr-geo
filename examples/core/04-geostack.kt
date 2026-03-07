@@ -1,8 +1,7 @@
 @file:JvmName("GeoStack")
 package examples.core
 
-import geo.GeoJSON
-import geo.geoStack
+import geo.*
 
 /**
  * ## 04 - GeoStack
@@ -15,6 +14,7 @@ import geo.geoStack
  * - Automatic CRS unification across sources
  * - Querying stack metadata (source count, total features, bounding box)
  * - Multi-dataset composition for overlay rendering
+ * - Works with both loadGeo() and geoSource()
  *
  * ### To Run
  * ```
@@ -24,11 +24,11 @@ import geo.geoStack
 fun main() {
     println("=== GeoStack Multi-Dataset Composition Example ===\n")
 
-    // Load multiple GeoJSON datasets
+    // Load multiple datasets using new API
     println("Loading datasets...")
-    val sampleData = GeoJSON.load("examples/data/geo/sample.geojson")
-    val cities = GeoJSON.load("examples/data/geo/populated_places.geojson")
-    val riversLakes = GeoJSON.load("examples/data/geo/rivers_lakes.geojson")
+    val sampleData = loadGeo("examples/data/geo/sample.geojson")
+    val cities = loadGeo("examples/data/geo/populated_places.geojson")
+    val riversLakes = loadGeo("examples/data/geo/rivers_lakes.geojson")
 
     // Create a GeoStack combining all sources
     println("Creating GeoStack...")

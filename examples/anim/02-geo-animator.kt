@@ -4,25 +4,20 @@ package examples.anim
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.animatable.easing.Easing
-import geo.GeoJSON
-import geo.Point
-import geo.animation.animator
-import geo.projection.ProjectionFactory
-import geo.projection.ProjectionType
-import geo.render.Style
-import geo.render.Shape
-import geo.render.drawPoint
-import geo.render.withAlpha
-
-// CYAN is available via ColorRGBa directly
+import org.openrndr.extra.color.presets.*
+import geo.*
+import geo.animation.*
+import geo.render.*
 
 /**
  * ## 02 - Geo Animator
  *
  * Demonstrates animating geo-specific properties like coordinates.
- * Shows how to animate geographic data visualization on a map.
+ * Shows how to animate geographic data visualization on a map using
+ * the streamlined three-line workflow.
  *
  * ### Concepts
+ * - Three-line workflow: loadGeo() → projectToFit() → drawer.geo()
  * - Animating point position on map
  * - Coordinating animation with geographic data
  * - Projection-aware animation
@@ -39,18 +34,10 @@ fun main() = application {
     }
 
     program {
-        // Load geographic data
-        val data = GeoJSON.load("examples/data/geo/populated_places.geojson")
+        // Three-line workflow for loading data
+        val data = loadGeo("examples/data/geo/populated_places.geojson")
+        val projection = data.projectToFit(width, height)
         val features = data.features.toList().take(50)
-
-        // Create projection that fits data to viewport
-        val projection = ProjectionFactory.fitBounds(
-            data.boundingBox(),
-            width.toDouble(),
-            height.toDouble(),
-            padding = 20.0,
-            projection = ProjectionType.MERCATOR
-        )
 
         // Get the first point as animation target
         val targetFeature = features.firstOrNull()
@@ -86,25 +73,17 @@ fun main() = application {
             drawer.text("Animating point from center to target location", 20.0, 50.0)
             drawer.text("Position: (${animator.x.toInt()}, ${animator.y.toInt()})", 20.0, 80.0)
 
-            // Draw all other points (static)
-            val staticStyle = Style {
+            // Draw all other points (static) using inline style DSL
+            drawer.geo(data, projection) {
                 fill = ColorRGBa.WHITE.withAlpha(0.3)
                 stroke = null
                 size = 4.0
                 shape = Shape.Circle
             }
 
-            features.drop(1).forEach { feature ->
-                if (feature.geometry is Point) {
-                    val point = feature.geometry as Point
-                    val screenPt = point.toScreen(projection)
-                    drawPoint(drawer, screenPt, staticStyle)
-                }
-            }
-
             // Draw animated point
             val animatedStyle = Style {
-                fill = ColorRGBa(0.0, 1.0, 1.0)  // Cyan color
+                fill = ColorRGBa.CYAN
                 stroke = ColorRGBa.WHITE
                 strokeWeight = 2.0
                 size = 12.0

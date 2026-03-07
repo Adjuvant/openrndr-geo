@@ -1,19 +1,11 @@
 @file:JvmName("Mercator")
 package examples.proj
 
-import geo.GeoJSON
-import geo.LineString
-import geo.Polygon
-import geo.projection.ProjectionFactory
-import geo.projection.toScreen
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import geo.render.Style
-import geo.render.drawLineString
-import geo.render.drawPolygon
-import geo.render.withAlpha
-import org.openrndr.extra.color.presets.CORNFLOWER_BLUE
-import org.openrndr.extra.color.presets.STEEL_BLUE
+import org.openrndr.extra.color.presets.*
+import geo.*
+import geo.render.*
 
 /**
  * ## 01 - Mercator Projection
@@ -40,14 +32,14 @@ fun main() = application {
 
     program {
         // Create a world Mercator projection that fits the entire world
-        val projection = ProjectionFactory.fitWorldMercator(
+        val projection = geo.projection.ProjectionFactory.fitWorldMercator(
             width = width.toDouble(),
             height = height.toDouble()
         )
 
-        // Load coastline data for visual reference
+        // Load coastline data using auto-magic loader
         val coastline = try {
-            GeoJSON.load("examples/data/geo/coastline.geojson")
+            loadGeo("examples/data/geo/coastline.geojson")
         } catch (e: Exception) {
             println("Could not load coastline: ${e.message}")
             null
@@ -58,37 +50,18 @@ fun main() = application {
             drawer.clear(ColorRGBa(0.05, 0.1, 0.2))
 
             // Draw coastline if available
-            coastline?.features?.forEach { feature ->
-                when (val geometry = feature.geometry) {
-                    is LineString -> {
-                        val screenPoints = geometry.toScreen(projection)
-                        drawLineString(drawer, screenPoints, Style {
-                            fill = null
-                            stroke = ColorRGBa.CORNFLOWER_BLUE
-                            strokeWeight = 1.0
-                        })
-                    }
-                    is Polygon -> {
-                        // Render polygon - handles exterior and interior rings automatically
-                        drawPolygon(drawer, geometry, projection, Style {
-                            fill = ColorRGBa.STEEL_BLUE.withAlpha(0.3)
-                            stroke = ColorRGBa.CORNFLOWER_BLUE
-                            strokeWeight = 1.0
-                        })
-                    }
-                    is geo.Point -> { /* Skip points for coastline */ }
-                    is geo.MultiPoint -> { /* Skip */ }
-                    is geo.MultiLineString -> { /* Skip */ }
-                    is geo.MultiPolygon -> { /* Skip */ }
+            coastline?.let { data ->
+                drawer.geo(data, projection) {
+                    fill = ColorRGBa.STEEL_BLUE.withAlpha(0.3)
+                    stroke = ColorRGBa.CORNFLOWER_BLUE
+                    strokeWeight = 1.0
                 }
             }
 
-            // Draw equator line for reference
+            // Draw equator and prime meridian for reference
             drawer.stroke = ColorRGBa.RED.withAlpha(0.5)
             drawer.strokeWeight = 1.0
             drawer.lineSegment(0.0, height / 2.0, width.toDouble(), height / 2.0)
-
-            // Draw prime meridian for reference
             drawer.lineSegment(width / 2.0, 0.0, width / 2.0, height.toDouble())
 
             // Draw title

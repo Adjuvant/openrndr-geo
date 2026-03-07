@@ -1,20 +1,21 @@
 @file:JvmName("CrsTransform")
 package examples.proj
 
-import geo.projection.CRSTransformer
+import geo.*
 import geo.crs.CRS
+import geo.projection.*
 
 /**
  * ## 03 - CRS Transformation
  *
  * Demonstrates coordinate transformation between different Coordinate Reference Systems (CRS)
- * using the Proj4J-based CRSTransformer.
+ * using the transform() function on GeoSource and CRSTransformer for raw coordinates.
  *
  * ### Concepts
- * - Understanding CRS (Coordinate Reference Systems)
- * - Transforming coordinates between EPSG codes
- * - WGS84 (EPSG:4326) to British National Grid (EPSG:27700) transformation
- * - Using CRSTransformer for coordinate conversion
+ * - Transforming data between CRS (WGS84 → Web Mercator)
+ * - Using CRS enum for type-safe CRS selection
+ * - Using CRSTransformer for raw coordinate conversion
+ * - GeoSource.transform() for automatic feature transformation
  *
  * ### To Run
  * ```
@@ -74,11 +75,18 @@ fun main() {
     }
 
     println()
+    println("GeoSource.transform() Example:")
+    println("  Load data: val data = loadGeo(\"file.geojson\")")
+    println("  Transform: val webMercatorData = data.transform(to = CRS.WebMercator)")
+    println("  Returns a new GeoSource with all features in the target CRS")
+
+    println()
     println("CRS transformation is working correctly!")
     println()
     println("Key Concepts:")
     println("  - CRSTransformer(sourceCRS, targetCRS) creates a transformer")
     println("  - transform(x, y) transforms a single coordinate pair")
+    println("  - GeoSource.transform(to = CRS) transforms entire datasets")
     println("  - WGS84 (EPSG:4326): Standard GPS coordinates (degrees)")
     println("  - Web Mercator (EPSG:3857): Web map standard (meters)")
     println("  - British National Grid (EPSG:27700): UK mapping (meters)")

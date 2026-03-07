@@ -5,19 +5,24 @@ import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.math.Vector2
 import org.openrndr.animatable.easing.Easing
-import geo.animation.GeoAnimator
-import geo.animation.composition.animate
+import geo.animation.*
 
 /**
- * Chain Composition Demo
+ * ## 05 - Chain Animations
  *
- * Demonstrates sequential animation via ChainedAnimationBuilder:
- * 1. Move circle from left to right (x: 100 -> 500)
- * 2. Then move up (y: 200 -> 100)
+ * Demonstrates sequential animation via ChainedAnimationBuilder.
+ * Shows how to chain multiple animations to run one after another.
  *
- * Each step runs after the previous completes.
+ * ### Concepts
+ * - ChainedAnimationBuilder for sequential animations
+ * - animate().then() syntax
+ * - GeoAnimator for animated properties
+ * - Animation completion detection
  *
- * To run: ./gradlew -Popenrndr.application=geo.examples.ChainDemoKt run
+ * ### To Run
+ * ```
+ * ./gradlew run -Popenrndr.application=examples.anim.ChainAnimationsKt
+ * ```
  */
 fun main() = application {
     configure {
@@ -31,6 +36,7 @@ fun main() = application {
             y = 200.0
         }
 
+        // Chain animations: Right then Up
         val chain = animate(shape) {
             ::x.animate(500.0, 1000, Easing.CubicOut)
         }.then {
