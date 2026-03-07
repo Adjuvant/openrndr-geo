@@ -170,3 +170,12 @@ None - no external service configuration required.
 ---
 *Phase: 13-integration-validation*
 *Completed: 2026-03-07*
+
+## Self-Check: PASSED
+
+- [x] ExampleRunner.kt exists (293 lines)
+- [x] ExampleRegressionTest.kt exists (329 lines)
+- [x] SUMMARY.md created with frontmatter
+- [x] All commits present (4 commits)
+- [x] regressionTest task configured and working
+- [x] All 26 examples validated
