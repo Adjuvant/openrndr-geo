@@ -189,7 +189,10 @@ abstract class GeoSource(
             bounds = bounds,
             width = drawer.width.toDouble(),
             height = drawer.height.toDouble(),
-            // TODO I though padding had changed to pixels?
+            // Padding as ratio of available space: 0.9 = 90% fill, 10% padding
+            // Note: fitBounds() documents padding in pixels, but this usage treats
+            // it as a scale factor. 0.9 provides subtle padding while maintaining
+            // tight visual fit for the common case of rendering a source to viewport.
             padding = 0.9,
             projection = ProjectionType.MERCATOR
         )
