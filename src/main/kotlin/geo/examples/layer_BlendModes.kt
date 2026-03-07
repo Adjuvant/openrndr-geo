@@ -30,6 +30,7 @@ import org.openrndr.extra.fx.blend.Multiply
 import org.openrndr.extra.fx.blend.Overlay
 import org.openrndr.extra.fx.blend.Screen
 import org.openrndr.math.Vector2
+import org.openrndr.shape.Rectangle
 
 /**
  * Layer Blend Modes Example
@@ -88,73 +89,12 @@ import org.openrndr.math.Vector2
  * **Workaround:** Test blend mode examples on non-macOS platforms for full compatibility.
  */
 
-// TODO promote helper function to API feature, quite reusable.
-// Helper function to draw data in a specific quadrant
-private fun drawDataQuadrant(
-    drawer: Drawer,
-    data: GeoSource,
-    projection: GeoProjection,
-    offsetX: Double,
-    offsetY: Double,
-    quadWidth: Double,
-    quadHeight: Double
-) {
-    data.features.take(200).forEach { feature ->
-        when (val geometry = feature.geometry) {
-            is Point -> {
-                val screen = geometry.toScreen(projection)
-                // Apply quadrant offset
-                val finalX = screen.x + offsetX
-                val finalY = screen.y + offsetY
-                // Only draw if in quadrant bounds
-                if (finalX >= offsetX && finalX <= offsetX + quadWidth &&
-                    finalY >= offsetY && finalY <= offsetY + quadHeight) {
-                    drawPoint(drawer, finalX, finalY, Style {
-                        fill = ColorRGBa(1.0, 0.5, 0.0).withAlpha(0.7)  // Orange
-                        stroke = ColorRGBa.YELLOW
-                        strokeWeight = 1.5
-                        size = 6.0
-                    })
-                }
-            }
-            is LineString -> {
-                val screenPoints = geometry.points.mapNotNull { pt ->
-                    val screen = Point(pt.x, pt.y).toScreen(projection)
-                    val finalX = screen.x + offsetX
-                    val finalY = screen.y + offsetY
-                    if (finalX >= offsetX && finalX <= offsetX + quadWidth &&
-                        finalY >= offsetY && finalY <= offsetY + quadHeight) {
-                        Vector2(finalX, finalY)
-                    } else null
-                }
-                if (screenPoints.isNotEmpty()) {
-                    drawLineString(drawer, screenPoints, Style {
-                        stroke = ColorRGBa(1.0, 0.5, 0.0).withAlpha(0.8)
-                        strokeWeight = 2.5
-                    })
-                }
-            }
-            is Polygon -> {
-                val screenPoints = geometry.exterior.mapNotNull { pt ->
-                    val screen = Point(pt.x, pt.y).toScreen(projection)
-                    val finalX = screen.x + offsetX
-                    val finalY = screen.y + offsetY
-                    if (finalX >= offsetX && finalX <= offsetX + quadWidth &&
-                        finalY >= offsetY && finalY <= offsetY + quadHeight) {
-                        Vector2(finalX, finalY)
-                    } else null
-                }
-                if (screenPoints.size >= 3) {
-                    drawPolygon(drawer, screenPoints, Style {
-                        fill = ColorRGBa(1.0, 0.5, 0.0).withAlpha(0.4)
-                        stroke = ColorRGBa.YELLOW.withAlpha(0.6)
-                        strokeWeight = 1.5
-                    })
-                }
-            }
-            else -> { }
-        }
-    }
+// Define a style for quadrant rendering
+private val quadrantStyle = Style {
+    fill = ColorRGBa(1.0, 0.5, 0.0).withAlpha(0.7)  // Orange
+    stroke = ColorRGBa.YELLOW
+    strokeWeight = 1.5
+    size = 6.0
 }
 
 fun main() = application {
@@ -224,8 +164,11 @@ fun main() = application {
             layer {
                 draw {
                     val sineShift = kotlin.math.sin(seconds / 180.0 * kotlin.math.PI) * (width / 2.0) * 0.5
-                    drawDataQuadrant(drawer, data, projection, 0.0 + sineShift, 0.0,
-                        width / 2.0, height / 2.0)
+                    data.renderQuadrant(
+                        drawer, projection,
+                        Rectangle(0.0 + sineShift, 0.0, width / 2.0, height / 2.0),
+                        style = quadrantStyle
+                    )
                 }
                 blend(Multiply())
             }
@@ -240,8 +183,11 @@ fun main() = application {
             layer {
                 draw {
                     val sineShift = kotlin.math.sin(seconds / 180.0 * kotlin.math.PI) * (width / 2.0) * 0.5
-                    drawDataQuadrant(drawer, data, projection, width / 2.0 - sineShift, 0.0,
-                        width / 2.0, height / 2.0)
+                    data.renderQuadrant(
+                        drawer, projection,
+                        Rectangle(width / 2.0 - sineShift, 0.0, width / 2.0, height / 2.0),
+                        style = quadrantStyle
+                    )
                 }
                 blend(Overlay())
             }
@@ -256,8 +202,11 @@ fun main() = application {
             layer {
                 draw {
                     val sineShift = kotlin.math.sin(seconds / 180.0 * kotlin.math.PI) * (width / 2.0) * 0.5
-                    drawDataQuadrant(drawer, data, projection, 0.0 + sineShift, height / 2.0,
-                        width / 2.0, height / 2.0)
+                    data.renderQuadrant(
+                        drawer, projection,
+                        Rectangle(0.0 + sineShift, height / 2.0, width / 2.0, height / 2.0),
+                        style = quadrantStyle
+                    )
                 }
                 blend(Screen())
             }
@@ -272,8 +221,11 @@ fun main() = application {
             layer {
                 draw {
                     val sineShift = kotlin.math.sin(seconds / 180.0 * kotlin.math.PI) * (width / 2.0) * 0.5
-                    drawDataQuadrant(drawer, data, projection, width / 2.0 - sineShift, height / 2.0,
-                        width / 2.0, height / 2.0)
+                    data.renderQuadrant(
+                        drawer, projection,
+                        Rectangle(width / 2.0 - sineShift, height / 2.0, width / 2.0, height / 2.0),
+                        style = quadrantStyle
+                    )
                 }
                 blend(Add())
             }

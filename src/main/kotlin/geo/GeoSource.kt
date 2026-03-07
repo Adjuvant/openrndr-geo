@@ -200,6 +200,43 @@ abstract class GeoSource(
     }
 
     /**
+     * Render this GeoSource to a specific rectangular region of the screen.
+     *
+     * This is useful for multi-view layouts, quadrant comparisons, or rendering
+     * data to specific viewport areas. Only features whose bounding boxes intersect
+     * the target region are rendered, with coordinates offset to the region's origin.
+     *
+     * ## Usage
+     * ```kotlin
+     * // Render to top-left quadrant
+     * val region = Rectangle(0.0, 0.0, width/2, height/2)
+     * source.renderQuadrant(drawer, projection, region, style = pointStyle)
+     *
+     * // Render with feature limit
+     * source.renderQuadrant(drawer, projection, region, maxFeatures = 100)
+     * ```
+     *
+     * @param drawer OpenRNDR Drawer for rendering
+     * @param projection Projection to use for coordinate transformation
+     * @param region The target screen region (corner x/y, width, height)
+     * @param maxFeatures Maximum number of features to render (default: 200)
+     * @param style Optional rendering style (null = use defaults)
+     */
+    fun renderQuadrant(
+        drawer: Drawer,
+        projection: GeoProjection,
+        region: org.openrndr.shape.Rectangle,
+        maxFeatures: Int = 200,
+        style: Style? = null
+    ) {
+        features
+            .take(maxFeatures)
+            .forEach { feature ->
+                feature.geometry.renderToDrawerWithOffset(drawer, projection, region, style)
+            }
+    }
+
+    /**
      * Print a summary of this GeoSource to the console.
      * Shows feature count, bounds, CRS, geometry types, memory estimate, and property keys.
      * Uses a single pass through the features Sequence for efficiency.
@@ -393,6 +430,91 @@ private fun Geometry.renderToDrawer(drawer: Drawer, projection: GeoProjection, s
             polygons.forEach { poly ->
                 val screenPoints = poly.exterior.map { projection.project(it) }
                 drawPolygon(drawer, screenPoints, style)
+            }
+        }
+    }
+}
+
+/**
+ * Render this geometry to the given Drawer with coordinate offset for quadrant rendering.
+ * Only renders geometry components that fall within the specified region bounds.
+ */
+private fun Geometry.renderToDrawerWithOffset(
+    drawer: Drawer,
+    projection: GeoProjection,
+    region: org.openrndr.shape.Rectangle,
+    style: Style?
+) {
+    val minX = region.corner.x
+    val minY = region.corner.y
+    val maxX = region.corner.x + region.width
+    val maxY = region.corner.y + region.height
+
+    when (this) {
+        is Point -> {
+            val screen = projection.project(Vector2(x, y))
+            // Check if point is within region bounds
+            if (screen.x >= minX && screen.x <= maxX && screen.y >= minY && screen.y <= maxY) {
+                // Apply offset to render relative to region origin
+                val offsetScreen = Vector2(screen.x - minX, screen.y - minY)
+                drawPoint(drawer, offsetScreen, style)
+            }
+        }
+        is LineString -> {
+            val screenPoints = points.mapNotNull { pt ->
+                val screen = projection.project(pt)
+                if (screen.x >= minX && screen.x <= maxX && screen.y >= minY && screen.y <= maxY) {
+                    Vector2(screen.x - minX, screen.y - minY)
+                } else null
+            }
+            if (screenPoints.isNotEmpty()) {
+                drawLineString(drawer, screenPoints, style)
+            }
+        }
+        is Polygon -> {
+            val screenPoints = exterior.mapNotNull { pt ->
+                val screen = projection.project(pt)
+                if (screen.x >= minX && screen.x <= maxX && screen.y >= minY && screen.y <= maxY) {
+                    Vector2(screen.x - minX, screen.y - minY)
+                } else null
+            }
+            if (screenPoints.size >= 3) {
+                drawPolygon(drawer, screenPoints, style)
+            }
+        }
+        is MultiPoint -> {
+            points.forEach { pt ->
+                val screen = projection.project(Vector2(pt.x, pt.y))
+                if (screen.x >= minX && screen.x <= maxX && screen.y >= minY && screen.y <= maxY) {
+                    val offsetScreen = Vector2(screen.x - minX, screen.y - minY)
+                    drawPoint(drawer, offsetScreen, style)
+                }
+            }
+        }
+        is MultiLineString -> {
+            lineStrings.forEach { line ->
+                val screenPoints = line.points.mapNotNull { pt ->
+                    val screen = projection.project(pt)
+                    if (screen.x >= minX && screen.x <= maxX && screen.y >= minY && screen.y <= maxY) {
+                        Vector2(screen.x - minX, screen.y - minY)
+                    } else null
+                }
+                if (screenPoints.isNotEmpty()) {
+                    drawLineString(drawer, screenPoints, style)
+                }
+            }
+        }
+        is MultiPolygon -> {
+            polygons.forEach { poly ->
+                val screenPoints = poly.exterior.mapNotNull { pt ->
+                    val screen = projection.project(pt)
+                    if (screen.x >= minX && screen.x <= maxX && screen.y >= minY && screen.y <= maxY) {
+                        Vector2(screen.x - minX, screen.y - minY)
+                    } else null
+                }
+                if (screenPoints.size >= 3) {
+                    drawPolygon(drawer, screenPoints, style)
+                }
             }
         }
     }
