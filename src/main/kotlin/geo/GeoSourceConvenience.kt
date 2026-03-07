@@ -31,7 +31,7 @@ import java.io.File
  */
 
 /**
- * Load a GeoJSON file and return a GeoJSONSource.
+ * Load a GeoJSON file and return a GeoSource.
  *
  * This is a convenience wrapper around [GeoJSON.load] that provides a consistent
  * API for loading geospatial data.
@@ -51,7 +51,7 @@ import java.io.File
  * @return A GeoSource implementation for the loaded data
  * @throws FileNotFoundException if the file doesn't exist
  */
-fun geoSource(path: String, optimize: Boolean = false): GeoJSONSource {
+fun geoSource(path: String, optimize: Boolean = false): GeoSource {
     return GeoJSON.load(path, optimize)
 }
 
@@ -63,7 +63,7 @@ fun geoSource(path: String, optimize: Boolean = false): GeoJSONSource {
  * @return A GeoSource implementation for the loaded data
  * @throws FileNotFoundException if the file doesn't exist
  */
-fun geoSource(file: File, optimize: Boolean = false): GeoJSONSource {
+fun geoSource(file: File, optimize: Boolean = false): GeoSource {
     return GeoJSON.load(file.absolutePath, optimize)
 }
 
@@ -75,7 +75,7 @@ fun geoSource(file: File, optimize: Boolean = false): GeoJSONSource {
  * @return A GeoSource implementation for the parsed data
  * @throws IllegalArgumentException if the content is not valid GeoJSON
  */
-fun geoSourceFromString(content: String, optimize: Boolean = false): GeoJSONSource {
+fun geoSourceFromString(content: String, optimize: Boolean = false): GeoSource {
     return GeoJSON.loadString(content, optimize)
 }
 

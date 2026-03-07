@@ -42,8 +42,8 @@ fun main() = application {
         val font = loadFont("data/fonts/default.otf", 64.0)
 
         // Load multiple datasets with potentially different CRS
-        val ocean = geoSource("data/geo/ocean.geojson")
-        val coastline = geoSource("data/geo/coastline.geojson")  // WGS84
+        val ocean = geoSource("data/geo/ocean.geojson", optimize = true)
+        val coastline = geoSource("data/geo/coastline.geojson", optimize = true)  // WGS84
         val cities = geoSource("data/geo/populated_places.geojson")       // WGS84
         val rivers = geoSource("data/geo/rivers_lakes.geojson")        // Could be different
 
@@ -87,7 +87,7 @@ fun main() = application {
                 println("Projected: $geometry")
             }
 
-        val topo = geoSource("data/geo/catchment-topo.geojson")
+        val topo = geoSource("data/geo/large_topo.geojson", optimize = true)
 
         val topoProjection = ProjectionFactory.fitBounds(
             topo.totalBoundingBox(),
@@ -97,6 +97,7 @@ fun main() = application {
         extend {
             animator.updateAnimation()
             drawer.clear(ColorRGBa.BLACK)
+            drawer.text("${"%2.2g".format(frameCount/seconds)} FPS", 20.0, 20.0)
             drawer.points {
                 repeat(20000) {
                     fill = rgb((it * 0.01 - seconds) % 1)

@@ -13,6 +13,10 @@ import geo.GeoSource
  *
  * The optimized geometries are stored as Any (since they don't extend Geometry),
  * so rendering code must check for both standard and optimized variants.
+ *
+ * IMPORTANT: Optimized geometries do NOT extend Geometry sealed class, so they
+ * cannot be converted to standard Feature objects. Use optimizedFeatureSequence
+ * for direct access to optimized data.
  */
 internal class OptimizedGeoSource(
     private val optimizedFeatures: Sequence<OptimizedFeature>,
@@ -20,17 +24,23 @@ internal class OptimizedGeoSource(
 ) : GeoSource(crs) {
 
     /**
-     * Returns the features as a Sequence<Feature> for API compatibility.
-     * Note: The geometries in these features are the optimized variants (stored as Any).
-     */
-    @Suppress("UNCHECKED_CAST")
-    override val features: Sequence<Feature>
-        get() = optimizedFeatures.map { it.toFeature() }
-
-    /**
      * Returns the raw optimized features for batch-aware rendering.
+     * This is the primary access method - optimized features cannot be converted
+     * to standard Feature objects due to type system constraints.
      */
     val optimizedFeatureSequence: Sequence<OptimizedFeature> = optimizedFeatures
+
+    /**
+     * NOT SUPPORTED: Optimized geometries cannot be converted to Feature objects.
+     * Attempting to access this property will throw an exception.
+     * Use optimizedFeatureSequence instead.
+     */
+    override val features: Sequence<Feature>
+        get() = throw UnsupportedOperationException(
+            "OptimizedGeoSource does not support standard Feature access. " +
+            "Use optimizedFeatureSequence for batch-optimized rendering, " +
+            "or load without optimize=true for standard Feature access."
+        )
 
     /**
      * Returns the bounding box of all features.
@@ -42,27 +52,35 @@ internal class OptimizedGeoSource(
         }
     }
 
+    /**
+     * Returns the total bounding box of all features.
+     * Alias for boundingBox() - computes from optimized geometry bounding boxes.
+     */
+    override fun totalBoundingBox(): Bounds {
+        return boundingBox()
+    }
+
+    /**
+     * Returns the count of features in this source.
+     * Iterates through the optimized features directly.
+     */
+    override fun countFeatures(): Long {
+        return optimizedFeatures.count().toLong()
+    }
+
 }
 
 /**
  * A feature with an optimized geometry stored as Any.
+ * 
+ * Optimized features cannot be converted to standard Feature objects because
+ * optimized geometries don't extend the Geometry sealed class (package restriction).
+ * Use directly with batch-aware rendering code.
  */
 internal data class OptimizedFeature(
     val optimizedGeometry: Any,
     val properties: Map<String, Any?>
 ) {
-    /**
-     * Converts to a standard Feature for API compatibility.
-     * The geometry is the optimized variant (stored as Any).
-     */
-    @Suppress("UNCHECKED_CAST")
-    fun toFeature(): Feature {
-        return Feature(
-            geometry = optimizedGeometry as geo.Geometry,
-            properties = properties
-        )
-    }
-
     /**
      * Returns the bounding box of this feature's optimized geometry.
      */
