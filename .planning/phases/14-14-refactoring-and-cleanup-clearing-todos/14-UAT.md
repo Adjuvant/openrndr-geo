@@ -1,9 +1,9 @@
 ---
-status: complete
+status: resolved
 phase: 14-refactoring-and-cleanup-clearing-todos
-source: 14-01-SUMMARY.md, 14-02-SUMMARY.md, 14-03-SUMMARY.md, 14-04-SUMMARY.md
+source: 14-01-SUMMARY.md, 14-02-SUMMARY.md, 14-03-SUMMARY.md, 14-04-SUMMARY.md, 14-05-SUMMARY.md, 14-06-SUMMARY.md
 started: 2026-03-07T18:30:00Z
-updated: 2026-03-07T18:35:00Z
+updated: 2026-03-07T19:20:00Z
 ---
 
 ## Current Test
@@ -28,23 +28,19 @@ note: "User noted Phase 13 (Integration & Validation) may not have fully complet
 expected: ./gradlew test shows 278 tests with 0 failures
 result: pass
 
-### 4. TemplateProgram.kt is Clean Entry Point
-expected: TemplateProgram.kt exists with documentation header, no TODOs, no App.kt duplicate
-result: issue
-reported: "the canonical entrypoint should be App.kt which you deleted"
-severity: major
-note: "Disagreement on canonical entry point. Phase 14-01 deleted App.kt as redundant, keeping TemplateProgram.kt. User expects App.kt as canonical entry point."
+### 4. App.kt is Canonical Entry Point
+expected: App.kt exists as canonical entry point with documentation, TemplateProgram.kt as alternative
+result: pass
+note: "Gap resolved by 14-05. App.kt restored as 54-line minimal entry point. TemplateProgram.kt (147 lines) preserved as comprehensive starter template."
 
 ### 5. GeoSource.renderQuadrant() API Exists
 expected: GeoSource class has public renderQuadrant() method with KDoc documentation
 result: pass
 
-### 6. Example File Renamed Correctly
-expected: render_FeatureIteration.kt exists, render_BasicRendering.kt does not exist
-result: issue
-reported: "pass, but this should be placed in @examples/render/ and numbered/renamed in sensible way"
-severity: minor
-note: "File was renamed from render_BasicRendering.kt to render_FeatureIteration.kt in src/main/kotlin/geo/examples/, but user expects it in examples/render/ directory with numbered naming convention (like 01-points.kt, 02-linestrings.kt, etc.)"
+### 6. Example File in Correct Location with Numbered Naming
+expected: 08-feature-iteration.kt exists in examples/render/, following numbered convention
+result: pass
+note: "Gap resolved by 14-06. File moved from src/main/kotlin/geo/examples/render_FeatureIteration.kt to examples/render/08-feature-iteration.kt following established convention (01- through 07- already exist)."
 
 ### 7. CHANGELOG.md Created
 expected: CHANGELOG.md exists with Phase 14 completion notes
@@ -53,30 +49,34 @@ result: pass
 ## Summary
 
 total: 7
-passed: 4
-issues: 3
+passed: 6
+issues: 0 (1 clarified)
 pending: 0
 skipped: 0
+
+**Gap Closure:** 2 gaps resolved via 14-05 and 14-06
 
 ## Gaps
 
 - truth: "Zero TODOs, FIXMEs, XXXs, or HACKs remain in Kotlin source code"
-  status: failed
-  reason: "User noted .planning/todos/pending/ contains 12 items - needs clarification"
+  status: clarified
+  reason: "Code TODOs are cleared (0 in src/). .planning/todos/ items are intentional backlog for future phases, not code TODOs."
   severity: minor
   test: 1
-  clarification: "Code TODOs are cleared. .planning/todos/ items are intentional backlog for future phases, not code TODOs."
+  action: "No action needed — documentation updated to clarify distinction"
 
-- truth: "Canonical entry point is TemplateProgram.kt with App.kt deleted"
-  status: failed
-  reason: "User reported: the canonical entrypoint should be App.kt which you deleted"
+- truth: "Canonical entry point is App.kt with TemplateProgram.kt as alternative"
+  status: resolved
+  reason: "App.kt restored as canonical entry point by Plan 14-05"
   severity: major
   test: 4
-  note: "Phase 14-01 deleted App.kt as redundant duplicate of TemplateProgram.kt. User expects App.kt as canonical entry point."
+  resolution: "Created src/main/kotlin/App.kt (54 lines) as minimal canonical entry point. TemplateProgram.kt (147 lines) preserved as comprehensive starter template."
+  resolved_by: "14-05-PLAN.md"
 
-- truth: "Example file render_FeatureIteration.kt is in correct location"
-  status: failed
-  reason: "User reported: should be placed in @examples/render/ and numbered/renamed in sensible way"
+- truth: "Example file is in correct location with numbered naming"
+  status: resolved
+  reason: "File moved to examples/render/08-feature-iteration.kt by Plan 14-06"
   severity: minor
   test: 6
-  note: "File is in src/main/kotlin/geo/examples/ but user expects it in examples/render/ with numbered naming (like 01-points.kt)"
+  resolution: "Moved from src/main/kotlin/geo/examples/render_FeatureIteration.kt to examples/render/08-feature-iteration.kt following numbered convention."
+  resolved_by: "14-06-PLAN.md"
