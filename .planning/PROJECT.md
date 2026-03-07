@@ -8,14 +8,15 @@ A Kotlin/OpenRNDR prototyping library for creative geospatial visualization. It 
 
 An expressive, well-architected API that makes exploring intersections of geo datasets feel fluid and creative — decoupling data operations from rendering so new visual ideas can be prototyped quickly.
 
-## Current Milestone: v1.3.0 Performance
+## Current Milestone: v1.4.0 Developer Experience
 
-**Goal:** Optimize rendering performance for large datasets through batch projection and geometry caching.
+**Goal:** Improve API ergonomics, fix rendering edge cases, and enhance developer workflow.
 
 **Target features:**
-- Batch screen space projection for coordinate transforms
-- Cache projected geometries across animation frames
-- Performance benchmarking and measurement tools
+- Single-import API (`import geo.*`)
+- Reduced boilerplate for common workflows
+- Fixed MultiPolygon and graticule rendering
+- Better code organization and documentation
 
 ## Requirements
 
@@ -52,18 +53,28 @@ An expressive, well-architected API that makes exploring intersections of geo da
 - ✓ Escape hatches — RawProjection and styleByFeature for advanced patterns (API-03) — v1.2.0
 - ✓ 16 runnable examples — structured by category with sample data (DOC-01, DOC-02, DOC-03, DOC-04) — v1.2.0
 
+**v1.3.0 Performance:**
+- ✓ Batch coordinate transformation — DoubleArray-based storage with indexed loops (PERF-01) — v1.3.0
+- ✓ Viewport caching — Clear-on-change semantics with transparent integration (PERF-04, PERF-05, PERF-06, PERF-07) — v1.3.0
+- ✓ Performance benchmarks — 1533x average speedup validated (PERF-08, PERF-09) — v1.3.0
+- ✓ Regression testing — All 26 v1.2.0 examples work unchanged (PERF-10) — v1.3.0
+- ✓ Code cleanup — Zero TODOs, 278 tests passing — v1.3.0
+
 ### Active
 
-**v1.3.0 Focus (Performance):**
-- [ ] Batch screen space projection — performance optimization (PERF-01)
-- [ ] Cache projected geometries across frames (PERF-02)
-
-**v1.4.0 Focus (Advanced Features):**
-- [ ] Clip geometries at projection bounds (vs current clamp) (ADV-01)
-- [ ] Configurable bounds handling strategy (ADV-02)
-- [ ] Graticule layer improvements — support for zoomed-in maps
+**v1.4.0 Focus (Developer Experience):**
+- [ ] Single-import API — `import geo.*` gets everything needed (API-01)
+- [ ] Reduced boilerplate — 3-line rendering workflow (API-02)
+- [ ] MultiPolygon rendering fixes — ocean/whole-world data (RENDER-01)
+- [ ] Polygon ring handling — proper interior/exterior support (RENDER-02)
+- [ ] OptimizedGeoSource caching — extend ViewportCache (PERF-11)
+- [ ] Code organization — core/ subdirectory (ORG-02)
+- [ ] Documentation fixes — README corrections (DOCS-01)
+- [ ] Graticule improvements — zoomed-in map support (LAYER-01)
 
 **Deferred:**
+- [ ] Clip geometries at projection bounds (vs current clamp) (ADV-01)
+- [ ] Configurable bounds handling strategy (ADV-02)
 - [ ] Documentation — guide for exploring available functions, organized by visual intent (deferred from v1.0)
 - [ ] Real-time pan/zoom — defer to v2
 - [ ] Custom aesthetic primitives (hatching, stippling) — defer to v2
@@ -79,13 +90,15 @@ An expressive, well-architected API that makes exploring intersections of geo da
 
 ## Context
 
-**Current State (v1.2.0 shipped):**
-- ~15,986 lines of Kotlin production code
-- 350+ files created/modified
-- 34 plans completed across 10 phases
+**Current State (v1.3.0 shipped):**
+- ~18,376 lines of Kotlin production code (+2,390 from v1.2.0)
+- 103 Kotlin source files
+- 34 test files
+- 80 commits across 3 days
 - Build: OPENRNDR 0.4.5, Kotlin 2.2.10, JVM 17
-- Test coverage: 200+ tests passing
-- 16 runnable examples across 5 categories
+- Test coverage: 278 tests passing
+- 26 runnable examples across 5 categories
+- Performance: 1533x average speedup for static camera (target: 10x)
 
 - Built on OPENRNDR 0.4.5 with Kotlin 2.2.10, JVM 17
 - Existing template project with ORX extensions (shapes, noise, color, composition, envelopes, etc.)
@@ -109,6 +122,15 @@ An expressive, well-architected API that makes exploring intersections of geo da
 - Two-tier API matching OpenRNDR DSL conventions (Style { } pattern)
 - 16 runnable examples organized by category (core, render, proj, anim, layer)
 - @file:JvmName annotations for digit-prefixed example filenames
+
+**v1.3.0 Improvements:**
+- Batch coordinate transformation using DoubleArray storage and indexed loops
+- Viewport caching with clear-on-change semantics and identity-based keys
+- Performance benchmarks validating 1533x speedup (target: 10x)
+- Regression test suite ensuring all examples work unchanged
+- Memory usage bounded during extended creative sessions
+- Code cleanup: zero TODOs remain, all tests pass
+- Two entry points: App.kt (minimal, 54 lines) and TemplateProgram.kt (comprehensive, 147 lines)
 
 ## Constraints
 
@@ -137,6 +159,11 @@ An expressive, well-architected API that makes exploring intersections of geo da
 | OpenRNDR Shape contours for holes | Native transparency support | ✓ Shipped in v1.2.0 — holes show background |
 | Two-tier vs three-tier API | Simpler mental model | ✓ Shipped in v1.2.0 — collapsed to two tiers |
 | @file:JvmName for examples | Kotlin naming with numbered files | ✓ Shipped in v1.2.0 — valid class names |
+| DoubleArray coordinate storage | Contiguous memory for batch transforms | ✓ Shipped in v1.3.0 — 10x+ performance improvement |
+| Identity-based cache keys | Avoid expensive geometry hashing | ✓ Shipped in v1.3.0 — O(1) cache lookups |
+| Clear-on-change caching | Simple invalidation vs LRU/LFU | ✓ Shipped in v1.3.0 — creative coding appropriate |
+| Opt-in optimization flag | Backward compatibility | ✓ Shipped in v1.3.0 — `optimize=true` parameter |
+| Two canonical entry points | Minimal vs comprehensive workflows | ✓ Shipped in v1.3.0 — App.kt and TemplateProgram.kt |
 
 ---
-*Last updated: 2026-03-05 after starting v1.3.0 milestone*
+*Last updated: 2026-03-07 after completing v1.3.0 Performance milestone*
