@@ -11,7 +11,7 @@
 - [x] **Phase 11: Batch Projection** - Transform coordinate arrays efficiently (2/2 plans complete)
 - [x] **Phase 12: Viewport Caching** - Simple cache with clear-on-change semantics (completed 2026-03-06)
 - [x] **Phase 13: Integration & Validation** - Verify all v1.2.0 examples work unchanged (completed 2026-03-07)
-- [x] **Phase 14: Refactoring and Cleanup** - Clear all TODOs and technical debt (4/6 plans complete, 2 gap closure plans pending)
+- [x] **Phase 14: Refactoring and Cleanup** - Clear all TODOs and technical debt (5/6 plans complete, 1 gap closure plan pending)
 
 ## Progress
 
@@ -20,7 +20,7 @@
 | 11. Batch Projection | 2/2 | Complete    | 2026-03-05 |
 | 12. Viewport Caching | 3/3 | Complete   | 2026-03-06 |
 | 13. Integration & Validation | 2/2 | Complete    | 2026-03-07 |
-| 14. Refactoring & Cleanup | 4/6 | In Progress (Gap Closure)    | 2026-03-07 |
+| 14. Refactoring & Cleanup | 5/6 | In Progress (Gap Closure)    | 2026-03-07 |
 
 **Coverage:** 10/10 v1.3.0 requirements mapped ✓
 
@@ -176,13 +176,13 @@ Creative coding use case differs from web applications:
 7. Build passes with no errors
 8. All tests pass
 
-**Plans:** 4/6 plans complete, 2 gap closure plans pending
+**Plans:** 5/6 plans complete, 1 gap closure plan pending
 
 - [x] `14-01-PLAN.md` — Directory structure: Resolve App.kt/TemplateProgram.kt redundancy (Wave 1) — Completed 2026-03-07
 - [x] `14-02-PLAN.md` — Method/code refactoring: GeoAnimator singleton & GeoSource padding (Wave 2) — Completed 2026-03-07
 - [x] `14-03-PLAN.md` — Feature fixes: Promote helper to API, fix example naming (Wave 3) — Completed 2026-03-07
 - [x] `14-04-PLAN.md` — AOB: Final TODO sweep, build/test verification (Wave 4) — Completed 2026-03-07
-- [ ] `14-05-PLAN.md` — **GAP CLOSURE**: Restore App.kt as canonical entry point (Wave 1) — Addresses UAT Gap (Test 4)
+- [x] `14-05-PLAN.md` — **GAP CLOSURE**: Restore App.kt as canonical entry point (Wave 1) — Completed 2026-03-07 — App.kt created as clean 54-line entry point
 - [ ] `14-06-PLAN.md` — **GAP CLOSURE**: Move example to examples/render/ with numbered naming (Wave 1) — Addresses UAT Gap (Test 6)
 
 **Wave Structure:**

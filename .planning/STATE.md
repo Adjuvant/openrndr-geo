@@ -2,8 +2,8 @@
 
 **Current Milestone:** v1.3.0 Performance  
 **Phase:** 14-refactoring-and-cleanup-clearing-todos  
-**Current Plan:** Not started
-**Last Updated:** 2026-03-07T18:13:00Z
+**Current Plan:** 14-05 complete
+**Last Updated:** 2026-03-07T19:20:00Z
 
 ## Project Reference
 
@@ -30,7 +30,7 @@
 | 11 | Batch Projection | ✓ Complete | 2/2 | - |
 | 12 | Viewport Caching | ✓ Complete | 3/3 | - |
 | 13 | Integration & Validation | ✓ Complete | 2/2 | - |
-| 14 | Refactoring and Cleanup | ✓ Complete | 4/4 | - |
+| 14 | Refactoring and Cleanup | ✓ Complete | 5/5 | - |
 
 ## Performance Metrics
 
@@ -88,6 +88,7 @@
 | GeoAnimator singleton design | Intentional for creative coding - one animation focus | ✓ Documented |
 | GeoSource padding semantics | 0.9 is ratio (90% fill), not pixels - documented | ✓ Clarified |
 | Phase 14-refactoring-and-cleanup-clearing-todos P04 | 24min | 4 tasks | 1 file | Zero TODOs achieved |
+| Phase 14-refactoring-and-cleanup-clearing-todos P05 | 5min | 2 tasks | 1 file | App.kt restored as canonical entry point
 
 ### Active Requirements (v1.3.0)
 
@@ -137,11 +138,18 @@ None currently.
 - Created CHANGELOG.md documenting Phase 14 completion
 - CLEANUP-04 requirement satisfied
 - Phase 14 complete: 4/4 plans done
+- ✅ Completed Plan 14-05: Restore App.kt as canonical entry point
+- Created App.kt (54 lines) as clean, minimal entry point
+- TemplateProgram.kt (147 lines) preserved as comprehensive template
+- Gap from UAT.md Test 4 resolved - App.kt restored per user expectation
+- CLEANUP-01 requirement satisfied
+- Phase 14 complete: 5/5 plans done
 
 ### Next Actions
-1. Phase 14 complete - ready for v1.3.0 milestone completion
+1. Phase 14 complete with 5/5 plans - ready for v1.3.0 milestone completion
 2. Prepare v1.3.0 release notes with performance improvements
 3. Update ROADMAP.md and MILESTONES.md for v1.3.0 completion
+4. Tag v1.3.0 release
 
 ## Files
 
@@ -163,12 +171,13 @@ None currently.
 | 14-02-SUMMARY.md | GeoAnimator singleton and GeoSource padding documentation | 2026-03-07 |
 | 14-03-SUMMARY.md | Promote helper to API and fix example naming | 2026-03-07 |
 | 14-04-SUMMARY.md | Final cleanup - zero TODOs, all tests pass | 2026-03-07 |
+| 14-05-SUMMARY.md | App.kt restored as canonical entry point | 2026-03-07 |
 
 ### Session Continuity
 
-**Last Session:** 2026-03-07T18:13:00Z
-**Stopped At:** Completed 14-04-PLAN.md
-**Duration:** 24 minutes
+**Last Session:** 2026-03-07T19:20:00Z
+**Stopped At:** Completed 14-05-PLAN.md
+**Duration:** 5 minutes
 **Resume File:** None
 
 ---
