@@ -26,7 +26,8 @@ fun main() = application {
     program {
         // Load a single GeoJSON dataset
         val data = geoSource("data/sample.geojson")
-        
+        val topo = geoSource("data/geo/catchment-topo.geojson", optimize = true)
+
         // Create a projection that fits the data to the viewport
         val projection = ProjectionFactory.fitBounds(
             data.totalBoundingBox(),
@@ -35,17 +36,34 @@ fun main() = application {
             padding = 20.0,
             projection = ProjectionType.MERCATOR
         )
+
+        val topoProj = ProjectionFactory.fitBounds(
+            topo.totalBoundingBox(),
+            width.toDouble(),
+            height.toDouble(),
+            padding = 20.0,
+            projection = ProjectionType.MERCATOR
+        )
         
         extend {
             // Clear background
             drawer.clear(ColorRGBa.BLACK)
-            
+
+            drawer.geo(topo) {
+                this.projection = topoProj
+                style = Style { stroke = ColorRGBa.RED }
+            }
+
             // Render with simple styling
             drawer.geo(data) {
                 this.projection = projection
                 styleByType = mapOf(
+                    // TODO this should not be text based, the types are fixed from spec
                     "Point" to Style(
                         fill = ColorRGBa.CYAN
+                    ),
+                    "LineString" to Style(
+                        stroke = ColorRGBa.YELLOW
                     )
                 )
             }
