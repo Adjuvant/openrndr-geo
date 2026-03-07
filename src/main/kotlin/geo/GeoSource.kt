@@ -585,3 +585,73 @@ private fun Double.format(decimals: Int) = "%.${decimals}f".format(this)
  * Center a string within a given width.
  */
 private fun String.center(width: Int): String = padStart((width + length) / 2).padEnd(width)
+
+// ============================================================================
+// geoSource() Function - Explicit Loading API
+// ============================================================================
+
+/**
+ * Creates a GeoSource from a file path with explicit control over CRS.
+ *
+ * The geoSource() function provides explicit, manual control over loading:
+ * - No automatic CRS detection
+ * - No automatic projection fitting
+ * - No caching (unless you wrap it yourself)
+ *
+ * Use this when you need precise control or when loadGeo's auto-magic
+ * doesn't work for your use case.
+ *
+ * ## Usage
+ * ```kotlin
+ * // Explicit CRS control
+ * val source = geoSource("data/custom.json", crs = CRS.WebMercator)
+ *
+ * // Default WGS84 (GeoJSON standard)
+ * val source = geoSource("data/world.json")
+ * ```
+ *
+ * @param path Path to the geo data file (GeoJSON or GeoPackage)
+ * @param crs Explicit CRS to use (default: WGS84 for GeoJSON)
+ * @return GeoSource containing the loaded features
+ * @throws FileNotFoundException if the file doesn't exist
+ * @throws IllegalArgumentException if the file format is not supported
+ */
+fun geoSource(path: String, crs: CRS = CRS.WGS84): GeoSource {
+    val file = java.io.File(path)
+    if (!file.exists()) {
+        throw java.io.FileNotFoundException("File not found: $path")
+    }
+
+    return when {
+        path.endsWith(".json", ignoreCase = true) ||
+        path.endsWith(".geojson", ignoreCase = true) -> {
+            // GeoJSON: Use explicit CRS or default to WGS84
+            val source = GeoJSON.load(path)
+            if (crs != CRS.WGS84) {
+                source.transform(crs)
+            } else {
+                source
+            }
+        }
+        path.endsWith(".gpkg", ignoreCase = true) -> {
+            // GeoPackage: Load with explicit CRS
+            GeoPackage.load(path, crs.code)
+        }
+        else -> throw IllegalArgumentException(
+            "Unsupported file format: $path. " +
+            "Supported formats: .json, .geojson, .gpkg"
+        )
+    }
+}
+
+/**
+ * Creates a GeoSource from a file path with explicit CRS code.
+ *
+ * @param path Path to the geo data file
+ * @param crsCode CRS code string (e.g., "EPSG:4326", "EPSG:3857")
+ * @return GeoSource containing the loaded features
+ */
+fun geoSource(path: String, crsCode: String): GeoSource {
+    val crs = CRS.fromString(crsCode)
+    return geoSource(path, crs)
+}

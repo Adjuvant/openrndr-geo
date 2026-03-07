@@ -1,9 +1,9 @@
 # Project State: openrndr-geo
 
 **Current Milestone:** v1.4.0 Developer Experience  
-**Phase:** Not started (defining requirements)  
-**Current Plan:** —
-**Last Updated:** 2026-03-07T20:55:00Z
+**Phase:** 15 (API Ergonomics — Planned)  
+**Current Plan:** 15-01-PLAN.md
+**Last Updated:** 2026-03-07T21:40:00Z
 
 ## Project Reference
 
@@ -31,7 +31,7 @@
 | 12 | Viewport Caching | ✓ Complete | 3/3 | - |
 | 13 | Integration & Validation | ✓ Complete | 2/2 | - |
 | 14 | Refactoring and Cleanup | ✓ Complete | 6/6 | - |
-| 15 | API Ergonomics | ○ Not Started | 0/2 | - |
+| 15 | API Ergonomics | 📋 Planned | 2/2 | - |
 | 16 | Rendering Improvements | ○ Not Started | 0/2 | - |
 | 17 | Performance Fixes | ○ Not Started | 0/1 | - |
 | 18 | Code Organization | ○ Not Started | 0/2 | - |
@@ -169,14 +169,13 @@ All 11 previously pending todos have been formalized as v1.4.0 requirements. See
 - Quick Task 11 complete: 2/2 tasks done
 
 ### Next Actions
-1. **Phase 15: API Ergonomics** — `/gsd-discuss-phase 15` to gather context
-2. Create phase plans for API-01, API-02, API-03
-3. Execute Phase 15 plans to complete API ergonomics
-4. Continue with Phases 16-20 sequentially
+1. **Phase 15: API Ergonomics** — Execute plans 15-01 and 15-02
+2. Run `/gsd-start 15-01` to begin implementation
+3. Continue with Phases 16-20 sequentially
 
 ### v1.4.0 Developer Experience (In Progress)
 
-**Current:** Milestone initialized, requirements formalized, ready to plan Phase 15
+**Current:** Phase 15 planning complete (2/2 plans), ready for execution
 
 **Phases:**
 - Phase 15: API Ergonomics — API-01, API-02, API-03
@@ -208,13 +207,15 @@ All 11 previously pending todos have been formalized as v1.4.0 requirements. See
 | 14-04-SUMMARY.md | Final cleanup - zero TODOs, all tests pass | 2026-03-07 |
 | 14-05-SUMMARY.md | App.kt restored as canonical entry point | 2026-03-07 |
 | 14-06-SUMMARY.md | Feature iteration example moved to examples/render/ | 2026-03-07 |
+| 15-01-PLAN.md | Import structure reorganization and package migration | 2026-03-07 |
+| 15-02-PLAN.md | Streamlined API implementation (geoSource, loadGeo, examples) | 2026-03-07 |
 
 ### Session Continuity
 
-**Last Session:** 2026-03-07T21:31:56.941Z
-**Stopped At:** Phase 15 context gathered
-**Duration:** 5 minutes
-**Resume File:** .planning/phases/15-api-ergonomics-reduce-boilerplate/15-CONTEXT.md
+**Last Session:** 2026-03-07T21:41:25.133Z
+**Stopped At:** Phase 15 planned (2 plans, 2 waves)
+**Duration:** 10 minutes
+**Resume File:** .planning/phases/15-api-ergonomics-reduce-boilerplate/15-01-PLAN.md
 
 ---
 *State file for project continuity across sessions*

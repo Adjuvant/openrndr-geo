@@ -17,23 +17,23 @@
 
 ### Phase 15: API Ergonomics — Reduce Boilerplate
 
-**Status:** Not Started  
-**Plans:** 0/2  
+**Status:** Planned  
+**Plans:** 2/2  
 **Depends on:** Phase 14 (v1.3.0 completion)
 
 **Goal:** Reduce API boilerplate for the most common creative coding workflow: load data → create projection → render.
 
-**Requirements:** API-01, API-02, API-03, API-04
+**Requirements:** API-01, API-02, API-03
 
 **Success Criteria:**
 1. Single-import API works (`import geo.*`)
 2. Streamlined rendering workflow (3 lines or less)
 3. Conventions over configuration
-4. Backward compatible
+4. Hard break — no backward compatibility (all 26 examples updated)
 
 **Planned:**
-- [ ] `15-01-PLAN.md` — Import structure and wildcard exports
-- [ ] `15-02-PLAN.md` — Streamlined rendering API
+- [x] [`15-01-PLAN.md`](phases/15-api-ergonomics-reduce-boilerplate/15-01-PLAN.md) — Import structure reorganization and package migration
+- [x] [`15-02-PLAN.md`](phases/15-api-ergonomics-reduce-boilerplate/15-02-PLAN.md) — Streamlined API implementation (geoSource, loadGeo, updated examples)
 
 ---
 
@@ -99,7 +99,7 @@
 | Phase | Milestone | Plans | Status | Target |
 |-------|-----------|-------|--------|--------|
 | 11-14 | v1.3.0 | 13/13 | ✅ Complete | 2026-03-07 |
-| 15 | v1.4.0 | 0/2 | ⏳ Not Started | TBD |
+| 15 | v1.4.0 | 2/2 | 📋 Planned | TBD |
 | 16 | v1.4.0 | 0/2 | ⏳ Not Started | TBD |
 | 17 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
 | 18 | v1.4.0 | 0/2 | ⏳ Not Started | TBD |
