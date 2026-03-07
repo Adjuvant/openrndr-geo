@@ -22,7 +22,7 @@
 
 - [ ] **PERF-08**: Static camera scenarios show 10x+ improvement over v1.2.0 baseline
 - [ ] **PERF-09**: Performance validated with realistic datasets
-- [ ] **PERF-10**: All 16 v1.2.0 examples continue to work unchanged (regression test)
+- [x] **PERF-10**: All 16 v1.2.0 examples continue to work unchanged (regression test)
 
 ## v2+ Requirements (Deferred)
 
@@ -63,7 +63,7 @@
 | PERF-07 | Phase 12 | Complete |
 | PERF-08 | Phase 13 | Pending |
 | PERF-09 | Phase 13 | Pending |
-| PERF-10 | Phase 13 | Pending |
+| PERF-10 | Phase 13 | Complete |
 
 **Coverage:**
 - v1.3.0 requirements: 10 total
