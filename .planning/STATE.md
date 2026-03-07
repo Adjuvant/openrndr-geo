@@ -2,7 +2,7 @@
 
 **Current Milestone:** v1.4.0 Developer Experience  
 **Phase:** 15 (API Ergonomics — Complete)  
-**Current Plan:** 15-02-PLAN.md
+**Current Plan:** Not started
 **Last Updated:** 2026-03-07T22:55:00Z
 
 ## Project Reference

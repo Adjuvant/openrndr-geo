@@ -18,7 +18,7 @@
 ### Phase 15: API Ergonomics — Reduce Boilerplate
 
 **Status:** Planned  
-**Plans:** 2/2  
+**Plans:** 2/2 plans complete
 **Depends on:** Phase 14 (v1.3.0 completion)
 
 **Goal:** Reduce API boilerplate for the most common creative coding workflow: load data → create projection → render.
@@ -99,7 +99,7 @@
 | Phase | Milestone | Plans | Status | Target |
 |-------|-----------|-------|--------|--------|
 | 11-14 | v1.3.0 | 13/13 | ✅ Complete | 2026-03-07 |
-| 15 | v1.4.0 | 2/2 | 📋 Planned | TBD |
+| 15 | v1.4.0 | Complete    | 2026-03-07 | TBD |
 | 16 | v1.4.0 | 0/2 | ⏳ Not Started | TBD |
 | 17 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
 | 18 | v1.4.0 | 0/2 | ⏳ Not Started | TBD |

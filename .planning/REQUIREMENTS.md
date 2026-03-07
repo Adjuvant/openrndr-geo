@@ -9,9 +9,9 @@ Requirements for the Developer Experience milestone. Each requirement maps to a 
 
 ### API Ergonomics (Phase 15)
 
-- [ ] **API-01**: Single-import API — `import geo.*` gets everything needed for basic workflows
-- [ ] **API-02**: Reduced boilerplate — 3-line rendering workflow (load → project → render)
-- [ ] **API-03**: RawProjection UX improvements — better samples and documentation for advanced workflows
+- [x] **API-01**: Single-import API — `import geo.*` gets everything needed for basic workflows
+- [x] **API-02**: Reduced boilerplate — 3-line rendering workflow (load → project → render)
+- [x] **API-03**: RawProjection UX improvements — better samples and documentation for advanced workflows
 
 ### Rendering Improvements (Phase 16)
 
@@ -69,9 +69,9 @@ Features acknowledged but not in current milestone scope.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| API-01 | Phase 15 | Pending |
-| API-02 | Phase 15 | Pending |
-| API-03 | Phase 15 | Pending |
+| API-01 | Phase 15 | Complete |
+| API-02 | Phase 15 | Complete |
+| API-03 | Phase 15 | Complete |
 | RENDER-01 | Phase 16 | Pending |
 | RENDER-02 | Phase 16 | Pending |
 | PERF-11 | Phase 17 | Pending |
