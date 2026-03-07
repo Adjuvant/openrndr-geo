@@ -21,19 +21,19 @@ import geo.render.drawPolygon
 import org.openrndr.extra.color.presets.ORANGE
 
 /**
- * Basic Rendering Example
+ * Feature Iteration Example
  *
- * This example demonstrates the core geo rendering API by:
+ * This intermediate example demonstrates feature iteration and rendering by:
  * 1. Loading geo data from a GeoJSON file
  * 2. Creating a map projection for screen coordinates
- * 3. Rendering Point and LineString geometries with styling
+ * 3. Iterating through features and handling multiple geometry types
+ * 4. Rendering each geometry type with appropriate styling
  *
  * To run this example:
- * ./gradlew run --main=geo.examples.BasicRendering
+ * ./gradlew run --main=geo.examples.FeatureIteration
  *
- * The sample data (data/sample.geojson) contains:
- * - A Point feature representing a location
- * - A LineString feature representing a path
+ * The sample data (data/geo/coastline.geojson) contains:
+ * - Point, LineString, and Polygon features
  *
  * You can modify the Style properties to experiment with:
  * - Colors (fill, stroke)
@@ -81,7 +81,6 @@ fun main() = application {
             drawer.clear(ColorRGBa.WHITE)
 
             // Iterate through all features in the dataset
-            // TODO this isn't basic now, this is feature rendering, intermediate. Replace with dump geojson to screen.
             // Each feature has a geometry (Point, LineString, Polygon, etc.) and properties
             data.features.forEach { feature ->
                 val geometry = feature.geometry
