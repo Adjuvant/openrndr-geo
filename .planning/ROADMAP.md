@@ -8,12 +8,20 @@
 
 ## Phases
 
+### v1.3.0 Performance (Complete)
+
 - [x] **Phase 11: Batch Projection** - Transform coordinate arrays efficiently (2/2 plans complete)
 - [x] **Phase 12: Viewport Caching** - Simple cache with clear-on-change semantics (completed 2026-03-06)
 - [x] **Phase 13: Integration & Validation** - Verify all v1.2.0 examples work unchanged (completed 2026-03-07)
 - [x] **Phase 14: Refactoring and Cleanup** - Clear all TODOs and technical debt (6/6 plans complete - Phase finished)
 
+### v1.4.0 Developer Experience (Planned)
+
+- [ ] **Phase 15: API Ergonomics** - Reduce boilerplate for common rendering workflows
+
 ## Progress
+
+### v1.3.0 Performance
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -22,7 +30,13 @@
 | 13. Integration & Validation | 2/2 | Complete    | 2026-03-07 |
 | 14. Refactoring & Cleanup | 6/6 | Complete    | 2026-03-07 |
 
-**Coverage:** 10/10 v1.3.0 requirements mapped ✓
+**Coverage:** 14/14 requirements mapped ✓
+
+### v1.4.0 Developer Experience
+
+| Phase | Plans Complete | Status | Target |
+|-------|----------------|--------|--------|
+| 15. API Ergonomics | 0/2 | Not Started | TBD |
 
 ## Phase Details
 
@@ -99,6 +113,7 @@
 ## Dependency Graph
 
 ```
+v1.3.0 Performance:
 Phase 11: Batch Projection
     ↓
 Phase 12: Viewport Caching
@@ -106,6 +121,11 @@ Phase 12: Viewport Caching
 Phase 13: Integration & Validation
     ↓
 Phase 14: Refactoring & Cleanup
+
+v1.4.0 Developer Experience:
+Phase 15: API Ergonomics
+    ↓ (after v1.3.0 release)
+Phase 16+: [Future phases]
 ```
 
 ## Coverage Matrix
@@ -126,8 +146,12 @@ Phase 14: Refactoring & Cleanup
 | CLEANUP-02 | 14 | Code Refactoring |
 | CLEANUP-03 | 14 | API Improvements |
 | CLEANUP-04 | 14 | Final Verification |
+| API-01 | 15 | Import Structure |
+| API-02 | 15 | Streamlined Rendering |
+| API-03 | 15 | Conventions over Configuration |
+| API-04 | 15 | Backward Compatibility |
 
-**Coverage:** 14/14 requirements mapped ✓
+**Coverage:** 18/18 requirements mapped ✓
 
 ## Success Criteria Summary
 
@@ -137,6 +161,7 @@ Phase 14: Refactoring & Cleanup
 | 12 | 5 | Simple viewport-based caching |
 | 13 | 5 | Validation & regression testing |
 | 14 | 8 | Code cleanup & TODO resolution |
+| 15 | 6 | API ergonomics & boilerplate reduction |
 
 ## Notes
 
@@ -191,6 +216,54 @@ Creative coding use case differs from web applications:
 - Wave 3: Plan 14-03 (feature fixes - API promotion, renaming) ✓
 - Wave 4: Plan 14-04 (verification - final sweep, tests) ✓
 - **Gap Closure Wave**: Plans 14-05, 14-06 (UAT issue resolution) — Can run in parallel
+
+---
+
+### Phase 15: API Ergonomics — Reduce Boilerplate
+
+**Goal:** Reduce API boilerplate for the most common creative coding workflow: load data → create projection → render. Make the library more expressive and reduce friction for new users.
+
+**Depends on:** Phase 14 (v1.3.0 completion)
+
+**Requirements:** API-01, API-02, API-03, API-04
+
+**Success Criteria** (what must be TRUE):
+1. Single-import API works (`import geo.*` gets commonly needed classes)
+2. Streamlined rendering workflow with minimal setup code
+3. Conventions over configuration for common use cases
+4. Existing API remains backward compatible
+5. Examples demonstrate both minimal and full-control approaches
+6. Users can render data in 3 lines or less for simple cases
+
+**Source:** Todo 2026-02-25-reduce-rendering-boilerplate.md
+
+**Current vs Target API:**
+
+```kotlin
+// CURRENT (boilerplate-heavy):
+val data = geoSource("file.geojson")
+val projection = ProjectionFactory.fitBounds(data.totalBoundingBox(), width, height)
+drawer.geo(data) { this.projection = projection }
+
+// TARGET (minimal):
+geoSource("file.geojson").renderTo(drawer) // auto-fits to viewport
+```
+
+**Ideas to Explore:**
+- Wildcard export of commonly used classes
+- `GeoSource.renderTo()` convenience method with auto-projection
+- Simplified import structure (single data monolith)
+- Convention-based defaults for projection, styling, etc.
+- DSL improvements for common patterns
+
+**Plans:** 0/2 plans (To be planned)
+
+- [ ] `15-01-PLAN.md` — Import structure and wildcard exports
+- [ ] `15-02-PLAN.md` — Streamlined rendering API and conventions
+
+**Wave Structure:**
+- Wave 1: Plan 15-01 (import structure - foundation)
+- Wave 2: Plan 15-02 (rendering API - builds on imports)
 
 ---
 
