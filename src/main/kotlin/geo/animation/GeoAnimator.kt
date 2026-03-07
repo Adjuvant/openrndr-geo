@@ -111,7 +111,17 @@ class GeoAnimator : Animatable() {
         val duration: Long = 1000L
     )
 
-    // TODO Not sure animator should be a singleton, can only animate one thing?
+    /**
+     * Singleton instance ensuring single animation focus for creative coding workflows.
+     *
+     * The singleton pattern is intentional for this use case: creative coding typically
+     * involves one primary animation sequence at a time. Multiple concurrent animations
+     * can be composed using [geo.animation.composition.GeoTimeline] or by managing
+     * multiple properties on the single animator instance.
+     *
+     * This design avoids allocation overhead per frame and provides a global animation
+     * state that persists across the application lifecycle.
+     */
     companion object {
         /**
          * Singleton instance of GeoAnimator.
