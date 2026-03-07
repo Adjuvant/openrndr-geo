@@ -1,9 +1,9 @@
 # Project State: openrndr-geo
 
 **Current Milestone:** v1.4.0 Developer Experience  
-**Phase:** 15 (API Ergonomics — Planned)  
-**Current Plan:** 15-01-PLAN.md
-**Last Updated:** 2026-03-07T21:40:00Z
+**Phase:** 15 (API Ergonomics — Complete)  
+**Current Plan:** 15-02-PLAN.md
+**Last Updated:** 2026-03-07T22:55:00Z
 
 ## Project Reference
 
@@ -21,7 +21,7 @@
 | v1.1.0 API Improvements | ✓ Complete | 100% |
 | v1.2.0 API & Examples | ✓ Complete | 100% |
 | **v1.3.0 Performance** | ✓ Complete | 100% |
-| **v1.4.0 Developer Experience** | ◆ In Progress | 0% |
+| **v1.4.0 Developer Experience** | ◆ In Progress | 50% |
 
 ### Phase Status
 
@@ -31,7 +31,7 @@
 | 12 | Viewport Caching | ✓ Complete | 3/3 | - |
 | 13 | Integration & Validation | ✓ Complete | 2/2 | - |
 | 14 | Refactoring and Cleanup | ✓ Complete | 6/6 | - |
-| 15 | API Ergonomics | 📋 Planned | 2/2 | - |
+| 15 | API Ergonomics | ✓ Complete | 2/2 | - |
 | 16 | Rendering Improvements | ○ Not Started | 0/2 | - |
 | 17 | Performance Fixes | ○ Not Started | 0/1 | - |
 | 18 | Code Organization | ○ Not Started | 0/2 | - |
