@@ -1,8 +1,8 @@
 # Project State: openrndr-geo
 
 **Current Milestone:** v1.3.0 Performance  
-**Phase:** 13-integration-validation  
-**Current Plan:** Not started
+**Phase:** 14-refactoring-and-cleanup-clearing-todos  
+**Current Plan:** 01 (Complete)
 **Last Updated:** 2026-03-07
 
 ## Project Reference
@@ -20,7 +20,7 @@
 | v1.0.0 Foundation | ✓ Complete | 100% |
 | v1.1.0 API Improvements | ✓ Complete | 100% |
 | v1.2.0 API & Examples | ✓ Complete | 100% |
-| **v1.3.0 Performance** | 🔄 In Progress | 50% |
+| **v1.3.0 Performance** | ✓ Complete | 100% |
 | v1.4.0 Advanced Features | ⏳ Pending | 0% |
 
 ### Phase Status
@@ -29,7 +29,8 @@
 |-------|------|--------|-------|------------|
 | 11 | Batch Projection | ✓ Complete | 2/2 | - |
 | 12 | Viewport Caching | ✓ Complete | 3/3 | - |
-| 13 | Integration & Validation | 🔄 In Progress | 1/2 | - |
+| 13 | Integration & Validation | ✓ Complete | 2/2 | - |
+| 14 | Refactoring and Cleanup | 🔄 In Progress | 1/4 | - |
 
 ## Performance Metrics
 
@@ -81,6 +82,7 @@
 | Mercator-safe coordinate bounds | Avoid ±90° poles in synthetic data | ✓ Fixed |
 | Phase 13-integration-validation P01 | 25min | 3 tasks | 5 files | 1533x speedup achieved |
 | Phase 13-integration-validation P02 | 18min | 3 tasks | 3 files |
+| Phase 14-refactoring-and-cleanup-clearing-todos P01 | 5min | 2 tasks | 2 files |
 
 ### Active Requirements (v1.3.0)
 
@@ -108,7 +110,7 @@ None currently.
 
 - Phase 14 added: 14 refactoring and cleanup, clearing todos
 
-### Pending Todos (12 total)
+### Pending Todos (10 total)
 
 | Area | Count | Latest |
 |------|-------|--------|
@@ -117,7 +119,7 @@ None currently.
 | api | 3 | Fix filter comparison operators for property() |
 | docs | 1 | Fix README run commands and data paths |
 | layer | 1 | Graticule layer for zoomed-in maps |
-| tooling | 3 | Organize file contents for better code navigation |
+| tooling | 1 | Organize file contents for better code navigation |
 
 ### Quick Tasks Completed
 
@@ -129,16 +131,17 @@ None currently.
 
 ### Last Actions
 - ✅ Completed Plan 13-01: Performance benchmarks validating 10x+ improvement target
-- Created SyntheticDataGenerator for reproducible 10k-250k feature datasets
-- Created BaselineSimulator for v1.2.0 behavior comparison (per-point, no cache)
-- Created PerformanceBenchmark with comprehensive timing measurements
+- ✅ Completed Plan 13-02: Regression testing all 16 examples - all pass
+- ✅ Completed Plan 14-01: Entry point consolidation - deleted App.kt, cleaned TemplateProgram.kt
+- Resolved 2 TODOs from entry point files
+- CLEANUP-01 requirement satisfied
 - Results: 1533x average speedup (static), 343x average (pan) - far exceeding 10x target
-- PERF-08 and PERF-09 requirements satisfied
+- PERF-08 through PERF-10 requirements satisfied
 - All tests pass: `./gradlew test --tests "geo.performance.*"`
 
 ### Next Actions
-1. Continue Phase 13 Plan 02: Regression testing all 16 v1.2.0 examples
-2. Run examples to verify no rendering regressions
+1. Continue Phase 14 Plan 02: Next cleanup task
+2. Address remaining TODOs in GeoAnimator.kt, GeoSource.kt, examples
 3. Document v1.3.0 release notes with performance improvements
 
 ## Files
@@ -156,13 +159,15 @@ None currently.
 | 12-02-SUMMARY.md | Geometry dirty flag integration | 2026-03-06 |
 | 12-03-SUMMARY.md | ViewportCache integration and tests | 2026-03-06 |
 | 13-01-SUMMARY.md | Performance benchmarks - 1533x speedup achieved | 2026-03-07 |
+| 13-02-SUMMARY.md | Regression testing - all 16 examples pass | 2026-03-07 |
+| 14-01-SUMMARY.md | Entry point consolidation - App.kt deleted, TemplateProgram.kt cleaned | 2026-03-07 |
 
 ### Session Continuity
 
-**Last Session:** 2026-03-07T17:18:57.126Z
-**Stopped At:** Phase 14 context gathered
-**Duration:** 25 minutes
-**Resume File:** .planning/phases/14-14-refactoring-and-cleanup-clearing-todos/14-CONTEXT.md
+**Last Session:** 2026-03-07T17:35:00Z
+**Stopped At:** Completed 14-01-PLAN.md
+**Duration:** 5 minutes
+**Resume File:** .planning/phases/14-14-refactoring-and-cleanup-clearing-todos/14-02-PLAN.md
 
 ---
 *State file for project continuity across sessions*

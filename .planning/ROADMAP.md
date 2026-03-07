@@ -11,7 +11,7 @@
 - [x] **Phase 11: Batch Projection** - Transform coordinate arrays efficiently (2/2 plans complete)
 - [x] **Phase 12: Viewport Caching** - Simple cache with clear-on-change semantics (completed 2026-03-06)
 - [x] **Phase 13: Integration & Validation** - Verify all v1.2.0 examples work unchanged (completed 2026-03-07)
-- [ ] **Phase 14: Refactoring and Cleanup** - Clear all TODOs and technical debt (4 plans ready)
+- [~] **Phase 14: Refactoring and Cleanup** - Clear all TODOs and technical debt (1/4 plans complete)
 
 ## Progress
 
@@ -20,7 +20,7 @@
 | 11. Batch Projection | 2/2 | Complete    | 2026-03-05 |
 | 12. Viewport Caching | 3/3 | Complete   | 2026-03-06 |
 | 13. Integration & Validation | 2/2 | Complete    | 2026-03-07 |
-| 14. Refactoring & Cleanup | 0/4 | Planned     | — |
+| 14. Refactoring & Cleanup | 1/4 | In Progress | 2026-03-07 |
 
 **Coverage:** 10/10 v1.3.0 requirements mapped ✓
 
@@ -88,11 +88,11 @@
 **Plans:** 2/2 plans complete
 
 - [x] `13-01-PLAN.md` — Performance benchmarking infrastructure and tests (PERF-08, PERF-09) — Completed 2026-03-07
-- [ ] `13-02-PLAN.md` — Regression testing all 16 v1.2.0 examples (PERF-10)
+- [x] `13-02-PLAN.md` — Regression testing all 16 v1.2.0 examples (PERF-10) — Completed 2026-03-07
 
 **Wave Structure:**
-- Wave 1: Plan 13-01 (performance benchmarks - can run independently)
-- Wave 2: Plan 13-02 (regression tests - depends on benchmarks)
+- Wave 1: Plan 13-01 (performance benchmarks - can run independently) ✓
+- Wave 2: Plan 13-02 (regression tests - depends on benchmarks) ✓
 
 ---
 
@@ -178,13 +178,13 @@ Creative coding use case differs from web applications:
 
 **Plans:** 4 plans in 4 waves
 
-- [ ] `14-01-PLAN.md` — Directory structure: Resolve App.kt/TemplateProgram.kt redundancy (Wave 1)
+- [x] `14-01-PLAN.md` — Directory structure: Resolve App.kt/TemplateProgram.kt redundancy (Wave 1) — Completed 2026-03-07
 - [ ] `14-02-PLAN.md` — Method/code refactoring: GeoAnimator singleton & GeoSource padding (Wave 2)
 - [ ] `14-03-PLAN.md` — Feature fixes: Promote helper to API, fix example naming (Wave 3)
 - [ ] `14-04-PLAN.md` — AOB: Final TODO sweep, build/test verification (Wave 4)
 
 **Wave Structure:**
-- Wave 1: Plan 14-01 (structural changes - directory/entry points)
+- Wave 1: Plan 14-01 (structural changes - directory/entry points) ✓
 - Wave 2: Plan 14-02 (code refactoring - singleton & semantics)
 - Wave 3: Plan 14-03 (feature fixes - API promotion, renaming)
 - Wave 4: Plan 14-04 (verification - final sweep, tests)
