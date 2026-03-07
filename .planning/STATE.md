@@ -2,8 +2,8 @@
 
 **Current Milestone:** v1.3.0 Performance  
 **Phase:** 13-integration-validation  
-**Current Plan:** Not started
-**Last Updated:** 2026-03-06
+**Current Plan:** 01 (Complete)
+**Last Updated:** 2026-03-07
 
 ## Project Reference
 
@@ -20,7 +20,7 @@
 | v1.0.0 Foundation | ✓ Complete | 100% |
 | v1.1.0 API Improvements | ✓ Complete | 100% |
 | v1.2.0 API & Examples | ✓ Complete | 100% |
-| **v1.3.0 Performance** | 🔄 In Progress | 25% |
+| **v1.3.0 Performance** | 🔄 In Progress | 50% |
 | v1.4.0 Advanced Features | ⏳ Pending | 0% |
 
 ### Phase Status
@@ -29,7 +29,7 @@
 |-------|------|--------|-------|------------|
 | 11 | Batch Projection | ✓ Complete | 2/2 | - |
 | 12 | Viewport Caching | ✓ Complete | 3/3 | - |
-| 13 | Integration & Validation | ⏳ Pending | 0/2 | Phase 12 |
+| 13 | Integration & Validation | 🔄 In Progress | 1/2 | - |
 
 ## Performance Metrics
 
@@ -39,9 +39,15 @@
 - No geometry caching
 - 16 runnable examples working
 
+### Achieved Metrics (Phase 13-01 Benchmarks)
+- **Static camera:** 1533x average speedup (range: 30.96x - 4870.36x) ✓
+- **Pan operations:** 343x average speedup (range: 39.52x - 827.29x) ✓
+- **Test datasets:** Validated with 10k/50k/100k/250k features
+- **All benchmarks:** PASS - exceeding 10x target significantly
+
 ### Target Metrics (v1.3.0)
-- **Static camera:** 10x+ frame time improvement
-- **Pan operations:** Improvement from batch projection
+- **Static camera:** 10x+ frame time improvement ✓ EXCEEDED
+- **Pan operations:** Improvement from batch projection ✓ EXCEEDED
 - **Memory:** Simple size limit (clear-on-change, no LRU)
 - **Compatibility:** All 16 v1.2.0 examples work unchanged
 
@@ -71,6 +77,9 @@
 | Synthetic datasets for benchmarking | Consistent, controllable test data | ✓ Decided |
 | 8x-15x acceptable range | 10x ± variation based on dataset characteristics | ✓ Decided |
 | PerformanceBenchmark test class | Run via `./gradlew test` or standalone | ✓ Decided |
+| Materialized Lists for benchmarks | Allow multiple feature sequence consumptions | ✓ Implemented |
+| Mercator-safe coordinate bounds | Avoid ±90° poles in synthetic data | ✓ Fixed |
+| Phase 13-integration-validation P01 | 25min | 3 tasks | 5 files | 1533x speedup achieved |
 
 ### Active Requirements (v1.3.0)
 
@@ -97,15 +106,18 @@ None currently.
 ## Session Continuity
 
 ### Last Actions
-- ✅ Completed Plan 12-03: ViewportCache integration into GeoStack rendering pipeline
-- Integrated private viewportCache instance with renderWithCache() and projectGeometryToArray() helpers
-- Created 8 comprehensive unit tests covering cache storage, invalidation, limits, dirty flag, and transparency
-- Full test suite passes with no regressions
-- Public API unchanged (PERF-07 satisfied)
+- ✅ Completed Plan 13-01: Performance benchmarks validating 10x+ improvement target
+- Created SyntheticDataGenerator for reproducible 10k-250k feature datasets
+- Created BaselineSimulator for v1.2.0 behavior comparison (per-point, no cache)
+- Created PerformanceBenchmark with comprehensive timing measurements
+- Results: 1533x average speedup (static), 343x average (pan) - far exceeding 10x target
+- PERF-08 and PERF-09 requirements satisfied
+- All tests pass: `./gradlew test --tests "geo.performance.*"`
 
 ### Next Actions
-1. Start Phase 13: Integration & Validation (`/gsd-plan-phase 13`)
-2. Or review Phase 12 progress (`/gsd-verify-work 12`)
+1. Continue Phase 13 Plan 02: Regression testing all 16 v1.2.0 examples
+2. Run examples to verify no rendering regressions
+3. Document v1.3.0 release notes with performance improvements
 
 ## Files
 
@@ -121,13 +133,14 @@ None currently.
 | 12-01-SUMMARY.md | Viewport caching infrastructure | 2026-03-06 |
 | 12-02-SUMMARY.md | Geometry dirty flag integration | 2026-03-06 |
 | 12-03-SUMMARY.md | ViewportCache integration and tests | 2026-03-06 |
+| 13-01-SUMMARY.md | Performance benchmarks - 1533x speedup achieved | 2026-03-07 |
 
 ### Session Continuity
 
-**Last Session:** 2026-03-06T23:26:00.000Z
-**Stopped At:** Phase 13 context gathered
-**Duration:** 2 minutes
-**Resume File:** .planning/phases/13-integration-validation/13-CONTEXT.md
+**Last Session:** 2026-03-07T00:05:00.000Z
+**Stopped At:** Completed 13-01-PLAN.md
+**Duration:** 25 minutes
+**Resume File:** None
 
 ---
 *State file for project continuity across sessions*
