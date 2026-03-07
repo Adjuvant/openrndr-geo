@@ -104,7 +104,7 @@
 
 None currently.
 
-### Pending Todos (11 total)
+### Pending Todos (12 total)
 
 | Area | Count | Latest |
 |------|-------|--------|
@@ -113,7 +113,7 @@ None currently.
 | api | 3 | Fix filter comparison operators for property() |
 | docs | 1 | Fix README run commands and data paths |
 | layer | 1 | Graticule layer for zoomed-in maps |
-| tooling | 2 | Move geo root files to core subdirectory |
+| tooling | 3 | Organize file contents for better code navigation |
 
 ### Quick Tasks Completed
 
