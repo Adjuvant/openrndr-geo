@@ -2,8 +2,8 @@
 
 **Current Milestone:** v1.3.0 Performance  
 **Phase:** 14-refactoring-and-cleanup-clearing-todos  
-**Current Plan:** 14-05 complete
-**Last Updated:** 2026-03-07T19:20:00Z
+**Current Plan:** 14-06 complete
+**Last Updated:** 2026-03-07T19:25:00Z
 
 ## Project Reference
 
@@ -30,7 +30,7 @@
 | 11 | Batch Projection | ✓ Complete | 2/2 | - |
 | 12 | Viewport Caching | ✓ Complete | 3/3 | - |
 | 13 | Integration & Validation | ✓ Complete | 2/2 | - |
-| 14 | Refactoring and Cleanup | ✓ Complete | 5/5 | - |
+| 14 | Refactoring and Cleanup | ✓ Complete | 6/6 | - |
 
 ## Performance Metrics
 
@@ -89,6 +89,7 @@
 | GeoSource padding semantics | 0.9 is ratio (90% fill), not pixels - documented | ✓ Clarified |
 | Phase 14-refactoring-and-cleanup-clearing-todos P04 | 24min | 4 tasks | 1 file | Zero TODOs achieved |
 | Phase 14-refactoring-and-cleanup-clearing-todos P05 | 5min | 2 tasks | 1 file | App.kt restored as canonical entry point
+| Phase 14-refactoring-and-cleanup-clearing-todos P06 | 5min | 3 tasks | 2 files |
 
 ### Active Requirements (v1.3.0)
 
@@ -144,9 +145,16 @@ None currently.
 - Gap from UAT.md Test 4 resolved - App.kt restored per user expectation
 - CLEANUP-01 requirement satisfied
 - Phase 14 complete: 5/5 plans done
+- ✅ Completed Plan 14-06: Move render_FeatureIteration.kt to examples/render/
+- Moved file from src/main/kotlin/geo/examples/ to examples/render/08-feature-iteration.kt
+- Updated package declaration, data path, and header format
+- Build verification: `./gradlew compileKotlin` passes
+- Gap from UAT.md Test 6 resolved - example follows numbered naming convention
+- CLEANUP-03 requirement satisfied
+- Phase 14 complete: 6/6 plans done
 
 ### Next Actions
-1. Phase 14 complete with 5/5 plans - ready for v1.3.0 milestone completion
+1. Phase 14 complete with 6/6 plans - ready for v1.3.0 milestone completion
 2. Prepare v1.3.0 release notes with performance improvements
 3. Update ROADMAP.md and MILESTONES.md for v1.3.0 completion
 4. Tag v1.3.0 release
@@ -172,11 +180,12 @@ None currently.
 | 14-03-SUMMARY.md | Promote helper to API and fix example naming | 2026-03-07 |
 | 14-04-SUMMARY.md | Final cleanup - zero TODOs, all tests pass | 2026-03-07 |
 | 14-05-SUMMARY.md | App.kt restored as canonical entry point | 2026-03-07 |
+| 14-06-SUMMARY.md | Feature iteration example moved to examples/render/ | 2026-03-07 |
 
 ### Session Continuity
 
-**Last Session:** 2026-03-07T19:20:00Z
-**Stopped At:** Completed 14-05-PLAN.md
+**Last Session:** 2026-03-07T19:25:00Z
+**Stopped At:** Completed 14-06-PLAN.md
 **Duration:** 5 minutes
 **Resume File:** None
 
