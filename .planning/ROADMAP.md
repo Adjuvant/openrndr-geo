@@ -18,6 +18,10 @@
 ### v1.4.0 Developer Experience (Planned)
 
 - [ ] **Phase 15: API Ergonomics** - Reduce boilerplate for common rendering workflows
+- [ ] **Phase 16: Rendering Improvements** - Fix MultiPolygon and polygon ring handling
+- [ ] **Phase 17: Performance Fixes** - ViewportCache integration for optimized rendering
+- [ ] **Phase 18: Code Organization** - File structure and navigation improvements
+- [ ] **Phase 19: Documentation Fixes** - README corrections and updates
 
 ## Progress
 
@@ -37,6 +41,10 @@
 | Phase | Plans Complete | Status | Target |
 |-------|----------------|--------|--------|
 | 15. API Ergonomics | 0/2 | Not Started | TBD |
+| 16. Rendering Improvements | 0/2 | Not Started | TBD |
+| 17. Performance Fixes | 0/1 | Not Started | TBD |
+| 18. Code Organization | 0/2 | Not Started | TBD |
+| 19. Documentation Fixes | 0/1 | Not Started | TBD |
 
 ## Phase Details
 
@@ -123,9 +131,16 @@ Phase 13: Integration & Validation
 Phase 14: Refactoring & Cleanup
 
 v1.4.0 Developer Experience:
-Phase 15: API Ergonomics
-    ↓ (after v1.3.0 release)
-Phase 16+: [Future phases]
+                    ↓ (after v1.3.0 release)
+        ┌───────────────────────────────┐
+        │                               │
+Phase 15: API Ergonomics      Phase 16: Rendering
+        │                               │
+Phase 17: Performance Fixes     Phase 20: Layer Features
+        │
+Phase 18: Code Organization
+        │
+Phase 19: Documentation
 ```
 
 ## Coverage Matrix
@@ -150,8 +165,16 @@ Phase 16+: [Future phases]
 | API-02 | 15 | Streamlined Rendering |
 | API-03 | 15 | Conventions over Configuration |
 | API-04 | 15 | Backward Compatibility |
+| RENDER-01 | 16 | MultiPolygon Handling |
+| RENDER-02 | 16 | Polygon Ring Handling |
+| PERF-11 | 17 | OptimizedGeoSource Cache |
+| ORG-01 | 18 | Example Cleanup |
+| ORG-02 | 18 | Directory Structure |
+| ORG-03 | 18 | File Organization |
+| DOCS-01 | 19 | README Corrections |
+| LAYER-01 | 20 | Graticule Improvements |
 
-**Coverage:** 18/18 requirements mapped ✓
+**Coverage:** 29/29 requirements mapped ✓
 
 ## Success Criteria Summary
 
@@ -162,6 +185,11 @@ Phase 16+: [Future phases]
 | 13 | 5 | Validation & regression testing |
 | 14 | 8 | Code cleanup & TODO resolution |
 | 15 | 6 | API ergonomics & boilerplate reduction |
+| 16 | 4 | MultiPolygon & polygon ring fixes |
+| 17 | 4 | OptimizedGeoSource performance |
+| 18 | 5 | Code organization & structure |
+| 19 | 3 | Documentation corrections |
+| 20 | 4 | Graticule layer enhancements |
 
 ## Notes
 
@@ -264,6 +292,123 @@ geoSource("file.geojson").renderTo(drawer) // auto-fits to viewport
 **Wave Structure:**
 - Wave 1: Plan 15-01 (import structure - foundation)
 - Wave 2: Plan 15-02 (rendering API - builds on imports)
+
+---
+
+### Phase 16: Rendering Improvements
+
+**Goal:** Fix MultiPolygon rendering for ocean/whole-world data and improve polygon interior/exterior ring handling.
+
+**Depends on:** Phase 14 (v1.3.0 completion)
+
+**Requirements:** RENDER-01, RENDER-02
+
+**Success Criteria** (what must be TRUE):
+1. MultiPolygon features spanning projection limits render correctly
+2. Polygon interior rings (holes) handled properly
+3. Ocean data (oceans.geojson) renders without artifacts
+4. Winding order and ring classification work correctly
+
+**Source:** Todos 2026-02-25-fix-multipolygon-ocean-data.md, 2026-02-26-improve-polygon-interior-exterior-ring-handling.md
+
+**Plans:** 0/2 plans (To be planned)
+
+- [ ] `16-01-PLAN.md` — MultiPolygon projection limit handling
+- [ ] `16-02-PLAN.md` — Polygon ring handling with OpenRNDR shapes
+
+---
+
+### Phase 17: Performance Fixes
+
+**Goal:** Extend ViewportCache to OptimizedGeoSource rendering path.
+
+**Depends on:** Phase 12 (Viewport Caching), Phase 14 (v1.3.0 completion)
+
+**Requirements:** PERF-11
+
+**Success Criteria** (what must be TRUE):
+1. OptimizedGeoSource uses ViewportCache for screen coordinates
+2. Examples with `optimize=true` achieve 60+ FPS
+3. Batch projection benefits available for optimized geometries
+4. No performance regression for standard rendering path
+
+**Source:** Todo 2026-03-07-extend-viewportcache-to-optimizedgeosource-rendering.md
+
+**Critical:** This fixes a gap where optimized rendering bypasses all Phase 11-12 performance work.
+
+**Plans:** 0/1 plans (To be planned)
+
+- [ ] `17-01-PLAN.md` — Integrate ViewportCache with OptimizedGeoSource
+
+---
+
+### Phase 18: Code Organization
+
+**Goal:** Improve project structure through file organization and cleanup.
+
+**Depends on:** Phase 14 (v1.3.0 completion)
+
+**Requirements:** ORG-01, ORG-02, ORG-03
+
+**Success Criteria** (what must be TRUE):
+1. Necro example files cleaned up (src/main/kotlin/geo/examples/)
+2. Core domain files organized in geo/core/ subdirectory
+3. File contents follow consistent organization patterns
+4. No functionality changes (pure refactoring)
+
+**Source:** Todos 2026-03-07-clean-up-necro-examples.md, 2026-03-07-move-geo-root-files.md, 2026-03-07-organize-file-contents.md
+
+**Plans:** 0/2 plans (To be planned)
+
+- [ ] `18-01-PLAN.md` — Clean up necro examples and directory structure
+- [ ] `18-02-PLAN.md` — Reorganize file contents for navigation
+
+---
+
+### Phase 19: Documentation Fixes
+
+**Goal:** Fix README run commands and data paths.
+
+**Depends on:** Phase 14 (v1.3.0 completion)
+
+**Requirements:** DOCS-01
+
+**Success Criteria** (what must be TRUE):
+1. Run commands in README files use correct class names (no "Kt" suffix)
+2. Data paths reference correct locations (examples/data/geo/)
+3. Users can copy-paste commands without modification
+
+**Source:** Todo 2026-02-27-fix-readme-run-commands-and-data-paths.md
+
+**Quick Fix:** No research needed, can be quick task or short phase.
+
+**Plans:** 0/1 plans (To be planned)
+
+- [ ] `19-01-PLAN.md` — README corrections
+
+---
+
+### Phase 20: Layer Features
+
+**Goal:** Fix and enhance graticule layer for zoomed-in maps.
+
+**Depends on:** Phase 14 (v1.3.0 completion)
+
+**Requirements:** LAYER-01
+
+**Success Criteria** (what must be TRUE):
+1. Graticule layer works for local/regional (non-global) views
+2. Variable graticule density based on zoom level
+3. Viewport-based graticule generation (only visible area)
+4. Configurable interval parameters
+
+**Source:** Todo 2026-02-27-graticule-layer-for-zoomed-in-maps.md
+
+**Note:** Requires research on how other libraries handle graticules for zoomed-in views.
+
+**Plans:** 0/1 plans (To be planned)
+
+- [ ] `20-01-PLAN.md` — Graticule layer improvements
 
 ---
 
