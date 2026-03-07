@@ -4,13 +4,14 @@
 **Goal:** Optimize rendering performance through batch projection and simple viewport caching.  
 **Target:** 10x+ improvement for static camera scenarios.  
 **Achieved:** 1533x average speedup (Phase 13-01)  
-**Last Updated:** 2026-03-07 (Phase 13-01 complete)
+**Last Updated:** 2026-03-07 (Phase 14 planned)
 
 ## Phases
 
 - [x] **Phase 11: Batch Projection** - Transform coordinate arrays efficiently (2/2 plans complete)
 - [x] **Phase 12: Viewport Caching** - Simple cache with clear-on-change semantics (completed 2026-03-06)
 - [x] **Phase 13: Integration & Validation** - Verify all v1.2.0 examples work unchanged (completed 2026-03-07)
+- [ ] **Phase 14: Refactoring and Cleanup** - Clear all TODOs and technical debt (4 plans ready)
 
 ## Progress
 
@@ -19,6 +20,7 @@
 | 11. Batch Projection | 2/2 | Complete    | 2026-03-05 |
 | 12. Viewport Caching | 3/3 | Complete   | 2026-03-06 |
 | 13. Integration & Validation | 2/2 | Complete    | 2026-03-07 |
+| 14. Refactoring & Cleanup | 0/4 | Planned     | — |
 
 **Coverage:** 10/10 v1.3.0 requirements mapped ✓
 
@@ -102,6 +104,8 @@ Phase 11: Batch Projection
 Phase 12: Viewport Caching
     ↓
 Phase 13: Integration & Validation
+    ↓
+Phase 14: Refactoring & Cleanup
 ```
 
 ## Coverage Matrix
@@ -118,8 +122,12 @@ Phase 13: Integration & Validation
 | PERF-08 | 13 | Measurement |
 | PERF-09 | 13 | Measurement |
 | PERF-10 | 13 | Validation |
+| CLEANUP-01 | 14 | Entry Point Cleanup |
+| CLEANUP-02 | 14 | Code Refactoring |
+| CLEANUP-03 | 14 | API Improvements |
+| CLEANUP-04 | 14 | Final Verification |
 
-**Coverage:** 10/10 v1.3.0 requirements mapped ✓
+**Coverage:** 14/14 requirements mapped ✓
 
 ## Success Criteria Summary
 
@@ -128,6 +136,7 @@ Phase 13: Integration & Validation
 | 11 | 5 | Batch transformation infrastructure |
 | 12 | 5 | Simple viewport-based caching |
 | 13 | 5 | Validation & regression testing |
+| 14 | 8 | Code cleanup & TODO resolution |
 
 ## Notes
 
@@ -148,6 +157,39 @@ Creative coding use case differs from web applications:
 - When camera moves, **everything** becomes stale (not LRU-worthy)
 - Simple clear-on-change is sufficient and more predictable
 - Bounded by "one viewport worth of data" — no complex eviction needed
+
+### Phase 14: Refactoring and Cleanup, Clearing TODOs
+
+**Goal:** Address all accumulated TODOs, FIXMEs, and technical debt in the codebase following v1.3.0 performance work. Clean up code hygiene through systematic refactoring in a sensible order.
+
+**Depends on:** Phase 13
+
+**Requirements:** CLEANUP-01, CLEANUP-02, CLEANUP-03, CLEANUP-04
+
+**Success Criteria** (what must be TRUE):
+1. Zero TODOs remain in the entire Kotlin codebase
+2. App.kt and TemplateProgram.kt redundancy resolved
+3. GeoAnimator singleton design decision documented
+4. GeoSource padding semantics clarified
+5. drawDataQuadrant helper promoted to public API
+6. render_BasicRendering.kt renamed to reflect actual content
+7. Build passes with no errors
+8. All tests pass
+
+**Plans:** 4 plans in 4 waves
+
+- [ ] `14-01-PLAN.md` — Directory structure: Resolve App.kt/TemplateProgram.kt redundancy (Wave 1)
+- [ ] `14-02-PLAN.md` — Method/code refactoring: GeoAnimator singleton & GeoSource padding (Wave 2)
+- [ ] `14-03-PLAN.md` — Feature fixes: Promote helper to API, fix example naming (Wave 3)
+- [ ] `14-04-PLAN.md` — AOB: Final TODO sweep, build/test verification (Wave 4)
+
+**Wave Structure:**
+- Wave 1: Plan 14-01 (structural changes - directory/entry points)
+- Wave 2: Plan 14-02 (code refactoring - singleton & semantics)
+- Wave 3: Plan 14-03 (feature fixes - API promotion, renaming)
+- Wave 4: Plan 14-04 (verification - final sweep, tests)
+
+---
 
 ---
 *Created: 2026-03-05 for v1.3.0 Performance milestone*
