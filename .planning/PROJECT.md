@@ -10,13 +10,19 @@ An expressive, well-architected API that makes exploring intersections of geo da
 
 ## Current Milestone: v1.4.0 Developer Experience
 
+**Status:** In Progress  
+**Started:** 2026-03-07  
 **Goal:** Improve API ergonomics, fix rendering edge cases, and enhance developer workflow.
 
 **Target features:**
-- Single-import API (`import geo.*`)
-- Reduced boilerplate for common workflows
-- Fixed MultiPolygon and graticule rendering
-- Better code organization and documentation
+- Single-import API (`import geo.*`) — 3-line workflow from data to render
+- Reduced boilerplate for common creative coding patterns
+- Fixed MultiPolygon rendering for ocean/whole-world data
+- Improved polygon interior/exterior ring handling
+- ViewportCache integration for OptimizedGeoSource
+- Better code organization (core/ subdirectory)
+- Documentation fixes (README corrections)
+- Graticule layer improvements for zoomed-in maps
 
 ## Requirements
 
@@ -62,15 +68,18 @@ An expressive, well-architected API that makes exploring intersections of geo da
 
 ### Active
 
-**v1.4.0 Focus (Developer Experience):**
-- [ ] Single-import API — `import geo.*` gets everything needed (API-01)
-- [ ] Reduced boilerplate — 3-line rendering workflow (API-02)
-- [ ] MultiPolygon rendering fixes — ocean/whole-world data (RENDER-01)
-- [ ] Polygon ring handling — proper interior/exterior support (RENDER-02)
-- [ ] OptimizedGeoSource caching — extend ViewportCache (PERF-11)
-- [ ] Code organization — core/ subdirectory (ORG-02)
-- [ ] Documentation fixes — README corrections (DOCS-01)
-- [ ] Graticule improvements — zoomed-in map support (LAYER-01)
+**v1.4.0 Developer Experience:**
+- [ ] **API-01:** Single-import API — `import geo.*` gets everything needed
+- [ ] **API-02:** Reduced boilerplate — 3-line rendering workflow
+- [ ] **API-03:** RawProjection UX improvements for advanced workflows
+- [ ] **RENDER-01:** MultiPolygon rendering fixes for ocean/whole-world data
+- [ ] **RENDER-02:** Polygon ring handling — proper interior/exterior support
+- [ ] **PERF-11:** OptimizedGeoSource caching — extend ViewportCache
+- [ ] **ORG-01:** Clean up necro examples from src/main/kotlin/geo/examples
+- [ ] **ORG-02:** Move geo root files to core/ subdirectory
+- [ ] **ORG-03:** Organize file contents for better code navigation
+- [ ] **DOCS-01:** Fix README run commands and data paths
+- [ ] **LAYER-01:** Graticule improvements for zoomed-in maps
 
 **Deferred:**
 - [ ] Clip geometries at projection bounds (vs current clamp) (ADV-01)
@@ -166,4 +175,4 @@ An expressive, well-architected API that makes exploring intersections of geo da
 | Two canonical entry points | Minimal vs comprehensive workflows | ✓ Shipped in v1.3.0 — App.kt and TemplateProgram.kt |
 
 ---
-*Last updated: 2026-03-07 after completing v1.3.0 Performance milestone*
+*Last updated: 2026-03-07 after starting v1.4.0 Developer Experience milestone*

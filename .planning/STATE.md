@@ -1,9 +1,9 @@
 # Project State: openrndr-geo
 
-**Current Milestone:** v1.3.0 Performance  
-**Phase:** 14-refactoring-and-cleanup-clearing-todos  
-**Current Plan:** 14-06 complete
-**Last Updated:** 2026-03-07T19:25:00Z
+**Current Milestone:** v1.4.0 Developer Experience  
+**Phase:** Not started (defining requirements)  
+**Current Plan:** —
+**Last Updated:** 2026-03-07T20:55:00Z
 
 ## Project Reference
 
@@ -21,7 +21,7 @@
 | v1.1.0 API Improvements | ✓ Complete | 100% |
 | v1.2.0 API & Examples | ✓ Complete | 100% |
 | **v1.3.0 Performance** | ✓ Complete | 100% |
-| v1.4.0 Advanced Features | ⏳ Pending | 0% |
+| **v1.4.0 Developer Experience** | ◆ In Progress | 0% |
 
 ### Phase Status
 
@@ -31,6 +31,12 @@
 | 12 | Viewport Caching | ✓ Complete | 3/3 | - |
 | 13 | Integration & Validation | ✓ Complete | 2/2 | - |
 | 14 | Refactoring and Cleanup | ✓ Complete | 6/6 | - |
+| 15 | API Ergonomics | ○ Not Started | 0/2 | - |
+| 16 | Rendering Improvements | ○ Not Started | 0/2 | - |
+| 17 | Performance Fixes | ○ Not Started | 0/1 | - |
+| 18 | Code Organization | ○ Not Started | 0/2 | - |
+| 19 | Documentation Fixes | ○ Not Started | 0/1 | - |
+| 20 | Layer Features | ○ Not Started | 0/1 | - |
 
 ## Performance Metrics
 
@@ -91,23 +97,30 @@
 | Phase 14-refactoring-and-cleanup-clearing-todos P05 | 5min | 2 tasks | 1 file | App.kt restored as canonical entry point
 | Phase 14-refactoring-and-cleanup-clearing-todos P06 | 5min | 3 tasks | 2 files |
 
-### Active Requirements (v1.3.0)
+### Active Requirements (v1.4.0)
 
-**Phase 11 — Batch Projection:**
-- PERF-01: Batch-transform coordinate arrays
-- PERF-02: Rendering pipeline uses batch projection
-- PERF-03: Preserve existing API contracts
+**Phase 15 — API Ergonomics:**
+- API-01: Single-import API (`import geo.*`)
+- API-02: Reduced boilerplate for 3-line workflow
+- API-03: RawProjection UX improvements
 
-**Phase 12 — Viewport Caching:**
-- PERF-04: Cache projected geometries for viewport
-- PERF-05: Clear cache on viewport change
-- PERF-06: Simple size limit (not LRU)
-- PERF-07: Transparent to existing code
+**Phase 16 — Rendering Improvements:**
+- RENDER-01: MultiPolygon rendering for ocean/whole-world data
+- RENDER-02: Polygon interior/exterior ring handling
 
-**Phase 13 — Integration & Validation:**
-- PERF-08: 10x+ improvement for static camera
-- PERF-09: Performance validated with datasets
-- PERF-10: All 16 v1.2.0 examples work unchanged
+**Phase 17 — Performance Fixes:**
+- PERF-11: ViewportCache for OptimizedGeoSource
+
+**Phase 18 — Code Organization:**
+- ORG-01: Clean up necro examples
+- ORG-02: Move geo root files to core/
+- ORG-03: Organize file contents
+
+**Phase 19 — Documentation Fixes:**
+- DOCS-01: Fix README run commands and data paths
+
+**Phase 20 — Layer Features:**
+- LAYER-01: Graticule layer for zoomed-in maps
 
 ### Known Blockers
 
@@ -118,18 +131,18 @@ None currently.
 - Phase 14 added: 14 refactoring and cleanup, clearing todos
 - Phases 15-20 added: v1.4.0 Developer Experience milestone covering all 11 pending todos
 
-### Pending Todos (11 total - All Scheduled for v1.4.0)
+### Pending Todos (0 active - All Formalized as Requirements)
 
-| Area | Count | Latest | Roadmap Phase |
-|------|-------|--------|---------------|
-| tooling | 3 | 2026-03-07 | Phase 18 (Code Organization) |
-| api | 3 | 2026-03-07 | Phase 15 (API Ergonomics) |
-| rendering | 2 | 2026-03-07 | Phase 16 (Rendering Improvements) |
-| performance | 1 | 2026-02-25 | Phase 17 (Performance Fixes) |
-| layer | 1 | 2026-02-27 | Phase 20 (Layer Features) |
-| docs | 1 | 2026-02-27 | Phase 19 (Documentation Fixes) |
+All 11 previously pending todos have been formalized as v1.4.0 requirements. See REQUIREMENTS.md for details.
 
-**All todos now have roadmap_phase assigned** — See ROADMAP.md Phases 15-20
+| Area | Count | Phase |
+|------|-------|-------|
+| api | 3 | Phase 15 (API Ergonomics) |
+| rendering | 2 | Phase 16 (Rendering Improvements) |
+| performance | 1 | Phase 17 (Performance Fixes) |
+| tooling | 3 | Phase 18 (Code Organization) |
+| docs | 1 | Phase 19 (Documentation Fixes) |
+| layer | 1 | Phase 20 (Layer Features) |
 
 ### Quick Tasks Completed
 
@@ -141,13 +154,11 @@ None currently.
 ## Session Continuity
 
 ### Last Actions
-- ✅ Completed v1.3.0 Milestone Audit — all 10 requirements satisfied
-- ✅ Created v1.3.0-MILESTONE-AUDIT.md with comprehensive cross-phase verification
-- ✅ Verified 1533x speedup achievement (target: 10x+) across all performance requirements
-- ✅ Confirmed all 8 phases complete with integration wiring verified
-- ✅ Updated REQUIREMENTS.md — PERF-08 and PERF-09 marked complete
-- ✅ Identified 2 minor documentation items as tech debt for v1.4.0 Phase 19
-- ✅ Milestone status: PASSED — ready for release
+- ✅ Started v1.4.0 Developer Experience milestone
+- ✅ Updated PROJECT.md with current milestone goals and target features
+- ✅ Updated STATE.md for new milestone (phases 15-20 initialized)
+- ✅ Formalized 11 pending todos as v1.4.0 requirements
+- ✅ Created REQUIREMENTS.md with REQ-IDs for all 11 requirements
 
 ### Previous Actions
 - ✅ Completed Quick Task 11: Mark batch screen space projection todo as done
@@ -158,18 +169,22 @@ None currently.
 - Quick Task 11 complete: 2/2 tasks done
 
 ### Next Actions
-1. **Complete v1.3.0 milestone** — run `/gsd-complete-milestone v1.3.0`
-2. Create v1.3.0 git tag for release
-3. Update MILESTONES.md with v1.3.0 completion summary
-4. Begin v1.4.0 planning when ready — Phase 15 (API Ergonomics) has 3 todos scheduled
+1. **Phase 15: API Ergonomics** — `/gsd-discuss-phase 15` to gather context
+2. Create phase plans for API-01, API-02, API-03
+3. Execute Phase 15 plans to complete API ergonomics
+4. Continue with Phases 16-20 sequentially
 
-### v1.4.0 Developer Experience (Planned)
-- Phase 15: API Ergonomics — reduce boilerplate (3 todos)
-- Phase 16: Rendering Improvements — MultiPolygon fixes (2 todos)
-- Phase 17: Performance Fixes — OptimizedGeoSource cache (1 todo)
-- Phase 18: Code Organization — file structure (3 todos)
-- Phase 19: Documentation Fixes — README corrections (1 todo)
-- Phase 20: Layer Features — graticule improvements (1 todo)
+### v1.4.0 Developer Experience (In Progress)
+
+**Current:** Milestone initialized, requirements formalized, ready to plan Phase 15
+
+**Phases:**
+- Phase 15: API Ergonomics — API-01, API-02, API-03
+- Phase 16: Rendering Improvements — RENDER-01, RENDER-02
+- Phase 17: Performance Fixes — PERF-11
+- Phase 18: Code Organization — ORG-01, ORG-02, ORG-03
+- Phase 19: Documentation Fixes — DOCS-01
+- Phase 20: Layer Features — LAYER-01
 
 ## Files
 
