@@ -104,6 +104,16 @@
 
 None currently.
 
+### Pending Todos (9 total)
+
+| Area | Count | Latest |
+|------|-------|--------|
+| performance | 2 | Extend ViewportCache to OptimizedGeoSource rendering |
+| rendering | 2 | Improve polygon interior/exterior ring handling |
+| api | 3 | Fix filter comparison operators for property() |
+| docs | 1 | Fix README run commands and data paths |
+| layer | 1 | Graticule layer for zoomed-in maps |
+
 ### Quick Tasks Completed
 
 | # | Description | Date | Commit | Directory |
