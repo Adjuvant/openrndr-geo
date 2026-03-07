@@ -38,14 +38,14 @@ fun main() = application {
             // Clear with white background
             drawer.clear(ColorRGBa.WHITE)
 
-            // Draw points with inline style DSL
-            drawer.geo(data, projection) {
-                fill = ColorRGBa.ORANGE
-                stroke = ColorRGBa.DODGER_BLUE
-                strokeWeight = 1.0
-                size = 8.0
-                shape = Shape.Circle
-            }
+            // Draw points with inline style DSL - use explicit Style.Builder
+            drawer.geo(data, projection, block = {
+                this.fill = ColorRGBa.ORANGE
+                this.stroke = ColorRGBa.DODGER_BLUE
+                this.strokeWeight = 1.0
+                this.size = 8.0
+                this.shape = Shape.Circle
+            })
         }
     }
 }

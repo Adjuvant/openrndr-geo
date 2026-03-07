@@ -8,17 +8,18 @@ import org.openrndr.draw.loadFont
 import geo.*
 import geo.animation.*
 import geo.render.*
+import geo.projection.*
 
 /**
  * ## 06 - LineString Color Animation
  *
  * Demonstrates animating LineString colors based on feature properties
- * using the streamlined API with inline style DSL.
+ * using the streamlined API.
  *
  * ### Concepts
  * - Property-based styling with animation
  * - Three-line workflow
- * - Inline style DSL with dynamic values
+ * - GeoRenderConfig for advanced styling
  * - Color interpolation with mix()
  *
  * ### To Run
@@ -60,15 +61,15 @@ fun main() = application {
 
             val currentColor = mix(startColor, endColor, animator.progress)
 
-            // Draw with styleByFeature in config block
-            drawer.geo(data) {
+            // Draw using explicit GeoRenderConfig block to avoid overload ambiguity
+            drawer.geo(data, block = fun GeoRenderConfig.() {
                 this.projection = projection
                 styleByFeature = { feature: Feature ->
                     val v = feature.doubleProperty("property_value") ?: minValue
                     val t = if (range > 0.0) (v - minValue) / range else 0.0
                     Style(stroke = currentColor, strokeWeight = 0.05 + t * 0.45)
                 }
-            }
+            })
 
             drawer.fontMap = font
             drawer.fill = ColorRGBa.WHITE

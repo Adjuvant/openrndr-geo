@@ -367,18 +367,6 @@ fun Drawer.geo(source: GeoSource, projection: GeoProjection? = null, block: Styl
 }
 
 /**
- * Draw a CachedGeoSource with inline style DSL.
- *
- * @param source The CachedGeoSource to render
- * @param projection Optional projection (null = auto-fit)
- * @param block Style configuration block
- */
-fun Drawer.geo(source: CachedGeoSource, projection: GeoProjection? = null, block: Style.() -> Unit) {
-    // Delegate to the main GeoSource version
-    this.geo(source as GeoSource, projection, block)
-}
-
-/**
  * Apply default values to style properties that weren't set.
  *
  * Defaults:

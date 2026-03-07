@@ -5,7 +5,8 @@ import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.math.Vector2
 import org.openrndr.animatable.easing.Easing
-import geo.animation.*
+import geo.animation.GeoAnimator
+import geo.animation.composition.animate
 
 /**
  * ## 05 - Chain Animations

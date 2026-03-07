@@ -66,10 +66,10 @@ class CachedGeoSource(
     override fun countFeatures(): Long = delegate.countFeatures()
 
     /**
-     * Returns true if this source contains no features.
-     * Delegates to the underlying source.
+     * Check if empty - delegates to underlying source.
+     * Note: isEmpty() is final in GeoSource, use this method instead.
      */
-    override fun isEmpty(): Boolean = delegate.isEmpty()
+    fun checkEmpty(): Boolean = delegate.features.none()
 
     /**
      * Clear the viewport cache to free memory.
@@ -87,7 +87,7 @@ class CachedGeoSource(
      * Get the current cache size (number of cached geometries).
      * Useful for debugging and monitoring memory usage.
      */
-    fun cacheSize(): Int = viewportCache.size()
+    fun cacheSize(): Int = viewportCache.size
 
     /**
      * Internal access to the viewport cache for drawer.geo() integration.

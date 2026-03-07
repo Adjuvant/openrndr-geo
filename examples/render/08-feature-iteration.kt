@@ -3,34 +3,23 @@ package examples.render
 
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import geo.GeoJSON
-import geo.Point
-import geo.LineString
-import geo.MultiLineString
-import geo.MultiPoint
-import geo.MultiPolygon
-import geo.Polygon
-import geo.render.Style
-import geo.render.Shape
-import geo.render.drawPoint
-import geo.projection.ProjectionFactory
-import geo.render.drawLineString
-import geo.render.drawMultiLineString
-import geo.render.drawMultiPoint
-import geo.render.drawMultiPolygon
-import geo.render.drawPolygon
-import org.openrndr.extra.color.presets.ORANGE
+import org.openrndr.extra.color.presets.*
+import geo.*
+import geo.render.*
+import geo.projection.*
 
 /**
  * ## 08 - Feature Iteration
  *
- * Demonstrates feature iteration and rendering multiple geometry types.
+ * Demonstrates feature iteration and rendering multiple geometry types
+ * using the streamlined API with three-line workflow.
  *
  * ### Concepts
- * - Loading GeoJSON data with mixed geometry types
+ * - Loading data with loadGeo()
  * - Iterating through features and handling multiple geometry types
- * - Using fitWorldMercator projection for global data
- * - Rendering each geometry type with appropriate styling
+ * - Using projectToFit() for automatic projection
+ * - Rendering with inline style DSL
+ * - Three-line workflow with manual iteration
  *
  * ### To Run
  * ```
@@ -44,14 +33,11 @@ fun main() = application {
     }
 
     program {
-        // Load geo data from the sample GeoJSON file
-        // GeoJSON.load() returns a GeoJSONSource which contains a sequence of features
-        val data = GeoJSON.load("examples/data/geo/coastline.geojson")
+        // Three-line workflow
+        val data = loadGeo("examples/data/geo/coastline.geojson")
+        val projection = data.projectToFit(width, height)
 
-        // Use fitWorldMercator for a projection that shows the whole world at zoom=0
-        // zoom=0 means world fits in viewport, zoom=1 means 2x zoomed in, etc.
-        val projection = ProjectionFactory.fitWorldMercator(width.toDouble(), height.toDouble())
-
+        // Define styles using inline DSL pattern
         val pointStyle = Style {
             fill = ColorRGBa.RED
             stroke = ColorRGBa.BLACK
@@ -60,10 +46,8 @@ fun main() = application {
         }
 
         val lineStyle = Style {
-            stroke = ColorRGBa.BLUE          // Line color
-            strokeWeight = 1.0             // Line thickness
-            // lineCap and lineJoin control how line ends and corners look
-            // BUTT, ROUND, SQUARE for caps; MITER, ROUND, BEVEL for joins
+            stroke = ColorRGBa.BLUE
+            strokeWeight = 1.0
         }
 
         val polygonStyle = Style {
@@ -71,51 +55,29 @@ fun main() = application {
             stroke = ColorRGBa.ORANGE
             strokeWeight = 1.0
         }
-        // The extend block is called every frame (60 times per second by default)
+
         extend {
-            // Clear the screen with white background
+            // Clear with white background
             drawer.clear(ColorRGBa.WHITE)
 
-            // Iterate through all features in the dataset
-            // Each feature has a geometry (Point, LineString, Polygon, etc.) and properties
-            data.features.forEach { feature ->
+            // Option 1: Use drawer.geo() for simple rendering
+            drawer.geo(data, projection) {
+                stroke = ColorRGBa.CORNFLOWER_BLUE
+                strokeWeight = 1.0
+                fill = ColorRGBa.CORNFLOWER_BLUE.withAlpha(0.2)
+            }
+
+            // Option 2: Manual iteration for custom per-geometry handling
+            // This shows how to access individual geometries when needed
+            data.features.take(10).forEach { feature ->
                 val geometry = feature.geometry
-
-                // Handle each geometry type appropriately
                 when (geometry) {
-                    is Point -> {
-                        // Project the geographic point to screen coordinates
-                        // toScreen() applies the Mercator projection transformation
-                        // Draw the point with predefined style
-                        drawPoint(drawer, geometry.toScreen(projection), pointStyle)
-                    }
-
-                    is LineString -> {
-                        // Project all points in the line string to screen coordinates
-                        // LineString stores points as Vector2 in geographic coordinates
-                        // Draw the line string with blue styling
-                        drawLineString(drawer, geometry.toScreen(projection), lineStyle)
-                    }
-
-                    is Polygon -> {
-                        // Data is WGS84, project exterior ring directly
-                        drawPolygon(drawer, geometry.exteriorToScreen(projection), polygonStyle)
-                    }
-
-                    is MultiPoint -> { /* Draw multiple points */
-                        drawMultiPoint(drawer, geometry, projection, pointStyle)
-                    }
-
-                    is MultiLineString -> { /* Draw multiple lines */
-                        drawMultiLineString(drawer, geometry, projection, lineStyle)
-                    }
-                    is MultiPolygon -> { /* Draw multiple polygons */
-                        drawMultiPolygon(drawer, geometry, projection, polygonStyle)
-                    }
-                    // Other geometry types can be added here:
-                    else -> {
-                        // Skip geometry types not handled in this example
-                    }
+                    is Point -> drawPoint(drawer, geometry.toScreen(projection), pointStyle)
+                    is LineString -> drawLineString(drawer, geometry.toScreen(projection), lineStyle)
+                    is Polygon -> drawPolygon(drawer, geometry.exteriorToScreen(projection), polygonStyle)
+                    is MultiPoint -> drawMultiPoint(drawer, geometry, projection, pointStyle)
+                    is MultiLineString -> drawMultiLineString(drawer, geometry, projection, lineStyle)
+                    is MultiPolygon -> drawMultiPolygon(drawer, geometry, projection, polygonStyle)
                 }
             }
         }

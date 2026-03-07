@@ -1,5 +1,4 @@
 @file:JvmName("GeoStackRender")
-
 package examples.render
 
 import org.openrndr.application
@@ -8,9 +7,7 @@ import org.openrndr.KEY_ARROW_LEFT
 import org.openrndr.KEY_ARROW_RIGHT
 import org.openrndr.KEY_ARROW_UP
 import org.openrndr.KEY_ARROW_DOWN
-import geo.GeoJSON
-import geo.GeoStack
-import geo.geoStack
+import geo.*
 
 /**
  * ## 07 - GeoStack Rendering with Zoom/Pan
@@ -23,7 +20,7 @@ import geo.geoStack
  * - `geoStack()` for multi-dataset composition
  * - Automatic CRS unification across sources
  * - Multi-dataset overlay rendering
- * - Auto-fit projection with stack.render()
+ * - Auto-fit projection with drawer.geo()
  * - Interactive view manipulation (zoom, pan, reset)
  *
  * ### Keyboard Controls
@@ -44,15 +41,14 @@ fun main() = application {
     }
 
     program {
-        // Load multiple GeoJSON datasets with different geometry types
+        // Load multiple datasets using new API
         println("Loading datasets...")
-        val coastline = GeoJSON.load("examples/data/geo/coastline.geojson",optimize = true)
-        val cities = GeoJSON.load("examples/data/geo/populated_places.geojson",optimize = true)
-        val riversLakes = GeoJSON.load("examples/data/geo/rivers_lakes.geojson",optimize = true)
+        val coastline = loadGeo("examples/data/geo/coastline.geojson")
+        val cities = loadGeo("examples/data/geo/populated_places.geojson")
+        val riversLakes = loadGeo("examples/data/geo/rivers_lakes.geojson")
 
         // Create a GeoStack combining all sources
-        // Automatically unifies CRS across all datasets
-        println("Creating GeoStack with ${listOf(coastline, cities, riversLakes).size} sources...")
+        println("Creating GeoStack with 3 sources...")
         val stack = geoStack(coastline, cities, riversLakes)
 
         println("GeoStack ready: ${stack.sourceCount()} sources, unified CRS: ${stack.crs}")
@@ -61,62 +57,33 @@ fun main() = application {
         println("  i - Zoom in")
         println("  o - Zoom out")
         println("  Arrow keys or WASD - Pan view")
+
         // Key bindings for iterative exploration
         keyboard.keyDown.listen {
             when (it.key) {
-
-                // Pan directions (arrow keys or WASD)
-                KEY_ARROW_LEFT -> {
-                    panLeft(stack)
-                }
-
-                KEY_ARROW_RIGHT -> {
-                    panRight(stack)
-                }
-
-                KEY_ARROW_UP -> {
-                    panUp(stack)
-                }
-
-                KEY_ARROW_DOWN -> {
-                    panDown(stack)
-                }
-
+                KEY_ARROW_LEFT -> panLeft(stack)
+                KEY_ARROW_RIGHT -> panRight(stack)
+                KEY_ARROW_UP -> panUp(stack)
+                KEY_ARROW_DOWN -> panDown(stack)
                 else -> {}
             }
             when (it.name) {
-                // Reset to full view
                 "f" -> {
                     stack.reset()
                     println("Reset to full view")
                 }
-                // Zoom in
                 "i" -> {
                     stack.zoom(1.5)
                     println("Zoomed in 1.5x")
                 }
-                // Zoom out
                 "o" -> {
                     stack.zoom(0.75)
                     println("Zoomed out 0.75x")
                 }
-                // Pan directions (arrow keys or WASD)
-                "a" -> {
-                    panLeft(stack)
-                }
-
-                "d" -> {
-                    panRight(stack)
-                }
-
-                "w" -> {
-                    panUp(stack)
-                }
-
-                "s" -> {
-                    panDown(stack)
-                }
-
+                "a" -> panLeft(stack)
+                "d" -> panRight(stack)
+                "w" -> panUp(stack)
+                "s" -> panDown(stack)
                 else -> {}
             }
         }
@@ -124,9 +91,9 @@ fun main() = application {
         extend {
             // Clear with black background
             drawer.clear(ColorRGBa.BLACK)
-            drawer.text("${frameCount} :: ${frameCount/seconds} FPS", 20.0, 20.0)
+            drawer.text("${frameCount} :: ${(frameCount/seconds).toInt()} FPS", 20.0, 20.0)
+            
             // Render all features with current view
-            // Projection automatically uses current view bounds
             stack.render(drawer)
         }
     }

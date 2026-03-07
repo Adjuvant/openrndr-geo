@@ -137,11 +137,13 @@ fun main() = application {
 //                }
 //            }
 
-            drawer.geo(topo){ this.projection = topoProjection
+            // Use explicit type to avoid overload ambiguity
+            drawer.geo(topo, block = fun geo.render.GeoRenderConfig.() {
+                this.projection = topoProjection
                 styleByType = mapOf(
                     "LineString" to Style(stroke = ColorRGBa.BLUE, strokeWeight = 1.5)
                 )
-            }
+            })
         }
     }
 }
