@@ -1,26 +1,34 @@
+/**
+ * Template Program - OPENRNDR GEO Starter
+ * 
+ * This is a demonstration template showing the basic usage of the openrndr-geo library.
+ * It demonstrates:
+ * - Loading multiple GeoJSON datasets
+ * - Creating a geoStack to combine sources
+ * - Using ProjectionFactory for viewport fitting
+ * - Chain operations: filter().map().withProjection()
+ * - Rendering with custom styles
+ * 
+ * Note: This file serves as both a runnable example and a starting point for new projects.
+ */
+
 import geo.GeoPackage
 import geo.GeoSource
 import geo.animation.animator
-import geo.animation.interpolators.linearInterpolate
 import geo.forEachWithProjection
 import geo.geoSource
 import geo.geoStack
 import geo.projection.ProjectionFactory
 import geo.projection.ProjectionType
-import geo.projection.RawProjection
 import geo.projection.toWGS84
 import geo.render.Style
 import geo.render.geo
-import geo.render.geoFeatures
-import geo.render.geoJSON
-import geo.render.geoSource
 import org.openrndr.animatable.easing.Easing
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.color.rgb
 import org.openrndr.draw.loadFont
 import org.openrndr.draw.loadImage
-import org.openrndr.extra.color.colormatrix.tint
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -74,14 +82,13 @@ fun main() = application {
         )
 
         // Test: filter().map().withProjection() chain
-        // TODO need the chain ordering explained, and need to see if shorter chains can work
+        // Chain order: filter features -> transform -> apply projection -> iterate with geometry
         sampleData
             .filter { it.propertyKeys().contains("population") }
             .map { it }  // Identity transform
             .withProjection(projection)
             .take(5)
             .forEachWithProjection { feature, geometry ->
-                // TODO try to take and render only cities in top half of screen
                 println("Feature: ${feature.propertyKeys()}")
                 println("Name: ${feature.property("name")}")
                 println("Projected: $geometry")
