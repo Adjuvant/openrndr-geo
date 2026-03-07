@@ -116,17 +116,20 @@ None currently.
 ### Roadmap Evolution
 
 - Phase 14 added: 14 refactoring and cleanup, clearing todos
+- Phases 15-20 added: v1.4.0 Developer Experience milestone covering all 11 pending todos
 
-### Pending Todos (11 total)
+### Pending Todos (11 total - All Scheduled for v1.4.0)
 
-| Area | Count | Latest |
-|------|-------|--------|
-| tooling | 3 | 2026-03-07 |
-| api | 3 | 2026-03-07 |
-| rendering | 2 | 2026-03-07 |
-| performance | 1 | 2026-02-25 |
-| layer | 1 | 2026-02-27 |
-| docs | 1 | 2026-02-27 |
+| Area | Count | Latest | Roadmap Phase |
+|------|-------|--------|---------------|
+| tooling | 3 | 2026-03-07 | Phase 18 (Code Organization) |
+| api | 3 | 2026-03-07 | Phase 15 (API Ergonomics) |
+| rendering | 2 | 2026-03-07 | Phase 16 (Rendering Improvements) |
+| performance | 1 | 2026-02-25 | Phase 17 (Performance Fixes) |
+| layer | 1 | 2026-02-27 | Phase 20 (Layer Features) |
+| docs | 1 | 2026-02-27 | Phase 19 (Documentation Fixes) |
+
+**All todos now have roadmap_phase assigned** — See ROADMAP.md Phases 15-20
 
 ### Quick Tasks Completed
 
@@ -139,9 +142,16 @@ None currently.
 
 ### Last Actions
 - ✅ Completed Quick Task 11: Mark batch screen space projection todo as done
-- Moved 2026-02-25-batch-screen-space-projection.md from pending/ to done/
-- Updated todo frontmatter with completion info (Phases 11-12)
-- Added completion notes documenting 1533x speedup results
+- ✅ Evaluated all 11 pending todos and assigned to roadmap phases
+- ✅ Added Phases 15-20 to ROADMAP.md for v1.4.0 Developer Experience milestone:
+  - Phase 15: API Ergonomics (3 todos - api area)
+  - Phase 16: Rendering Improvements (2 todos - rendering area)
+  - Phase 17: Performance Fixes (1 todo - OptimizedGeoSource cache)
+  - Phase 18: Code Organization (3 todos - tooling area)
+  - Phase 19: Documentation Fixes (1 todo - README corrections)
+  - Phase 20: Layer Features (1 todo - graticule improvements)
+- ✅ Updated all todo files with status: scheduled and roadmap_phase references
+- ✅ Updated STATE.md with new roadmap phase assignments
 - Updated STATE.md pending todos count from 0 to 11 (actual count)
 - Quick Task 11 complete: 2/2 tasks done
 
