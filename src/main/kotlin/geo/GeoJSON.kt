@@ -9,6 +9,8 @@ import geo.internal.geometry.OptimizedMultiPoint
 import geo.internal.geometry.OptimizedMultiPolygon
 import geo.internal.geometry.OptimizedPoint
 import geo.internal.geometry.OptimizedPolygon
+import geo.render.geometry.normalizeMultiPolygon
+import geo.render.geometry.normalizePolygon
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -215,7 +217,11 @@ object GeoJSON {
         return when (type) {
             "Point" -> parsePoint(coords)
             "LineString" -> parseLineString(coords)
-            "Polygon" -> parsePolygon(coords)
+            "Polygon" -> {
+                val polygons = parsePolygon(coords)
+                // When antimeridian splitting produces multiple polygons, wrap in MultiPolygon
+                if (polygons.size == 1) polygons[0] else MultiPolygon(polygons)
+            }
             "MultiPoint" -> parseMultiPoint(coords)
             "MultiLineString" -> parseMultiLineString(coords)
             "MultiPolygon" -> parseMultiPolygon(coords)
@@ -255,8 +261,9 @@ object GeoJSON {
 
     /**
      * Parses a Polygon geometry.
+     * Returns a List of Polygons because antimeridian splitting may produce multiple polygons.
      */
-    private fun parsePolygon(coords: JsonElement): Polygon {
+    private fun parsePolygon(coords: JsonElement): List<Polygon> {
         val rings = coords.jsonArray
         if (rings.isEmpty()) {
             throw IllegalArgumentException("Polygon must have at least 1 ring")
@@ -275,7 +282,8 @@ object GeoJSON {
                 } else null
             }
         }
-        return Polygon(exterior, interiors)
+        val polygon = Polygon(exterior, interiors)
+        return normalizePolygon(polygon)
     }
 
     /**
@@ -314,6 +322,7 @@ object GeoJSON {
 
     /**
      * Parses a MultiPolygon geometry.
+     * Applies normalization which may split individual polygons at the antimeridian.
      */
     private fun parseMultiPolygon(coords: JsonElement): MultiPolygon {
         val polygons = coords.jsonArray
@@ -337,7 +346,8 @@ object GeoJSON {
                 Polygon(exterior, interiors)
             } else null
         }
-        return MultiPolygon(polygonList)
+        val multiPolygon = MultiPolygon(polygonList)
+        return normalizeMultiPolygon(multiPolygon)
     }
 }
 
