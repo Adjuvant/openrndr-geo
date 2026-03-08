@@ -364,8 +364,17 @@ private fun Geometry.renderToDrawer(drawer: Drawer, projection: GeoProjection, s
             drawLineString(drawer, screenPoints, style)
         }
         is geo.Polygon -> {
-            val screenPoints = exterior.map { projection.project(it) }
-            drawPolygon(drawer, screenPoints, style)
+            if (interiors.isNotEmpty()) {
+                val screenExterior = exterior.map { projection.project(it) }
+                val screenInteriors = interiors.map { ring ->
+                    ring.map { projection.project(it) }
+                }
+                writePolygonWithHoles(drawer, screenExterior, screenInteriors,
+                    style ?: StyleDefaults.defaultPolygonStyle)
+            } else {
+                val screenPoints = exterior.map { projection.project(it) }
+                drawPolygon(drawer, screenPoints, style)
+            }
         }
         is geo.MultiPoint -> {
             points.forEach { pt ->
@@ -381,8 +390,17 @@ private fun Geometry.renderToDrawer(drawer: Drawer, projection: GeoProjection, s
         }
         is geo.MultiPolygon -> {
             polygons.forEach { poly ->
-                val screenPoints = poly.exterior.map { projection.project(it) }
-                drawPolygon(drawer, screenPoints, style)
+                if (poly.interiors.isNotEmpty()) {
+                    val screenExterior = poly.exterior.map { projection.project(it) }
+                    val screenInteriors = poly.interiors.map { ring ->
+                        ring.map { projection.project(it) }
+                    }
+                    writePolygonWithHoles(drawer, screenExterior, screenInteriors,
+                        style ?: StyleDefaults.defaultPolygonStyle)
+                } else {
+                    val screenPoints = poly.exterior.map { projection.project(it) }
+                    drawPolygon(drawer, screenPoints, style)
+                }
             }
         }
     }
