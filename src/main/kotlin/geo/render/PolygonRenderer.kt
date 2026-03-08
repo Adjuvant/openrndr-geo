@@ -3,9 +3,8 @@ package geo.render
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
 import org.openrndr.math.Vector2
+import org.openrndr.shape.Shape
 import org.openrndr.shape.ShapeContour
-import org.openrndr.shape.shape
-import org.openrndr.shape.contour
 
 /**
  * Write (draw) a Polygon geometry to the screen using the specified style.
@@ -122,29 +121,16 @@ fun writePolygonWithHoles(
     drawer.lineCap = style.lineCap
     drawer.lineJoin = style.lineJoin
 
-    // Build shape with exterior and holes using OpenRNDR Shape API
-    val s = shape {
-        // First contour = exterior boundary
-        contour {
-            moveTo(exterior[0])
-            for (i in 1 until exterior.size) {
-                lineTo(exterior[i])
-            }
-            close()
-        }
-        // Subsequent contours = holes (transparent cutouts)
-        interiors.forEach { hole ->
-            if (hole.size >= 3) {
-                contour {
-                    moveTo(hole[0])
-                    for (i in 1 until hole.size) {
-                        lineTo(hole[i])
-                    }
-                    close()
-                }
-            }
-        }
+    // Create contours with enforced winding order
+    // Exterior: clockwise (positive fill in screen space)
+    val extContour = ShapeContour.fromPoints(exterior, closed = true).clockwise
+
+    // Interiors: counter-clockwise (negative fill = holes)
+    val holeContours = interiors.filter { it.size >= 3 }.map { ring ->
+        ShapeContour.fromPoints(ring, closed = true).counterClockwise
     }
 
-    drawer.shape(s)
+    // Combine into single Shape and draw
+    val shape = Shape(listOf(extContour) + holeContours)
+    drawer.shape(shape)
 }
