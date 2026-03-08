@@ -3,7 +3,7 @@
 **Current Milestone:** v1.4.0 Developer Experience
 **Phase:** 16 (Rendering Improvements — Complete)
 **Current Plan:** Not started
-**Last Updated:** 2026-03-08T02:26:42Z
+**Last Updated:** 2026-03-08T14:12:51Z
 
 ## Project Reference
 
@@ -106,6 +106,7 @@
 | Combined Shape for MultiPolygons | Eliminates overdraw at shared boundaries, no seams with transparency | ✓ Implemented |
 | Exterior clockwise, interior counter-clockwise | Non-zero winding rule: same direction reinforces, opposite subtracts | ✓ Implemented |
 | Optimized path uses same approach | Consistency between standard and optimized rendering | ✓ Implemented |
+| Phase 16-rendering-improvements P04 | 8min | 4 tasks | 3 files | Gap closure - geometry normalization integration and hole rendering |
 
 ### Active Requirements (v1.4.0)
 
@@ -115,8 +116,8 @@
 - API-03: RawProjection UX improvements
 
 **Phase 16 — Rendering Improvements:**
-- RENDER-01: MultiPolygon rendering for ocean/whole-world data ✓ (test scaffolds complete)
-- RENDER-02: Polygon interior/exterior ring handling ✓ (test scaffolds complete)
+- RENDER-01: MultiPolygon rendering for ocean/whole-world data ✓ (implemented with normalization)
+- RENDER-02: Polygon interior/exterior ring handling ✓ (implemented with compound boolean difference)
 
 **Phase 17 — Performance Fixes:**
 - PERF-11: ViewportCache for OptimizedGeoSource
@@ -223,12 +224,13 @@ None currently.
 | 16-00-SUMMARY.md | TDD test scaffolds for geometry normalization utilities | 2026-03-08 |
 | 16-01-SUMMARY.md | Geometry normalization utilities - 40 tests passing | 2026-03-08 |
 | 16-03-SUMMARY.md | Gap closure: test helpers and multi-ring antimeridian handling | 2026-03-08 |
+| 16-04-SUMMARY.md | Gap closure: geometry normalization integration and hole rendering | 2026-03-08 |
 
 ### Session Continuity
 
-**Last Session:** 2026-03-08T02:26:42Z
-**Stopped At:** Completed 16-03-PLAN.md (Gap Closure)
-**Duration:** 4 minutes
+**Last Session:** 2026-03-08T14:12:51Z
+**Stopped At:** Completed 16-04-PLAN.md (Gap Closure - Rendering)
+**Duration:** 8 minutes
 **Resume File:** None
 
 ---

@@ -9,7 +9,7 @@
 
 **Milestone:** v1.4.0 Developer Experience  
 **Goal:** Improve API ergonomics, fix rendering edge cases, and enhance developer workflow  
-**Phase:** 17 (Performance Fixes)
+**Phase:** 16 (Rendering Improvements) — Complete, ready for Phase 17
 
 ---
 
@@ -40,7 +40,7 @@
 ### Phase 16: Rendering Improvements
 
 **Status:** Complete  
-**Plans:** 4/4 plans complete (1 gap closure plan pending execution)
+**Plans:** 4/4 plans complete
 
 **Goal:** Fix MultiPolygon rendering for ocean/whole-world data and improve polygon interior/exterior ring handling.
 
@@ -59,9 +59,7 @@
 - [x] [`16-01-PLAN.md`](phases/16-rendering-improvements/16-01-PLAN.md) — Geometry normalization utilities (antimeridian splitting, winding normalization, ring validation)
 - [x] [`16-02-PLAN.md`](phases/16-rendering-improvements/16-02-PLAN.md) — MultiPolygon rendering improvements (combined Shape rendering, optimized path updates)
 - [x] [`16-03-PLAN.md`](phases/16-rendering-improvements/16-03-PLAN.md) — Gap closure (test helpers, multi-ring handling)
-
-**Gap Closure (Pending Execution):**
-- [ ] [`16-04-PLAN.md`](phases/16-rendering-improvements/16-04-PLAN.md) — Integration of normalization into loading pipeline and hole rendering fixes
+- [x] [`16-04-PLAN.md`](phases/16-rendering-improvements/16-04-PLAN.md) — Gap closure (normalization integration, hole rendering via compound difference)
 
 ---
 
