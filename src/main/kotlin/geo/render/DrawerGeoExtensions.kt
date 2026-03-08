@@ -519,10 +519,24 @@ private fun projectGeometryToArray(
 ): Array<Vector2> = when (geometry) {
     is geo.Point -> arrayOf(projection.project(Vector2(geometry.x, geometry.y)))
     is geo.LineString -> geometry.points.map { projection.project(it) }.toTypedArray()
-    is geo.Polygon -> geometry.exterior.map { projection.project(it) }.toTypedArray()
+    is geo.Polygon -> {
+        val exteriorProjected = geometry.exterior.map { projection.project(it) }
+        val interiorProjected = geometry.interiors.flatMap { ring ->
+            ring.map { projection.project(it) }
+        }
+        (exteriorProjected + interiorProjected).toTypedArray()
+    }
     is geo.MultiPoint -> geometry.points.map { projection.project(Vector2(it.x, it.y)) }.toTypedArray()
     is geo.MultiLineString -> geometry.lineStrings.flatMap { it.points.map { pt -> projection.project(pt) } }.toTypedArray()
-    is geo.MultiPolygon -> geometry.polygons.flatMap { it.exterior.map { pt -> projection.project(pt) } }.toTypedArray()
+    is geo.MultiPolygon -> {
+        geometry.polygons.flatMap { poly ->
+            val ext = poly.exterior.map { projection.project(it) }
+            val ints = poly.interiors.flatMap { ring ->
+                ring.map { projection.project(it) }
+            }
+            ext + ints
+        }.toTypedArray()
+    }
 }
 
 /**
@@ -542,7 +556,22 @@ private fun renderProjectedCoordinates(
             drawLineString(drawer, projectedCoords.toList(), style)
         }
         is geo.Polygon -> {
-            drawPolygon(drawer, projectedCoords.toList(), style)
+            if (geometry.interiors.isNotEmpty()) {
+                val exteriorSize = geometry.exterior.size
+                val screenExterior = projectedCoords.slice(0 until exteriorSize)
+
+                val screenInteriors = mutableListOf<List<Vector2>>()
+                var idx = exteriorSize
+                geometry.interiors.forEach { ring ->
+                    screenInteriors.add(projectedCoords.slice(idx until idx + ring.size))
+                    idx += ring.size
+                }
+
+                writePolygonWithHoles(drawer, screenExterior, screenInteriors,
+                    style ?: StyleDefaults.defaultPolygonStyle)
+            } else {
+                drawPolygon(drawer, projectedCoords.toList(), style)
+            }
         }
         is geo.MultiPoint -> {
             projectedCoords.forEach { pt ->
@@ -558,11 +587,24 @@ private fun renderProjectedCoordinates(
             }
         }
         is geo.MultiPolygon -> {
-            // MultiPolygon flattens all exterior points
+            // MultiPolygon flattens all exterior and interior points
             var idx = 0
             geometry.polygons.forEach { poly ->
-                val polyPoints = Array(poly.exterior.size) { projectedCoords[idx++] }
-                drawPolygon(drawer, polyPoints.toList(), style)
+                val extSize = poly.exterior.size
+                val screenExterior = projectedCoords.slice(idx until idx + extSize)
+                idx += extSize
+
+                if (poly.interiors.isNotEmpty()) {
+                    val screenInteriors = mutableListOf<List<Vector2>>()
+                    poly.interiors.forEach { ring ->
+                        screenInteriors.add(projectedCoords.slice(idx until idx + ring.size))
+                        idx += ring.size
+                    }
+                    writePolygonWithHoles(drawer, screenExterior, screenInteriors,
+                        style ?: StyleDefaults.defaultPolygonStyle)
+                } else {
+                    drawPolygon(drawer, screenExterior, style)
+                }
             }
         }
     }
