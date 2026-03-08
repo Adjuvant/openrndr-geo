@@ -131,6 +131,7 @@ fun writePolygonWithHoles(
     }
 
     // Combine into single Shape and draw
+    // TODO This is not how cut holes are rendered in OPENRNDR
     val shape = Shape(listOf(extContour) + holeContours)
     drawer.shape(shape)
 }

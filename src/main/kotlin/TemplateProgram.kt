@@ -56,7 +56,7 @@ fun main() = application {
         val rivers = geoSource("data/geo/rivers_lakes.geojson")        // Could be different
 
         // Create a stack - automatically unifies to first source's CRS
-        val map = geoStack( coastline, cities, rivers) // ocean,
+        val map = geoStack( ocean,coastline, cities, rivers) // ocean,
 
         // Without the toWGS84 it ends up off the screen.
         var ness = GeoPackage.load("data/geo/ness-vectors.gpkg").toWGS84()
@@ -121,7 +121,7 @@ fun main() = application {
             drawer.text("OPENRNDR GEO", width / 4.0+animator.x, height / 2.0)
 
             // Fit to view and render
-//            map.render(drawer)
+            map.render(drawer)
 //            ness.render(drawer, nessProjection)
 //            drawer.geo(topo){ this.projection = topoProjection
 //                styleByFeature = { feature ->

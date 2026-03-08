@@ -30,8 +30,9 @@ fun main() = application {
     }
 
     program {
-        // Three-line workflow, with some filter sugar.
-        val data = loadGeo("examples/data/geo/sample.geojson").filter { it.geometry is Polygon }
+        // Three-line workflow, with some needless filter sugar.
+        val data = loadGeo("examples/data/geo/polygonsWithHole.geojson")
+            .filter { it.geometry is Polygon }
         val p = data.projectToFit(width, height)
 
         extend {
@@ -39,9 +40,10 @@ fun main() = application {
             drawer.clear(ColorRGBa(0.95, 0.95, 0.95))
 
             // Draw polygons with inline style DSL
+            // TODO fails to render holes in provided polygon features.
             drawer.geo(data) {
                 projection = p
-                fill = ColorRGBa(0.2, 0.6, 0.3, 0.7)  // Green with transparency
+                fill = ColorRGBa(0.2, 0.6, 0.3, 0.1)  // Green with transparency
                 stroke = ColorRGBa(0.1, 0.3, 0.1)     // Dark green stroke
                 strokeWeight = 1.0
             }
