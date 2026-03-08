@@ -39,12 +39,23 @@
 
 ### Phase 16: Rendering Improvements
 
-**Status:** Not Started  
-**Plans:** 0/2
+**Status:** Planned  
+**Plans:** 2/2 plans complete
 
 **Goal:** Fix MultiPolygon rendering for ocean/whole-world data and improve polygon interior/exterior ring handling.
 
 **Requirements:** RENDER-01, RENDER-02
+
+**Success Criteria:**
+1. MultiPolygons spanning antimeridian render without world-spanning artifacts
+2. Polygon winding order is normalized (exterior clockwise, interior counter-clockwise)
+3. Interior ring validation logs warnings for degenerate/out-of-bounds holes
+4. MultiPolygons render as single Shape with combined contours (no overdraw/seams)
+5. Both standard and optimized render paths use combined Shape approach
+
+**Planned:**
+- [x] [`16-01-PLAN.md`](phases/16-rendering-improvements/16-01-PLAN.md) — Geometry normalization utilities (antimeridian splitting, winding normalization, ring validation)
+- [x] [`16-02-PLAN.md`](phases/16-rendering-improvements/16-02-PLAN.md) — MultiPolygon rendering improvements (combined Shape rendering, optimized path updates)
 
 ---
 
@@ -99,8 +110,8 @@
 | Phase | Milestone | Plans | Status | Target |
 |-------|-----------|-------|--------|--------|
 | 11-14 | v1.3.0 | 13/13 | ✅ Complete | 2026-03-07 |
-| 15 | v1.4.0 | Complete    | 2026-03-07 | TBD |
-| 16 | v1.4.0 | 0/2 | ⏳ Not Started | TBD |
+| 15 | v1.4.0 | 2/2 | ✅ Complete | 2026-03-07 |
+| 16 | v1.4.0 | 2/2 | Planned | TBD |
 | 17 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
 | 18 | v1.4.0 | 0/2 | ⏳ Not Started | TBD |
 | 19 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
