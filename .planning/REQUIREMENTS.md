@@ -15,8 +15,8 @@ Requirements for the Developer Experience milestone. Each requirement maps to a 
 
 ### Rendering Improvements (Phase 16)
 
-- [ ] **RENDER-01**: MultiPolygon rendering for ocean/whole-world data — fix winding order and coordinate handling
-- [ ] **RENDER-02**: Polygon interior/exterior ring handling — proper hole support and ring classification
+- [x] **RENDER-01**: MultiPolygon rendering for ocean/whole-world data — fix winding order and coordinate handling
+- [x] **RENDER-02**: Polygon interior/exterior ring handling — proper hole support and ring classification
 
 ### Performance Fixes (Phase 17)
 
@@ -72,8 +72,8 @@ Features acknowledged but not in current milestone scope.
 | API-01 | Phase 15 | Complete |
 | API-02 | Phase 15 | Complete |
 | API-03 | Phase 15 | Complete |
-| RENDER-01 | Phase 16 | Pending |
-| RENDER-02 | Phase 16 | Pending |
+| RENDER-01 | Phase 16 | Complete |
+| RENDER-02 | Phase 16 | Complete |
 | PERF-11 | Phase 17 | Pending |
 | ORG-01 | Phase 18 | Pending |
 | ORG-02 | Phase 18 | Pending |

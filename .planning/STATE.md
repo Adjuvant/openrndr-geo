@@ -1,9 +1,9 @@
 # Project State: openrndr-geo
 
-**Current Milestone:** v1.4.0 Developer Experience  
-**Phase:** 15 (API Ergonomics — Complete)  
-**Current Plan:** Not started
-**Last Updated:** 2026-03-07T22:55:00Z
+**Current Milestone:** v1.4.0 Developer Experience
+**Phase:** 16 (Rendering Improvements — In Progress)
+**Current Plan:** 16-02 (Complete)
+**Last Updated:** 2026-03-08T01:38:36Z
 
 ## Project Reference
 
@@ -32,7 +32,7 @@
 | 13 | Integration & Validation | ✓ Complete | 2/2 | - |
 | 14 | Refactoring and Cleanup | ✓ Complete | 6/6 | - |
 | 15 | API Ergonomics | ✓ Complete | 2/2 | - |
-| 16 | Rendering Improvements | ○ Not Started | 0/2 | - |
+| 16 | Rendering Improvements | ◆ In Progress | 1/2 | - |
 | 17 | Performance Fixes | ○ Not Started | 0/1 | - |
 | 18 | Code Organization | ○ Not Started | 0/2 | - |
 | 19 | Documentation Fixes | ○ Not Started | 0/1 | - |
@@ -96,6 +96,10 @@
 | Phase 14-refactoring-and-cleanup-clearing-todos P04 | 24min | 4 tasks | 1 file | Zero TODOs achieved |
 | Phase 14-refactoring-and-cleanup-clearing-todos P05 | 5min | 2 tasks | 1 file | App.kt restored as canonical entry point
 | Phase 14-refactoring-and-cleanup-clearing-todos P06 | 5min | 3 tasks | 2 files |
+| Phase 16-rendering-improvements P02 | 5min | 3 tasks | 3 files | Combined Shape rendering for MultiPolygons |
+| Combined Shape for MultiPolygons | Eliminates overdraw at shared boundaries, no seams with transparency | ✓ Implemented |
+| Exterior clockwise, interior counter-clockwise | Non-zero winding rule: same direction reinforces, opposite subtracts | ✓ Implemented |
+| Optimized path uses same approach | Consistency between standard and optimized rendering | ✓ Implemented |
 
 ### Active Requirements (v1.4.0)
 
@@ -209,13 +213,14 @@ All 11 previously pending todos have been formalized as v1.4.0 requirements. See
 | 14-06-SUMMARY.md | Feature iteration example moved to examples/render/ | 2026-03-07 |
 | 15-01-PLAN.md | Import structure reorganization and package migration | 2026-03-07 |
 | 15-02-PLAN.md | Streamlined API implementation (geoSource, loadGeo, examples) | 2026-03-07 |
+| 16-02-SUMMARY.md | Combined Shape rendering for MultiPolygons with winding enforcement | 2026-03-08 |
 
 ### Session Continuity
 
-**Last Session:** 2026-03-08T01:00:24.378Z
-**Stopped At:** Phase 16 context gathered
-**Duration:** 10 minutes
-**Resume File:** .planning/phases/16-rendering-improvements/16-CONTEXT.md
+**Last Session:** 2026-03-08T01:38:36Z
+**Stopped At:** Completed 16-02-PLAN.md
+**Duration:** 5 minutes
+**Resume File:** None
 
 ---
 *State file for project continuity across sessions*
