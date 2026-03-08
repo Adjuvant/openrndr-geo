@@ -2,8 +2,8 @@
 
 **Current Milestone:** v1.4.0 Developer Experience
 **Phase:** 16 (Rendering Improvements — In Progress)
-**Current Plan:** 16-00 (Complete)
-**Last Updated:** 2026-03-08T01:52:56Z
+**Current Plan:** 16-01 (Complete)
+**Last Updated:** 2026-03-08T02:18:00Z
 
 ## Project Reference
 
@@ -32,7 +32,7 @@
 | 13 | Integration & Validation | ✓ Complete | 2/2 | - |
 | 14 | Refactoring and Cleanup | ✓ Complete | 6/6 | - |
 | 15 | API Ergonomics | ✓ Complete | 2/2 | - |
-| 16 | Rendering Improvements | ◆ In Progress | 2/3 | - |
+| 16 | Rendering Improvements | ◆ In Progress | 3/3 | - |
 | 17 | Performance Fixes | ○ Not Started | 0/1 | - |
 | 18 | Code Organization | ○ Not Started | 0/2 | - |
 | 19 | Documentation Fixes | ○ Not Started | 0/1 | - |
@@ -97,7 +97,12 @@
 | Phase 14-refactoring-and-cleanup-clearing-todos P05 | 5min | 2 tasks | 1 file | App.kt restored as canonical entry point
 | Phase 14-refactoring-and-cleanup-clearing-todos P06 | 5min | 3 tasks | 2 files |
 | Phase 16-rendering-improvements P00 | 21min | 6 tasks | 5 files | TDD test scaffolds for geometry utilities |
+| Phase 16-rendering-improvements P01 | 45min | 4 tasks | 8 files | Geometry normalization utilities with 40 tests |
 | Phase 16-rendering-improvements P02 | 5min | 3 tasks | 3 files | Combined Shape rendering for MultiPolygons |
+| Geometry normalization at load time | Produces canonical Shape-ready data per CONTEXT.md | ✓ Implemented |
+| Closed rings crossing antimeridian produce 3 sub-rings | Correct geometric behavior for even number of crossings | ✓ Verified |
+| io.github.oshai.kotlinlogging | Structured logging with feature IDs for validation warnings | ✓ Implemented |
+| Extension functions for fluent API | polygon.normalized() and multiPolygon.normalized() | ✓ Implemented |
 | Combined Shape for MultiPolygons | Eliminates overdraw at shared boundaries, no seams with transparency | ✓ Implemented |
 | Exterior clockwise, interior counter-clockwise | Non-zero winding rule: same direction reinforces, opposite subtracts | ✓ Implemented |
 | Optimized path uses same approach | Consistency between standard and optimized rendering | ✓ Implemented |
@@ -216,12 +221,13 @@ All 11 previously pending todos have been formalized as v1.4.0 requirements. See
 | 15-02-PLAN.md | Streamlined API implementation (geoSource, loadGeo, examples) | 2026-03-07 |
 | 16-02-SUMMARY.md | Combined Shape rendering for MultiPolygons with winding enforcement | 2026-03-08 |
 | 16-00-SUMMARY.md | TDD test scaffolds for geometry normalization utilities | 2026-03-08 |
+| 16-01-SUMMARY.md | Geometry normalization utilities - 40 tests passing | 2026-03-08 |
 
 ### Session Continuity
 
-**Last Session:** 2026-03-08T01:52:56Z
-**Stopped At:** Completed 16-00-PLAN.md
-**Duration:** 21 minutes
+**Last Session:** 2026-03-08T02:18:00Z
+**Stopped At:** Completed 16-01-PLAN.md
+**Duration:** 45 minutes
 **Resume File:** None
 
 ---
