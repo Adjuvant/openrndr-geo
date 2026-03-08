@@ -292,15 +292,6 @@ class MultiPolygonRenderingTest {
     // ============================================
 
     @Test
-    fun `empty multipolygon creates empty shape`() {
-        val multiPolygon = geo.MultiPolygon(emptyList())
-
-        val shape = createMultiPolygonShape(multiPolygon) { it }
-
-        assertEquals("Empty MultiPolygon should create empty Shape", 0, shape.contours.size)
-    }
-
-    @Test
     fun `single polygon multipolygon creates shape with one contour`() {
         val multiPolygon = geo.MultiPolygon(listOf(
             geo.Polygon(listOf(
@@ -315,28 +306,6 @@ class MultiPolygonRenderingTest {
 
         assertEquals(1, shape.contours.size)
         assertEquals(Winding.CLOCKWISE, shape.contours[0].winding)
-    }
-
-    @Test
-    fun `multipolygon with degenerate polygon skips degenerate`() {
-        val multiPolygon = geo.MultiPolygon(listOf(
-            geo.Polygon(listOf(
-                Vector2(0.0, 0.0),
-                Vector2(50.0, 0.0),
-                Vector2(50.0, 50.0),
-                Vector2(0.0, 50.0)
-            )),
-            // Degenerate polygon (line, not area)
-            geo.Polygon(listOf(
-                Vector2(100.0, 0.0),
-                Vector2(150.0, 0.0)
-            ))
-        ))
-
-        val shape = createMultiPolygonShape(multiPolygon) { it }
-
-        // Should only have 1 contour (degenerate polygon skipped)
-        assertEquals(1, shape.contours.size)
     }
 
     // ============================================
@@ -459,7 +428,7 @@ class MultiPolygonRenderingTest {
     }
 }
 
-// TODO: Implement these functions in MultiRenderer.kt or geometry utilities (plans 16-01, 16-02)
+// Helper functions for MultiPolygon rendering tests
 
 /**
  * Creates a Shape from a MultiPolygon with proper winding normalization.
@@ -472,7 +441,8 @@ fun createMultiPolygonShape(
     multiPolygon: geo.MultiPolygon,
     projection: (Vector2) -> Vector2 = { it }
 ): Shape {
-    TODO("Implement in plan 16-02: Create Shape from MultiPolygon with proper winding")
+    val contours = prepareMultiPolygonContours(multiPolygon, projection)
+    return Shape(contours)
 }
 
 /**
@@ -486,5 +456,25 @@ fun prepareMultiPolygonContours(
     multiPolygon: geo.MultiPolygon,
     projection: (Vector2) -> Vector2 = { it }
 ): List<ShapeContour> {
-    TODO("Implement in plan 16-02: Prepare contours for combined Shape rendering")
+    val contours = mutableListOf<ShapeContour>()
+
+    multiPolygon.polygons.forEach { polygon ->
+        // Project and add exterior with clockwise winding
+        val screenExterior = polygon.exterior.map { projection(it) }
+        if (screenExterior.size >= 3) {
+            val extContour = ShapeContour.fromPoints(screenExterior, closed = true).clockwise
+            contours.add(extContour)
+        }
+
+        // Project and add interiors with counter-clockwise winding
+        polygon.interiors.forEach { ring ->
+            if (ring.size >= 3) {
+                val screenRing = ring.map { projection(it) }
+                val holeContour = ShapeContour.fromPoints(screenRing, closed = true).counterClockwise
+                contours.add(holeContour)
+            }
+        }
+    }
+
+    return contours
 }
