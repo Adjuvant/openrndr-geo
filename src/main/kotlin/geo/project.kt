@@ -31,7 +31,7 @@ fun GeoSource.projectToFit(
         bounds = this.boundingBox(),
         width = width.toDouble(),
         height = height.toDouble(),
-        padding = 0.0,  // Tight fit: 100% of viewport
+        padding = 20.0,  // Tight fit: 100% of viewport
         projection = projectionType
     )
 }

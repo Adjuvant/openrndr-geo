@@ -94,10 +94,6 @@ internal fun splitAtAntimeridian(ring: List<Vector2>): List<List<Vector2>> {
 
     // Add the final ring if it has content
     if (currentRing.isNotEmpty()) {
-        // Close the ring by adding the first point if needed
-        if (currentRing.size > 1 && currentRing.first() != currentRing.last()) {
-            currentRing.add(currentRing.first())
-        }
         result.add(currentRing)
     }
 

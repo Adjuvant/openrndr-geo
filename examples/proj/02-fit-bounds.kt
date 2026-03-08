@@ -48,7 +48,7 @@ fun main() = application {
             // Draw title
             drawer.fill = ColorRGBa.WHITE
             drawer.text("Fit Bounds with Three-line Workflow", 20.0, 30.0)
-            drawer.text("Tight fit (100% of viewport)", 20.0, 50.0)
+            drawer.text("Tight fit (100% of viewport w 20 pixel padding)", 20.0, 50.0)
             drawer.text("Points: ${data.countFeatures()}", 20.0, 70.0)
 
             // Render points with inline style DSL

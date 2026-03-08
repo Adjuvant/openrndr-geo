@@ -42,10 +42,10 @@ fun main() = application {
 
             // Draw with inline style DSL - different styles for different renders
             
-            // Style 1: Filled polygons with solid stroke
+            // Style 1: Filled polygons with solid stroke, style passed in DSL
             drawer.geo(data, projection) {
-                fill = ColorRGBa(0.8, 0.2, 0.2, 0.8)  // Red fill
-                stroke = ColorRGBa(0.5, 0.1, 0.1)     // Dark red stroke
+                fill = ColorRGBa.PINK.opacify(.8)  // Red fill
+                stroke = ColorRGBa.RED     // Dark red stroke
                 strokeWeight = 2.0
             }
             
@@ -59,18 +59,21 @@ fun main() = application {
             // Square points
             cornerPoints.forEach { (x, y) ->
                 drawer.fill = null
-                drawer.stroke = ColorRGBa(0.2, 0.4, 0.8)
+                drawer.stroke = ColorRGBa.BLUE
                 drawer.strokeWeight = 1.5
                 drawer.rectangle(x - 5, y - 5, 10.0, 10.0)
             }
             
             // Circle points (orange)
-            drawer.fill = ColorRGBa(1.0, 0.6, 0.0)
-            drawer.stroke = ColorRGBa(0.6, 0.3, 0.0)
-            drawer.strokeWeight = 1.0
-            cornerPoints.forEach { (x, y) ->
-                drawer.circle(x + 100, y, 15.0)
+            drawer.stroke = ColorRGBa.BLACK
+            drawer.strokeWeight = 5.0
+            drawer.circles{
+                cornerPoints.forEach { (x, y) ->
+                    drawer.fill = ColorRGBa(1.0, 0.6, 0.0)
+                    circle(x + 100, y*2, 15.0)
+                }
             }
+
         }
     }
 }

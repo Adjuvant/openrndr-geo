@@ -1,13 +1,11 @@
 package geo.render
 
 import org.junit.Test
+import org.junit.Assert.*
 import org.openrndr.math.Vector2
 import org.openrndr.shape.Shape
 import org.openrndr.shape.ShapeContour
 import org.openrndr.shape.Winding
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-import kotlin.test.assertTrue
 
 /**
  * TDD scaffold for MultiPolygon rendering with combined Shape approach.
@@ -50,12 +48,12 @@ class MultiPolygonRenderingTest {
         // TODO: Implement createMultiPolygonShape helper
         val shape = createMultiPolygonShape(multiPolygon) { it }
 
-        assertNotNull(shape, "Should create a Shape from MultiPolygon")
+        assertNotNull("Should create a Shape from MultiPolygon", shape)
         assertEquals(
-            2,
-            shape.contours.size,
-            "Shape should have 2 contours (one per polygon)"
-        )
+    "Shape should have 2 contours (one per polygon)",
+    2,
+    shape.contours.size
+)
     }
 
     @Test
@@ -80,10 +78,10 @@ class MultiPolygonRenderingTest {
         // All contours should be clockwise (exterior winding)
         shape.contours.forEachIndexed { index, contour ->
             assertEquals(
-                Winding.CLOCKWISE,
-                contour.winding,
-                "Contour $index should be clockwise"
-            )
+    "Contour $index should be clockwise",
+    Winding.CLOCKWISE,
+    contour.winding
+)
         }
     }
 
@@ -115,10 +113,10 @@ class MultiPolygonRenderingTest {
         val shape = createMultiPolygonShape(multiPolygon) { it }
 
         assertEquals(
-            2,
-            shape.contours.size,
-            "Shape should have 2 contours (1 exterior + 1 hole)"
-        )
+    "Shape should have 2 contours (1 exterior + 1 hole)",
+    2,
+    shape.contours.size
+)
     }
 
     @Test
@@ -146,10 +144,10 @@ class MultiPolygonRenderingTest {
 
         val exteriorContour = shape.contours[0]
         assertEquals(
-            Winding.CLOCKWISE,
-            exteriorContour.winding,
-            "Exterior contour should be clockwise"
-        )
+    "Exterior contour should be clockwise",
+    Winding.CLOCKWISE,
+    exteriorContour.winding
+)
     }
 
     @Test
@@ -177,10 +175,10 @@ class MultiPolygonRenderingTest {
 
         val holeContour = shape.contours[1]
         assertEquals(
-            Winding.COUNTER_CLOCKWISE,
-            holeContour.winding,
-            "Hole contour should be counter-clockwise"
-        )
+    "Hole contour should be counter-clockwise",
+    Winding.COUNTER_CLOCKWISE,
+    holeContour.winding
+)
     }
 
     @Test
@@ -212,7 +210,7 @@ class MultiPolygonRenderingTest {
 
         val shape = createMultiPolygonShape(multiPolygon) { it }
 
-        assertEquals(3, shape.contours.size, "Should have 1 exterior + 2 holes")
+        assertEquals("Should have 1 exterior + 2 holes", 3, shape.contours.size)
 
         // First contour is exterior
         assertEquals(Winding.CLOCKWISE, shape.contours[0].winding)
@@ -299,7 +297,7 @@ class MultiPolygonRenderingTest {
 
         val shape = createMultiPolygonShape(multiPolygon) { it }
 
-        assertEquals(0, shape.contours.size, "Empty MultiPolygon should create empty Shape")
+        assertEquals("Empty MultiPolygon should create empty Shape", 0, shape.contours.size)
     }
 
     @Test
@@ -414,17 +412,17 @@ class MultiPolygonRenderingTest {
         // After normalization:
         // Exterior should be clockwise (correct)
         assertEquals(
-            Winding.CLOCKWISE,
-            shape.contours[0].winding,
-            "Exterior should be normalized to clockwise"
-        )
+    "Exterior should be normalized to clockwise",
+    Winding.CLOCKWISE,
+    shape.contours[0].winding
+)
 
         // Hole should be counter-clockwise (correct)
         assertEquals(
-            Winding.COUNTER_CLOCKWISE,
-            shape.contours[1].winding,
-            "Hole should be normalized to counter-clockwise"
-        )
+    "Hole should be normalized to counter-clockwise",
+    Winding.COUNTER_CLOCKWISE,
+    shape.contours[1].winding
+)
     }
 
     // ============================================

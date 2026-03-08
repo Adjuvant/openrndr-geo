@@ -12,6 +12,7 @@
  */
 
 import geo.*
+import geo.crs.CRS
 import geo.render.*
 import geo.projection.*
 import org.openrndr.application
@@ -26,21 +27,21 @@ fun main() = application {
     program {
         // Three-line workflow with auto-magic loading
         val data = loadGeo("data/sample.geojson")
-        val topo = loadGeo("data/geo/catchment-topo.geojson")
+        val topo = geoSource("data/geo/catchment-topo.geojson", crs = CRS.WGS84)
 
         // Create projections that fit the data to the viewport
         val projection = data.projectToFit(width, height)
-        val topoProj = topo.projectToFit(width, height)
+        val topoProj = ProjectionFactory.fitBounds(
+            topo.totalBoundingBox(),
+            width.toDouble(), height.toDouble(), 35.0,
+            PROJECTION_MERCATOR
+        )
+
+//        val sortedFeatures = data.features.sortedBy { it.boundingBox.center }
 
         extend {
             // Clear background
             drawer.clear(ColorRGBa.BLACK)
-
-            // Render topo with inline style DSL
-            drawer.geo(topo, topoProj) {
-                stroke = ColorRGBa.RED
-                strokeWeight = 1.5
-            }
 
             // Render data with inline style DSL
             drawer.geo(data, projection) {
@@ -48,6 +49,27 @@ fun main() = application {
                 fill = ColorRGBa.CYAN
                 strokeWeight = 1.0
                 size = 5.0
+            }
+
+//            sortedFeatures.forEach { projectedFeature ->
+//                val f = projectedFeature
+//                when (f){
+//                    is Point -> {
+//                        drawer.circle(f.x,f.y, 5.0)
+//                    }
+//                    is LineString -> {
+//                        drawer.lineSegment(f.points, )
+//                    }
+//                    is Polygon -> {
+//
+//                    }
+//                }
+//            }
+
+            // Render topo with inline style DSL
+            drawer.geo(topo, topoProj) {
+                stroke = ColorRGBa.RED
+                strokeWeight = 1.5
             }
         }
     }

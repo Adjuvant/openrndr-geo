@@ -1,10 +1,8 @@
 package geo.render.geometry
 
 import org.junit.Test
+import org.junit.Assert.*
 import org.openrndr.math.Vector2
-import kotlin.test.assertEquals
-import kotlin.test.assertFalse
-import kotlin.test.assertTrue
 
 /**
  * Tests for AntimeridianSplitter - antimeridian detection and ring splitting algorithms.
@@ -202,7 +200,7 @@ class AntimeridianSplitterTest {
         val result = splitAtAntimeridian(ring)
 
         result.forEach { splitRing ->
-            assertTrue(splitRing.size >= 3, "Ring should have at least 3 vertices")
+            assertTrue("Ring should have at least 3 vertices", splitRing.size >= 3)
             // Check if ring is closed (first equals last)
             assertEquals(splitRing.first().x, splitRing.last().x, 0.0001)
             assertEquals(splitRing.first().y, splitRing.last().y, 0.0001)
