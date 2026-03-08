@@ -30,8 +30,8 @@ fun main() = application {
     }
 
     program {
-        // Three-line workflow
-        val data = loadGeo("examples/data/geo/sample.geojson")
+        // Three-line workflow, with some filter sugar.
+        val data = loadGeo("examples/data/geo/sample.geojson").filter { it.geometry is Polygon }
         val projection = data.projectToFit(width, height)
 
         extend {

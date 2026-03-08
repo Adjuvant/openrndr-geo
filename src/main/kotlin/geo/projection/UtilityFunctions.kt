@@ -10,7 +10,7 @@ import org.openrndr.shape.Rectangle
  * @param max Maximum latitude, defaults to 85.05112878 (Web Mercator limit)
  * @return Clamped latitude in degrees
  */
-fun clampLatitude(latitude: Double, max: Double = 85.05112878): Double {
+fun clampLatitude(latitude: Double, max: Double = MAX_MERCATOR_LAT): Double {
     return latitude.coerceIn(-max, max)
 }
 
