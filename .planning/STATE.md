@@ -141,9 +141,7 @@ None currently.
 - Phase 14 added: 14 refactoring and cleanup, clearing todos
 - Phases 15-20 added: v1.4.0 Developer Experience milestone covering all 11 pending todos
 
-### Pending Todos (0 active - All Formalized as Requirements)
-
-All 11 previously pending todos have been formalized as v1.4.0 requirements. See REQUIREMENTS.md for details.
+### Pending Todos (1 active)
 
 | Area | Count | Phase |
 |------|-------|-------|
@@ -151,8 +149,10 @@ All 11 previously pending todos have been formalized as v1.4.0 requirements. See
 | rendering | 2 | Phase 16 (Rendering Improvements) |
 | performance | 1 | Phase 17 (Performance Fixes) |
 | tooling | 3 | Phase 18 (Code Organization) |
-| docs | 1 | Phase 19 (Documentation Fixes) |
+| docs | 2 | Phase 19 (Documentation Fixes) |
 | layer | 1 | Phase 20 (Layer Features) |
+
+**New:** Add example usage of clampLatitude and utility functions — docs area
 
 ### Quick Tasks Completed
 
