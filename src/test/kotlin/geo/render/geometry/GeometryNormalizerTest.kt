@@ -16,11 +16,12 @@ class GeometryNormalizerTest {
             Vector2(0.0, 100.0)
         )
         val polygon = Polygon(exterior)
-        
+
         val normalized = normalizePolygon(polygon)
-        
+
         assertNotNull(normalized)
-        assertTrue(normalized.exterior.size >= 3)
+        assertEquals("Should return single polygon when no antimeridian crossing", 1, normalized.size)
+        assertTrue(normalized[0].exterior.size >= 3)
     }
 
     @Test
@@ -38,11 +39,12 @@ class GeometryNormalizerTest {
             Vector2(10.0, 20.0)
         )
         val degenerateHole = listOf(Vector2(50.0, 50.0), Vector2(60.0, 50.0))
-        
+
         val polygon = Polygon(exterior, listOf(validHole, degenerateHole))
         val normalized = normalizePolygon(polygon)
-        
-        assertEquals(1, normalized.interiors.size)
+
+        assertEquals(1, normalized.size)
+        assertEquals(1, normalized[0].interiors.size)
     }
 
     @Test
@@ -54,10 +56,11 @@ class GeometryNormalizerTest {
             Vector2(0.0, 10.0)
         )
         val polygon = Polygon(exterior)
-        
+
         val normalized = polygon.normalized()
-        
+
         assertNotNull(normalized)
+        assertEquals(1, normalized.size)
     }
 
     @Test
@@ -75,11 +78,15 @@ class GeometryNormalizerTest {
             Vector2(170.0, 20.0)
         )
         val polygon = Polygon(exterior)
-        
+
         val normalized = normalizePolygon(polygon)
-        
+
         assertNotNull(normalized)
-        // Exterior should be normalized (may be split)
-        assertTrue(normalized.exterior.size >= 3)
+        // When crossing antimeridian, polygon may be split into multiple parts
+        assertTrue("Should return at least one polygon", normalized.size >= 1)
+        // Each polygon should have valid exterior
+        normalized.forEach { part ->
+            assertTrue("Each part should have valid exterior", part.exterior.size >= 3)
+        }
     }
 }
