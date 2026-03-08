@@ -3,8 +3,8 @@ package geo.render
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
 import org.openrndr.math.Vector2
-import org.openrndr.shape.Shape
 import org.openrndr.shape.ShapeContour
+import org.openrndr.shape.compound
 
 /**
  * Write (draw) a Polygon geometry to the screen using the specified style.
@@ -77,9 +77,12 @@ fun writePolygon(
 /**
  * Write (draw) a Polygon geometry with interior rings (holes) to the screen.
  *
- * Uses OpenRNDR's Shape API with multiple contours:
- * - First contour defines the exterior boundary
- * - Subsequent contours define holes (rendered as transparent cutouts)
+ * Uses OPENRNDR's compound { difference {} } boolean operation for explicit
+ * hole subtraction:
+ * - Exterior shape is the base
+ * - Each hole contour is converted to a shape and subtracted from the base
+ * - Returns List<Shape>, drawn with drawer.shapes()
+ * - No manual winding enforcement needed
  *
  * ## Usage
  * ```kotlin
@@ -121,17 +124,27 @@ fun writePolygonWithHoles(
     drawer.lineCap = style.lineCap
     drawer.lineJoin = style.lineJoin
 
-    // Create contours with enforced winding order
-    // Exterior: clockwise (positive fill in screen space)
-    val extContour = ShapeContour.fromPoints(exterior, closed = true).clockwise
+    val extContour = ShapeContour.fromPoints(exterior, closed = true)
 
-    // Interiors: counter-clockwise (negative fill = holes)
     val holeContours = interiors.filter { it.size >= 3 }.map { ring ->
-        ShapeContour.fromPoints(ring, closed = true).counterClockwise
+        ShapeContour.fromPoints(ring, closed = true)
     }
 
-    // Combine into single Shape and draw
-    // TODO This is not how cut holes are rendered in OPENRNDR
-    val shape = Shape(listOf(extContour) + holeContours)
-    drawer.shape(shape)
+    if (holeContours.isEmpty()) {
+        drawer.shape(extContour.shape)
+    } else {
+        // compound { difference {} } performs explicit boolean subtraction.
+        // No manual winding enforcement needed - the first shape is the
+        // base, all subsequent shapes are subtracted from it.
+        // Returns List<Shape>.
+        val result = compound {
+            difference {
+                shape(extContour.shape)
+                for (hole in holeContours) {
+                    shape(hole.shape)
+                }
+            }
+        }
+        drawer.shapes(result)
+    }
 }
