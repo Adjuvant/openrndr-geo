@@ -35,7 +35,7 @@ fun main() = application {
         // Three-line workflow
         // TODO be useful to apply contraints on load, or in projeection step. I.e. before rendering.
         val data = loadGeo("examples/data/geo/ocean.geojson")
-        val projection = data.projectToFit(width, height)
+        val p = data.projectToFit(width, height)
 
         extend {
             // Clear with white background
@@ -43,7 +43,8 @@ fun main() = application {
 
             //TODO Ocean will not render as when projection applied the latitudes in ocean data cause it to explode.
             // Draw multipolygons with inline style DSL
-            drawer.geo(data, projection) {
+            drawer.geo(data) {
+                projection = p
                 fill = ColorRGBa.DEEP_SKY_BLUE
                 stroke = ColorRGBa(0.0, 0.3, 0.6)
                 strokeWeight = 0.5

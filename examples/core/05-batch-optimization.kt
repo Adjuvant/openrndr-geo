@@ -56,7 +56,8 @@ fun main() = application {
             drawer.text("${frameCount} :: ${(frameCount/seconds).toInt()} FPS", 20.0, 20.0)
             
             // LEFT SIDE: Standard source in BLUE
-            drawer.geo(standardSource, leftProjection) {
+            drawer.geo(standardSource) {
+                projection = leftProjection
                 stroke = ColorRGBa.BLUE
                 strokeWeight = 1.5
                 fill = null
@@ -64,7 +65,8 @@ fun main() = application {
 
             // RIGHT SIDE: Optimized source in RED
             drawer.translate((width / 2.0), 0.0)
-            drawer.geo(optimizedData, rightProjection) {
+            drawer.geo(optimizedData) {
+                projection = rightProjection
                 stroke = ColorRGBa.RED
                 strokeWeight = 1.5
                 fill = null

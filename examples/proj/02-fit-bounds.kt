@@ -39,7 +39,7 @@ fun main() = application {
         println("Data bounds: min(${dataBounds.minX}, ${dataBounds.minY}) max(${dataBounds.maxX}, ${dataBounds.maxY})")
 
         // Create projection using projectToFit
-        val projection = data.projectToFit(width, height)
+        val p = data.projectToFit(width, height)
 
         extend {
             // Clear background
@@ -52,7 +52,8 @@ fun main() = application {
             drawer.text("Points: ${data.countFeatures()}", 20.0, 70.0)
 
             // Render points with inline style DSL
-            drawer.geo(data, projection) {
+            drawer.geo(data) {
+                projection = p
                 fill = ColorRGBa.ORANGE
                 stroke = ColorRGBa(0.0, 1.0, 1.0)  // Cyan
                 strokeWeight = 1.0

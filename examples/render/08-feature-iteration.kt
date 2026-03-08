@@ -35,7 +35,7 @@ fun main() = application {
     program {
         // Three-line workflow
         val data = loadGeo("examples/data/geo/coastline.geojson")
-        val projection = data.projectToFit(width, height)
+        val p = data.projectToFit(width, height)
 
         // Define styles using inline DSL pattern
         val pointStyle = Style {
@@ -61,7 +61,8 @@ fun main() = application {
             drawer.clear(ColorRGBa.WHITE)
 
             // Option 1: Use drawer.geo() for simple rendering
-            drawer.geo(data, projection) {
+            drawer.geo(data) {
+                projection = p
                 stroke = ColorRGBa.CORNFLOWER_BLUE
                 strokeWeight = 1.0
                 fill = ColorRGBa.CORNFLOWER_BLUE.withAlpha(0.2)
@@ -72,12 +73,12 @@ fun main() = application {
             data.features.take(10).forEach { feature ->
                 val geometry = feature.geometry
                 when (geometry) {
-                    is Point -> drawPoint(drawer, geometry.toScreen(projection), pointStyle)
-                    is LineString -> drawLineString(drawer, geometry.toScreen(projection), lineStyle)
-                    is Polygon -> drawPolygon(drawer, geometry.exteriorToScreen(projection), polygonStyle)
-                    is MultiPoint -> drawMultiPoint(drawer, geometry, projection, pointStyle)
-                    is MultiLineString -> drawMultiLineString(drawer, geometry, projection, lineStyle)
-                    is MultiPolygon -> drawMultiPolygon(drawer, geometry, projection, polygonStyle)
+                    is Point -> drawPoint(drawer, geometry.toScreen(p), pointStyle)
+                    is LineString -> drawLineString(drawer, geometry.toScreen(p), lineStyle)
+                    is Polygon -> drawPolygon(drawer, geometry.exteriorToScreen(p), polygonStyle)
+                    is MultiPoint -> drawMultiPoint(drawer, geometry, p, pointStyle)
+                    is MultiLineString -> drawMultiLineString(drawer, geometry, p, lineStyle)
+                    is MultiPolygon -> drawMultiPolygon(drawer, geometry, p, polygonStyle)
                 }
             }
         }

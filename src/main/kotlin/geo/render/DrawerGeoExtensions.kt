@@ -318,57 +318,6 @@ fun Drawer.geo(source: GeoSource, block: (GeoRenderConfig.() -> Unit)? = null) {
 // ============================================================================
 
 /**
- * Draw a GeoSource with inline style DSL.
- *
- * ## Three-line workflow
- * ```kotlin
- * val data = loadGeo("world.json")
- * val projection = data.projectToFit(width, height)
- * drawer.geo(data, projection) { stroke = ColorRGBa.WHITE; fill = ColorRGBa.RED }
- * ```
- *
- * ## Inline styling
- * ```kotlin
- * drawer.geo(data) {
- *     stroke = ColorRGBa.BLUE
- *     strokeWeight = 2.0
- *     fill = ColorRGBa.TRANSPARENT
- * }
- * ```
- *
- * Defaults when not specified:
- * - stroke = WHITE
- * - fill = RED (for polygons/points)
- * - strokeWeight = 1.5
- * - size = 5.0 (point radius)
- *
- * @param source The GeoSource to render
- * @param projection Optional projection (null = auto-fit)
- * @param block Style configuration block
- */
-fun Drawer.geo(source: GeoSource, projection: GeoProjection? = null, block: Style.() -> Unit) {
-    // Build style from block
-    val style = Style().apply(block)
-    
-    // Apply defaults for missing properties
-    val finalStyle = applyStyleDefaults(style, source)
-    
-    // Auto-fit projection if not specified
-    val proj = projection ?: ProjectionFactory.fitBounds(
-        bounds = source.totalBoundingBox(),
-        width = this.width.toDouble(),
-        height = this.height.toDouble(),
-        padding = 0.0,  // Tight fit for explicit API
-        projection = ProjectionType.MERCATOR
-    )
-    
-    // Render
-    source.features.forEach { feature ->
-        feature.geometry.renderToDrawer(this, proj, finalStyle)
-    }
-}
-
-/**
  * Apply default values to style properties that weren't set.
  *
  * Defaults:
@@ -461,7 +410,7 @@ private fun resolveOptimizedStyle(optFeature: OptimizedFeature, config: GeoRende
     config.styleByType[typeName]?.let { return it }
 
     // 3. Global style
-    config.style?.let { return it }
+    config.resolvedStyle()?.let { return it }
 
     // 4. Default based on geometry type
     return when (optFeature.optimizedGeometry) {

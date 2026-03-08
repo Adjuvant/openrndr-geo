@@ -32,14 +32,15 @@ fun main() = application {
     program {
         // Three-line workflow, with some filter sugar.
         val data = loadGeo("examples/data/geo/sample.geojson").filter { it.geometry is Polygon }
-        val projection = data.projectToFit(width, height)
+        val p = data.projectToFit(width, height)
 
         extend {
             // Clear with light gray background
             drawer.clear(ColorRGBa(0.95, 0.95, 0.95))
 
             // Draw polygons with inline style DSL
-            drawer.geo(data, projection) {
+            drawer.geo(data) {
+                projection = p
                 fill = ColorRGBa(0.2, 0.6, 0.3, 0.7)  // Green with transparency
                 stroke = ColorRGBa(0.1, 0.3, 0.1)     // Dark green stroke
                 strokeWeight = 1.0

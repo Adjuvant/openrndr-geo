@@ -62,7 +62,7 @@ fun main() = application {
         }
 
         // Create projection
-        val projection = ProjectionFactory.fitBounds(
+        val proj = ProjectionFactory.fitBounds(
             Bounds(-180.0, -90.0, 180.0, 90.0),
             width.toDouble(),
             height.toDouble(),
@@ -88,15 +88,15 @@ fun main() = application {
 
                     // Draw latitude lines
                     for (lat in -90..90 step 30) {
-                        val left = toScreen(lat.toDouble(), -180.0, projection)
-                        val right = toScreen(lat.toDouble(), 180.0, projection)
+                        val left = toScreen(lat.toDouble(), -180.0, proj)
+                        val right = toScreen(lat.toDouble(), 180.0, proj)
                         drawer.lineSegment(left.x, left.y, right.x, right.y)
                     }
 
                     // Draw longitude lines
                     for (lng in -180..180 step 30) {
-                        val top = toScreen(90.0, lng.toDouble(), projection)
-                        val bottom = toScreen(-90.0, lng.toDouble(), projection)
+                        val top = toScreen(90.0, lng.toDouble(), proj)
+                        val bottom = toScreen(-90.0, lng.toDouble(), proj)
                         drawer.lineSegment(top.x, top.y, bottom.x, bottom.y)
                     }
                 }
@@ -106,7 +106,8 @@ fun main() = application {
             layer {
                 draw {
                     coastline?.let { data ->
-                        drawer.geo(data, projection) {
+                        drawer.geo(data) {
+                            projection = proj
                             fill = null
                             stroke = ColorRGBa.CORNFLOWER_BLUE
                             strokeWeight = 2.0
@@ -121,7 +122,7 @@ fun main() = application {
                 draw {
                     rivers?.features?.take(200)?.forEach { feature ->
                         if (feature.geometry is LineString) {
-                            val screenPoints = feature.geometry.toScreen(projection)
+                            val screenPoints = feature.geometry.toScreen(proj)
                             drawLineString(drawer, screenPoints, Style {
                                 fill = null
                                 stroke = ColorRGBa.CYAN.withAlpha(0.6)
@@ -137,7 +138,7 @@ fun main() = application {
                 draw {
                     places?.features?.take(100)?.forEach { feature ->
                         if (feature.geometry is Point) {
-                            val screen = feature.geometry.toScreen(projection)
+                            val screen = feature.geometry.toScreen(proj)
                             drawPoint(drawer, screen, Style {
                                 fill = ColorRGBa.ORANGE
                                 stroke = ColorRGBa.WHITE

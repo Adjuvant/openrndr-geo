@@ -46,7 +46,7 @@ fun main() = application {
         val bounds = geo.Bounds(-180.0, -90.0, 180.0, 90.0)
 
         // Create projection
-        val projection = ProjectionFactory.fitWorldMercator(
+        val proj = ProjectionFactory.fitWorldMercator(
             width = width.toDouble(),
             height = height.toDouble()
         )
@@ -69,7 +69,8 @@ fun main() = application {
 
             // Draw coastline if available using inline style DSL
             coastline?.let { data ->
-                drawer.geo(data, projection) {
+                drawer.geo(data) {
+                    projection = proj
                     fill = ColorRGBa.CORNFLOWER_BLUE.withAlpha(0.2)
                     stroke = ColorRGBa.CORNFLOWER_BLUE.withAlpha(0.5)
                     strokeWeight = 1.0
@@ -89,13 +90,13 @@ fun main() = application {
 
                     if (isLatitude || isLongitude) {
                         if (isLongitude) {
-                            val top = toScreen(-90.0, point.x, projection)
-                            val bottom = toScreen(90.0, point.x, projection)
+                            val top = toScreen(-90.0, point.x, proj)
+                            val bottom = toScreen(90.0, point.x, proj)
                             drawer.lineSegment(top.x, top.y, bottom.x, bottom.y)
                         }
                         if (isLatitude) {
-                            val left = toScreen(point.y, -180.0, projection)
-                            val right = toScreen(point.y, 180.0, projection)
+                            val left = toScreen(point.y, -180.0, proj)
+                            val right = toScreen(point.y, 180.0, proj)
                             drawer.lineSegment(left.x, left.y, right.x, right.y)
                         }
                     }
@@ -109,7 +110,7 @@ fun main() = application {
             graticule10.features.forEach { feature ->
                 if (feature.geometry is Point) {
                     val point = feature.geometry as Point
-                    val screen = point.toScreen(projection)
+                    val screen = point.toScreen(proj)
                     val isGridIntersection =
                         (point.x.toInt() % 10 == 0) && (point.y.toInt() % 10 == 0)
 
@@ -125,14 +126,14 @@ fun main() = application {
             drawer.stroke = null
 
             listOf(-180, -120, -60, 0, 60, 120, 180).forEach { lng ->
-                val screen = toScreen(0.0, lng.toDouble(), projection)
+                val screen = toScreen(0.0, lng.toDouble(), proj)
                 if (screen.x > 50 && screen.x < width - 50) {
                     drawer.text("${lng}°", screen.x - 15, height - 20.0)
                 }
             }
 
             listOf(-90, -60, -30, 0, 30, 60, 90).forEach { lat ->
-                val screen = toScreen(lat.toDouble(), -175.0, projection)
+                val screen = toScreen(lat.toDouble(), -175.0, proj)
                 if (screen.y > 30 && screen.y < height - 50) {
                     drawer.text("${lat}°", 10.0, screen.y + 5)
                 }

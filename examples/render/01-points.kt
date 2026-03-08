@@ -32,20 +32,21 @@ fun main() = application {
     program {
         // Three-line workflow
         val data = loadGeo("examples/data/geo/populated_places.geojson")
-        val projection = data.projectToFit(width, height)
+        val p = data.projectToFit(width, height)
 
         extend {
             // Clear with white background
             drawer.clear(ColorRGBa.WHITE)
 
             // Draw points with inline style DSL - use explicit Style.Builder
-            drawer.geo(data, projection, block = {
+            drawer.geo(data) {
+                projection = p
                 this.fill = ColorRGBa.ORANGE
                 this.stroke = ColorRGBa.DODGER_BLUE
                 this.strokeWeight = 1.0
                 this.size = 8.0
                 this.shape = Shape.Circle
-            })
+            }
         }
     }
 }

@@ -32,7 +32,7 @@ fun main() = application {
 
     program {
         // Create a world Mercator projection that fits the entire world
-        val projection = geo.projection.ProjectionFactory.fitWorldMercator(
+        val proj = geo.projection.ProjectionFactory.fitWorldMercator(
             width = width.toDouble(),
             height = height.toDouble()
         )
@@ -51,7 +51,8 @@ fun main() = application {
 
             // Draw coastline if available
             coastline?.let { data ->
-                drawer.geo(data, projection) {
+                drawer.geo(data) {
+                    projection = proj
                     fill = ColorRGBa.STEEL_BLUE.withAlpha(0.3)
                     stroke = ColorRGBa.CORNFLOWER_BLUE
                     strokeWeight = 1.0

@@ -34,7 +34,7 @@ fun main() = application {
     program {
         // Load data using three-line workflow
         val data = loadGeo("examples/data/geo/sample.geojson")
-        val projection = data.projectToFit(width, height)
+        val p = data.projectToFit(width, height)
 
         extend {
             // Clear with white background
@@ -43,7 +43,8 @@ fun main() = application {
             // Draw with inline style DSL - different styles for different renders
             
             // Style 1: Filled polygons with solid stroke, style passed in DSL
-            drawer.geo(data, projection) {
+            drawer.geo(data) {
+                projection = p
                 fill = ColorRGBa.PINK.opacify(.8)  // Red fill
                 stroke = ColorRGBa.RED     // Dark red stroke
                 strokeWeight = 2.0

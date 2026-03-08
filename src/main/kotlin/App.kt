@@ -30,7 +30,7 @@ fun main() = application {
         val topo = geoSource("data/geo/catchment-topo.geojson", crs = CRS.WGS84)
 
         // Create projections that fit the data to the viewport
-        val projection = data.projectToFit(width, height)
+        val p = data.projectToFit(width, height)
         val topoProj = ProjectionFactory.fitBounds(
             topo.totalBoundingBox(),
             width.toDouble(), height.toDouble(), 35.0,
@@ -44,7 +44,8 @@ fun main() = application {
             drawer.clear(ColorRGBa.BLACK)
 
             // Render data with inline style DSL
-            drawer.geo(data, projection) {
+            drawer.geo(data) {
+                projection = p
                 stroke = ColorRGBa.YELLOW
                 fill = ColorRGBa.CYAN
                 strokeWeight = 1.0
@@ -67,7 +68,8 @@ fun main() = application {
 //            }
 
             // Render topo with inline style DSL
-            drawer.geo(topo, topoProj) {
+            drawer.geo(topo) {
+                projection = topoProj
                 stroke = ColorRGBa.RED
                 strokeWeight = 1.5
             }

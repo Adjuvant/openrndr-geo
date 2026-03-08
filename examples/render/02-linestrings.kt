@@ -31,14 +31,15 @@ fun main() = application {
     program {
         // Three-line workflow
         val data = loadGeo("examples/data/geo/rivers_lakes.geojson")
-        val projection = data.projectToFit(width, height)
+        val p = data.projectToFit(width, height)
 
         extend {
             // Clear with white background
             drawer.clear(ColorRGBa.WHITE)
 
             // Draw linestrings with inline style DSL
-            drawer.geo(data, projection) {
+            drawer.geo(data) {
+                projection = p
                 stroke = ColorRGBa(0.0, 0.4, 0.8)  // Blue color
                 strokeWeight = 1.5
                 fill = null  // Lines don't need fill

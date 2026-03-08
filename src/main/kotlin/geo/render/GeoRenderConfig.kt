@@ -2,63 +2,129 @@ package geo.render
 
 import geo.Feature
 import geo.projection.GeoProjection
+import org.openrndr.color.ColorRGBa
+import org.openrndr.draw.LineCap
+import org.openrndr.draw.LineJoin
 
 /**
  * Configuration for geo rendering with DSL builder support.
  *
- * ## Tier 1: Beginner (no config)
- * ```kotlin
- * drawer.geo(source)  // Auto-fit, default style
- * ```
+ * Style properties (fill, stroke, strokeWeight, etc.) are exposed directly
+ * on this class for simple one-block styling. They delegate to an internal
+ * Style instance which acts as the global/fallback style for the draw call.
  *
- * ## Tier 2: Professional (with config block)
+ * ## Tier 1: Quick styling
  * ```kotlin
  * drawer.geo(source) {
- *     projection = ProjectionMercator { width = 800; height = 600 }
- *     style = Style { stroke = ColorRGBa.WHITE; strokeWeight = 1.0 }
+ *     fill = ColorRGBa.PINK.opacify(0.8)
+ *     stroke = ColorRGBa.RED
+ *     strokeWeight = 2.0
+ * }
+ * ```
+ *
+ * ## Tier 2: Full config
+ * ```kotlin
+ * drawer.geo(source) {
+ *     projection = myProjection
+ *     fill = ColorRGBa.WHITE          // global fallback
+ *     strokeWeight = 1.0
  *     styleByType = mapOf(
  *         "Polygon" to Style { fill = ColorRGBa.RED },
  *         "LineString" to Style { stroke = ColorRGBa.BLUE }
  *     )
  *     styleByFeature = { feature ->
- *         if (feature.doubleProperty("pop") > 1000000) {
- *             Style { stroke = ColorRGBa.YELLOW; strokeWeight = 2.0 }
- *         } else null  // Falls back to styleByType or style
+ *         if (feature.doubleProperty("pop") > 1_000_000)
+ *             Style { stroke = ColorRGBa.YELLOW; strokeWeight = 3.0 }
+ *         else null  // fall through
  *     }
  * }
  * ```
  *
- * @property projection Optional projection (null = auto-fit to data bounds)
- * @property style Global style override
- * @property styleByType Style map keyed by geometry type name
- * @property styleByFeature Per-feature style function (returns null for fallback)
+ * Resolution order: styleByFeature → styleByType → top-level properties → StyleDefaults
  */
-data class GeoRenderConfig(
-    var projection: GeoProjection? = null,
-    var style: Style? = null,
-    var styleByType: Map<String, Style> = emptyMap(),
+class GeoRenderConfig {
+
+    // -- Projection --------------------------------------------------------
+    var projection: GeoProjection? = null
+
+    // -- Delegated style surface ------------------------------------------
+    // Internal Style instance; top-level fill/stroke/etc. read and write
+    // through this. Replaces the old `var style: Style?` field.
+    private val _style = Style()
+    private var _styleExplicitlySet = false
+
+    var fill: ColorRGBa?
+        get() = _style.fill
+        set(value) { _style.fill = value; _styleExplicitlySet = true }
+
+    var stroke: ColorRGBa?
+        get() = _style.stroke
+        set(value) { _style.stroke = value; _styleExplicitlySet = true }
+
+    var strokeWeight: Double
+        get() = _style.strokeWeight
+        set(value) { _style.strokeWeight = value; _styleExplicitlySet = true }
+
+    var size: Double
+        get() = _style.size
+        set(value) { _style.size = value; _styleExplicitlySet = true }
+
+    var shape: Shape
+        get() = _style.shape
+        set(value) { _style.shape = value; _styleExplicitlySet = true }
+
+    var lineCap: LineCap
+        get() = _style.lineCap
+        set(value) { _style.lineCap = value; _styleExplicitlySet = true }
+
+    var lineJoin: LineJoin
+        get() = _style.lineJoin
+        set(value) { _style.lineJoin = value; _styleExplicitlySet = true }
+
+    var miterLimit: Double
+        get() = _style.miterLimit
+        set(value) { _style.miterLimit = value; _styleExplicitlySet = true }
+
+    // -- Advanced style config --------------------------------------------
+    var styleByType: Map<String, Style> = emptyMap()
     var styleByFeature: ((Feature) -> Style?)? = null
-) {
+
+    // -- Helpers -----------------------------------------------------------
+
+    /**
+     * Returns the internal Style if any property was explicitly set,
+     * or null if the user never touched style properties.
+     * Used by the resolution chain to decide whether top-level
+     * style should override StyleDefaults.
+     */
+    fun resolvedStyle(): Style? = if (_styleExplicitlySet) _style else null
+
+    /**
+     * Returns a snapshot for safe iteration during render.
+     */
+    fun snapshot(): GeoRenderConfig {
+        val copy = GeoRenderConfig()
+        copy.projection = projection
+        if (_styleExplicitlySet) {
+            copy.fill = _style.fill
+            copy.stroke = _style.stroke
+            copy.strokeWeight = _style.strokeWeight
+            copy.size = _style.size
+            copy.shape = _style.shape
+            copy.lineCap = _style.lineCap
+            copy.lineJoin = _style.lineJoin
+            copy.miterLimit = _style.miterLimit
+        }
+        copy.styleByType = styleByType.toMap()
+        copy.styleByFeature = styleByFeature
+        return copy
+    }
+
     companion object {
-        /**
-         * Create GeoRenderConfig using DSL syntax.
-         * Follows Style { } and ProjectionMercator { } patterns.
-         */
         operator fun invoke(block: GeoRenderConfig.() -> Unit): GeoRenderConfig {
             return GeoRenderConfig().apply(block)
         }
     }
-    
-    /**
-     * Returns a snapshot of this config for safe iteration.
-     * Prevents mutation during render loop.
-     */
-    fun snapshot(): GeoRenderConfig = GeoRenderConfig(
-        projection = projection,
-        style = style,
-        styleByType = styleByType.toMap(),
-        styleByFeature = styleByFeature
-    )
 }
 
 /**
@@ -122,7 +188,7 @@ fun resolveStyle(feature: Feature, config: GeoRenderConfig): Style {
     config.styleByType[typeName]?.let { return it }
     
     // 3. Global style
-    config.style?.let { return it }
+    config.resolvedStyle()?.let { return it }
     
     // 4. Default
     return StyleDefaults.forGeometry(feature.geometry)

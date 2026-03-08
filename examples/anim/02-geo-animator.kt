@@ -36,7 +36,7 @@ fun main() = application {
     program {
         // Three-line workflow for loading data
         val data = loadGeo("examples/data/geo/populated_places.geojson")
-        val projection = data.projectToFit(width, height)
+        val proj = data.projectToFit(width, height)
         val features = data.features.toList().take(50)
 
         // Get the first point as animation target
@@ -50,7 +50,7 @@ fun main() = application {
         val animator = animator()
 
         // Calculate target screen position
-        val targetScreen = targetPoint.toScreen(projection)
+        val targetScreen = targetPoint.toScreen(proj)
         val originX = width / 2.0
         val originY = height / 2.0
 
@@ -74,7 +74,8 @@ fun main() = application {
             drawer.text("Position: (${animator.x.toInt()}, ${animator.y.toInt()})", 20.0, 80.0)
 
             // Draw all other points (static) using inline style DSL
-            drawer.geo(data, projection) {
+            drawer.geo(data) {
+                projection = proj
                 fill = ColorRGBa.WHITE.withAlpha(0.3)
                 stroke = null
                 size = 4.0
