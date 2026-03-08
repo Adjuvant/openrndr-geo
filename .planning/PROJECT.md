@@ -72,8 +72,8 @@ An expressive, well-architected API that makes exploring intersections of geo da
 - [ ] **API-01:** Single-import API — `import geo.*` gets everything needed
 - [ ] **API-02:** Reduced boilerplate — 3-line rendering workflow
 - [ ] **API-03:** RawProjection UX improvements for advanced workflows
-- [ ] **RENDER-01:** MultiPolygon rendering fixes for ocean/whole-world data
-- [ ] **RENDER-02:** Polygon ring handling — proper interior/exterior support
+- [x] **RENDER-01:** MultiPolygon rendering fixes for ocean/whole-world data
+- [x] **RENDER-02:** Polygon ring handling — proper interior/exterior support
 - [ ] **PERF-11:** OptimizedGeoSource caching — extend ViewportCache
 - [ ] **ORG-01:** Clean up necro examples from src/main/kotlin/geo/examples
 - [ ] **ORG-02:** Move geo root files to core/ subdirectory

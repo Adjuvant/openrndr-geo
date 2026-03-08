@@ -9,7 +9,7 @@
 
 **Milestone:** v1.4.0 Developer Experience  
 **Goal:** Improve API ergonomics, fix rendering edge cases, and enhance developer workflow  
-**Phase:** 15 (API Ergonomics)
+**Phase:** 17 (Performance Fixes)
 
 ---
 
@@ -39,30 +39,30 @@
 
 ### Phase 16: Rendering Improvements
 
-**Status:** Planned  
-**Plans:** 3/3 plans executed
+**Status:** Complete  
+**Plans:** 3/3 plans complete
 
 **Goal:** Fix MultiPolygon rendering for ocean/whole-world data and improve polygon interior/exterior ring handling.
 
 **Requirements:** RENDER-01, RENDER-02
 
 **Success Criteria:**
-1. MultiPolygons spanning antimeridian render without world-spanning artifacts
-2. Polygon winding order is normalized (exterior clockwise, interior counter-clockwise)
-3. Interior ring validation logs warnings for degenerate/out-of-bounds holes
-4. MultiPolygons render as single Shape with combined contours (no overdraw/seams)
-5. Both standard and optimized render paths use combined Shape approach
+1. ✅ MultiPolygons spanning antimeridian render without world-spanning artifacts
+2. ✅ Polygon winding order is normalized (exterior clockwise, interior counter-clockwise)
+3. ✅ Interior ring validation logs warnings for degenerate/out-of-bounds holes
+4. ✅ MultiPolygons render as single Shape with combined contours (no overdraw/seams)
+5. ✅ Both standard and optimized render paths use combined Shape approach
 
-**Planned:**
+**Completed:**
 - [x] [`16-01-PLAN.md`](phases/16-rendering-improvements/16-01-PLAN.md) — Geometry normalization utilities (antimeridian splitting, winding normalization, ring validation)
 - [x] [`16-02-PLAN.md`](phases/16-rendering-improvements/16-02-PLAN.md) — MultiPolygon rendering improvements (combined Shape rendering, optimized path updates)
-- [ ] [`16-03-PLAN.md`](phases/16-rendering-improvements/16-03-PLAN.md) — Gap closure (test helpers, multi-ring handling)
+- [x] [`16-03-PLAN.md`](phases/16-rendering-improvements/16-03-PLAN.md) — Gap closure (test helpers, multi-ring handling)
 
 ---
 
 ### Phase 17: Performance Fixes
 
-**Status:** Not Started  
+**Status:** In Progress  
 **Plans:** 0/1
 
 **Goal:** Extend ViewportCache to OptimizedGeoSource rendering path.
