@@ -40,7 +40,7 @@
 ### Phase 16: Rendering Improvements
 
 **Status:** Complete  
-**Plans:** 3/3 plans complete
+**Plans:** 4/4 plans complete
 
 **Goal:** Fix MultiPolygon rendering for ocean/whole-world data and improve polygon interior/exterior ring handling.
 
@@ -112,7 +112,7 @@
 |-------|-----------|-------|--------|--------|
 | 11-14 | v1.3.0 | 13/13 | ✅ Complete | 2026-03-07 |
 | 15 | v1.4.0 | 2/2 | ✅ Complete | 2026-03-07 |
-| 16 | 3/3 | In Progress| Gap closure | TBD |
+| 16 | 3/3 | Complete    | 2026-03-08 | TBD |
 | 17 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
 | 18 | v1.4.0 | 0/2 | ⏳ Not Started | TBD |
 | 19 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
