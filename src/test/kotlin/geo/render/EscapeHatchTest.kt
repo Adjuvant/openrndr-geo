@@ -71,10 +71,10 @@ class EscapeHatchTest {
         
         val perFeatureStyle = Style { stroke = ColorRGBa.RED; strokeWeight = 5.0 }
         val typeStyle = Style { stroke = ColorRGBa.GREEN; strokeWeight = 3.0 }
-        val globalStyle = Style { stroke = ColorRGBa.BLUE; strokeWeight = 1.0 }
-        
+
         val config = GeoRenderConfig()
-        config.style = globalStyle
+        config.stroke = ColorRGBa.BLUE
+        config.strokeWeight = 1.0
         config.styleByType = mapOf("Point" to typeStyle)
         config.styleByFeature = { f ->
             val priority = f.property("priority") as? String

@@ -25,7 +25,7 @@ class DrawerGeoExtensionsTest {
     fun testSimpleGeoCall() {
         val config = GeoRenderConfig()
         assertNull("Default config should have no projection", config.projection)
-        assertNull("Default config should have no style", config.style)
+        assertNull("Default config should have no style", config.resolvedStyle())
         assertTrue("Default config should have empty styleByType", config.styleByType.isEmpty())
         assertNull("Default config should have no styleByFeature", config.styleByFeature)
     }
@@ -36,10 +36,10 @@ class DrawerGeoExtensionsTest {
     @Test
     fun testGeoWithConfigBlock() {
         val config = GeoRenderConfig()
-        config.style = Style { stroke = ColorRGBa.RED }
+        config.stroke = ColorRGBa.RED
         
-        assertNotNull("Config should have style", config.style)
-        assertEquals("Style should have red stroke", ColorRGBa.RED, config.style?.stroke)
+        assertNotNull("Config should have style", config.resolvedStyle())
+        assertEquals("Style should have red stroke", ColorRGBa.RED, config.resolvedStyle()?.stroke)
     }
     
     /**
@@ -53,18 +53,19 @@ class DrawerGeoExtensionsTest {
         
         assertSame("Config should store projection", proj, config.projection)
     }
-    
+
     /**
      * Test that style from config block is applied.
      */
     @Test
     fun testConfigBlockStyle() {
-        val customStyle = Style { fill = ColorRGBa.BLUE; stroke = ColorRGBa.GREEN }
-        val config = GeoRenderConfig()
-        config.style = customStyle
-        
-        assertEquals("Style should have blue fill", ColorRGBa.BLUE, config.style?.fill)
-        assertEquals("Style should have green stroke", ColorRGBa.GREEN, config.style?.stroke)
+        val config = GeoRenderConfig {
+            fill = ColorRGBa.BLUE
+            stroke = ColorRGBa.GREEN
+        }
+
+        assertEquals("Style should have blue fill", ColorRGBa.BLUE, config.resolvedStyle()?.fill)
+        assertEquals("Style should have green stroke", ColorRGBa.GREEN, config.resolvedStyle()?.stroke)
     }
     
     /**
@@ -82,15 +83,15 @@ class DrawerGeoExtensionsTest {
     @Test
     fun testConfigSnapshot() {
         val original = GeoRenderConfig()
-        original.style = Style { stroke = ColorRGBa.RED }
+        original.stroke = ColorRGBa.RED
         
         val snapshot = original.snapshot()
         
         // Modify original
-        original.style = Style { stroke = ColorRGBa.BLUE }
+        original.stroke = ColorRGBa.BLUE
         
         // Snapshot should be unchanged
-        assertEquals("Snapshot should have original style", ColorRGBa.RED, snapshot.style?.stroke)
+        assertEquals("Snapshot should have original style", ColorRGBa.RED, snapshot.resolvedStyle()?.stroke)
     }
     
     /**
