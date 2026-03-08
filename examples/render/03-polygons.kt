@@ -43,8 +43,8 @@ fun main() = application {
             // TODO fails to render holes in provided polygon features.
             drawer.geo(data) {
                 projection = p
-                fill = ColorRGBa(0.2, 0.6, 0.3, 0.1)  // Green with transparency
-                stroke = ColorRGBa(0.1, 0.3, 0.1)     // Dark green stroke
+                fill = ColorRGBa(0.2, 0.6, 0.3, 0.6)  // Green with transparency
+                stroke = ColorRGBa(0.1, 0.8, 0.1)     // Dark green stroke
                 strokeWeight = 1.0
             }
         }

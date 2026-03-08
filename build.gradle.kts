@@ -46,6 +46,10 @@ kotlin.sourceSets.getByName("main") {
     kotlin.srcDir("examples")
 }
 
+kotlin.sourceSets.getByName("main") {
+    kotlin.srcDir("uat")
+}
+
 // ============================================================================
 // Regression Testing
 // ============================================================================

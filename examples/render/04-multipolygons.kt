@@ -34,7 +34,7 @@ fun main() = application {
     program {
         // Three-line workflow
         // TODO be useful to apply contraints on load, or in projeection step. I.e. before rendering.
-        val data = loadGeo("examples/data/geo/ocean.geojson")
+        val data = loadGeo("examples/data/geo/polygonsWithHole.geojson")
         val p = data.projectToFit(width, height)
 
         extend {
@@ -46,7 +46,7 @@ fun main() = application {
             drawer.geo(data) {
                 projection = p
                 fill = ColorRGBa.DEEP_SKY_BLUE
-                stroke = ColorRGBa(0.0, 0.3, 0.6)
+                stroke = ColorRGBa(0.0, 0.6, 0.6)
                 strokeWeight = 0.5
             }
         }
