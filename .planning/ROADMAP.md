@@ -40,7 +40,7 @@
 ### Phase 16: Rendering Improvements
 
 **Status:** Complete  
-**Plans:** 4/4 plans complete
+**Plans:** 4/4 plans complete (1 gap closure plan pending execution)
 
 **Goal:** Fix MultiPolygon rendering for ocean/whole-world data and improve polygon interior/exterior ring handling.
 
@@ -52,11 +52,16 @@
 3. ✅ Interior ring validation logs warnings for degenerate/out-of-bounds holes
 4. ✅ MultiPolygons render as single Shape with combined contours (no overdraw/seams)
 5. ✅ Both standard and optimized render paths use combined Shape approach
+6. ✅ Geometry normalization integrated into GeoJSON loading pipeline
+7. ✅ Polygon holes render correctly in standard rendering paths
 
 **Completed:**
 - [x] [`16-01-PLAN.md`](phases/16-rendering-improvements/16-01-PLAN.md) — Geometry normalization utilities (antimeridian splitting, winding normalization, ring validation)
 - [x] [`16-02-PLAN.md`](phases/16-rendering-improvements/16-02-PLAN.md) — MultiPolygon rendering improvements (combined Shape rendering, optimized path updates)
 - [x] [`16-03-PLAN.md`](phases/16-rendering-improvements/16-03-PLAN.md) — Gap closure (test helpers, multi-ring handling)
+
+**Gap Closure (Pending Execution):**
+- [ ] [`16-04-PLAN.md`](phases/16-rendering-improvements/16-04-PLAN.md) — Integration of normalization into loading pipeline and hole rendering fixes
 
 ---
 
