@@ -9,7 +9,8 @@ import geo.projection.MAX_MERCATOR_LAT
 import geo.projection.ProjectionMercator
 import org.openrndr.draw.Drawer
 import org.openrndr.math.Vector2
-import geo.render.writePolygonWithHoles
+import org.openrndr.shape.Shape
+import org.openrndr.shape.ShapeContour
 
 /**
  * Draw a MultiPoint geometry as a collection of points with consistent styling.
@@ -153,6 +154,13 @@ fun drawMultiPolygon(
 ) {
     val style = mergeStyles(StyleDefaults.defaultPolygonStyle, userStyle)
 
+    // Apply style properties to drawer
+    drawer.fill = style.fill
+    drawer.stroke = style.stroke
+    drawer.strokeWeight = style.strokeWeight
+    drawer.lineCap = style.lineCap
+    drawer.lineJoin = style.lineJoin
+
     // For Mercator projections, optionally clamp coordinates to valid range
     // This prevents artifacts when rendering ocean/whole-world data
     val polygonsToRender = if (clampToMercatorBounds && projection is ProjectionMercator) {
@@ -172,16 +180,26 @@ fun drawMultiPolygon(
         multiPolygon.polygons
     }
 
+    // Collect all contours from all polygons into a single Shape
+    // This eliminates overdraw at shared boundaries and seams with transparency
+    val allContours = mutableListOf<ShapeContour>()
+
     polygonsToRender.forEach { polygon ->
-        if (polygon.hasHoles()) {
-            // Render polygon with holes
-            val exterior = polygon.exteriorToScreen(projection)
-            val interiors = polygon.interiorsToScreen(projection)
-            writePolygonWithHoles(drawer, exterior, interiors, style)
-        } else {
-            // Simple polygon without holes
-            val exterior = polygon.exteriorToScreen(projection)
-            writePolygon(drawer, exterior, style)
+        // Project exterior to screen space and create clockwise contour
+        val screenExterior = polygon.exteriorToScreen(projection)
+        val extContour = ShapeContour.fromPoints(screenExterior, closed = true).clockwise
+        allContours.add(extContour)
+
+        // Project and add all holes with counter-clockwise winding
+        polygon.interiors.forEach { ring ->
+            if (ring.size >= 3) {
+                val screenRing = ring.map { projection.project(it) }
+                val holeContour = ShapeContour.fromPoints(screenRing, closed = true).counterClockwise
+                allContours.add(holeContour)
+            }
         }
     }
+
+    // Single draw call with all contours - non-zero winding rule handles overlap
+    drawer.shape(Shape(allContours))
 }
