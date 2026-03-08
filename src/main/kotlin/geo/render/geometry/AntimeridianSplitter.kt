@@ -67,12 +67,21 @@ internal fun interpolateAntimeridianCrossing(p1: Vector2, p2: Vector2): Double {
 internal fun splitAtAntimeridian(ring: List<Vector2>): List<List<Vector2>> {
     if (ring.isEmpty()) return emptyList()
     if (ring.size < 2) return listOf(ring)
+    
+    // If ring doesn't cross antimeridian, return it as-is
+    if (!crossesAntimeridian(ring)) {
+        return listOf(ring)
+    }
 
     val result = mutableListOf<MutableList<Vector2>>()
     var currentRing = mutableListOf<Vector2>()
 
-    // Check if this is a closed ring (first == last)
-    val isClosed = ring.size > 1 && ring.first().x == ring.last().x && ring.first().y == ring.last().y
+    // Check if this is a closed ring (first point equals last point)
+    val isClosed = ring.size > 2 && 
+                   ring.first().x == ring.last().x && 
+                   ring.first().y == ring.last().y
+    
+    // For closed rings, don't process the final closing segment
     val iterations = if (isClosed) ring.size - 1 else ring.size
 
     for (i in 0 until iterations) {
