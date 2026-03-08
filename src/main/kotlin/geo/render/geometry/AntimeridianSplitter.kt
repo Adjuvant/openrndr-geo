@@ -71,7 +71,11 @@ internal fun splitAtAntimeridian(ring: List<Vector2>): List<List<Vector2>> {
     val result = mutableListOf<MutableList<Vector2>>()
     var currentRing = mutableListOf<Vector2>()
 
-    for (i in ring.indices) {
+    // Check if this is a closed ring (first == last)
+    val isClosed = ring.size > 1 && ring.first().x == ring.last().x && ring.first().y == ring.last().y
+    val iterations = if (isClosed) ring.size - 1 else ring.size
+
+    for (i in 0 until iterations) {
         val current = ring[i]
         val next = ring[(i + 1) % ring.size]
 

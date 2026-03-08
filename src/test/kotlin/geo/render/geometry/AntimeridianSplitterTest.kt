@@ -222,16 +222,3 @@ class AntimeridianSplitterTest {
         assertEquals(1, result[0].size)
     }
 }
-
-// TODO: Implement these functions in AntimeridianSplitter.kt (plan 16-01)
-fun crossesAntimeridian(ring: List<Vector2>): Boolean {
-    TODO("Implement in plan 16-01: Detect if ring crosses ±180° longitude")
-}
-
-fun interpolateAntimeridianCrossing(p1: Vector2, p2: Vector2): Double {
-    TODO("Implement in plan 16-01: Interpolate latitude at antimeridian boundary")
-}
-
-fun splitAtAntimeridian(ring: List<Vector2>): List<List<Vector2>> {
-    TODO("Implement in plan 16-01: Split ring at antimeridian crossings")
-}
