@@ -1,9 +1,9 @@
 ---
-status: testing
+status: diagnosed
 phase: 16-rendering-improvements
 source: [16-00-SUMMARY.md, 16-01-SUMMARY.md, 16-02-SUMMARY.md, 16-03-SUMMARY.md]
 started: 2026-03-08T02:30:00Z
-updated: 2026-03-08T02:38:00Z
+updated: 2026-03-08T02:40:00Z
 ---
 
 ## Current Test
@@ -63,17 +63,38 @@ skipped: 0
   reason: "User reported: fail, see @examples/render/04-multipolygons.kt @.planning/todos/pending/2026-02-25-fix-multipolygon-ocean-data.md you may have created functions and test but they are not plumbed in to load>project>render flow for data like the world ocean. This is essential. Ocean must work. @examples/data/geo/ocean.geojson"
   severity: blocker
   test: 7
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Geometry normalization utilities (AntimeridianSplitter, WindingNormalizer, RingValidator, GeometryNormalizer) were fully implemented but never integrated into the data loading or rendering pipeline. GeoJSON.parsePolygon() and parseMultiPolygon() return raw parsed geometries without normalization. The CONTEXT.md decision to 'normalize at load time' was never implemented."
+  artifacts:
+    - path: "src/main/kotlin/geo/GeoJSON.kt"
+      issue: "parsePolygon() and parseMultiPolygon() return raw geometries without normalization"
+    - path: "src/main/kotlin/geo/loadGeo.kt"
+      issue: "loadGeo() has no normalization layer"
+    - path: "src/main/kotlin/geo/render/DrawerGeoExtensions.kt"
+      issue: "renderToDrawer() doesn't call normalization"
+  missing:
+    - "Import and call normalizePolygon() in GeoJSON.parsePolygon()"
+    - "Import and call normalizeMultiPolygon() in GeoJSON.parseMultiPolygon()"
+    - "Handle List<Polygon> return type when antimeridian splitting produces multiple polygons"
+  debug_session: ".planning/debug/geometry-normalization-integration.md"
 
 - truth: "Polygon holes render as transparent cutouts using non-zero winding rule with correct winding order"
   status: failed
   reason: "User reported: fail: @examples/render/04-multipolygons.kt none of the test file holes are rendered @examples/data/geo/polygonsWithHole.geojson shape order for exteriors. major issue, essential feature of geo rendering."
   severity: blocker
   test: 8
-  root_cause: ""
-  artifacts: []
-  missing: []
-  debug_session: ""
+  root_cause: "Standard rendering paths in DrawerGeoExtensions.kt completely ignore interior rings (holes). Geometry.renderToDrawer() for Polygon only maps exterior points and ignores interiors. MultiPolygon case also only uses poly.exterior. Only the optimized rendering path (OptimizedPolygon.renderOptimizedToDrawer()) correctly handles holes by checking interiors and calling writePolygonWithHoles()."
+  artifacts:
+    - path: "src/main/kotlin/geo/render/DrawerGeoExtensions.kt:366-368"
+      issue: "Polygon.renderToDrawer() only renders exterior, ignores interiors"
+    - path: "src/main/kotlin/geo/render/DrawerGeoExtensions.kt:382-386"
+      issue: "MultiPolygon.renderToDrawer() only uses poly.exterior"
+    - path: "src/main/kotlin/geo/render/DrawerGeoExtensions.kt:504-507"
+      issue: "projectGeometryToArray() only projects exterior coordinates"
+    - path: "src/main/kotlin/geo/render/DrawerGeoExtensions.kt:526-548"
+      issue: "renderProjectedCoordinates() only renders exterior from cache"
+  missing:
+    - "Polygon.renderToDrawer() must check if interiors.isNotEmpty() and call writePolygonWithHoles()"
+    - "MultiPolygon.renderToDrawer() must collect all contours (exteriors + holes) into single Shape"
+    - "projectGeometryToArray() must return both exterior AND interior coordinates"
+    - "renderProjectedCoordinates() must handle holes for Polygon/MultiPolygon"
+  debug_session: ".planning/debug/polygon-holes-not-rendering.md"
