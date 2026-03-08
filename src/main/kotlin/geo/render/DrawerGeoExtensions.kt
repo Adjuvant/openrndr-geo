@@ -21,6 +21,8 @@ import geo.projection.ProjectionFactory
 import geo.projection.ProjectionType
 import org.openrndr.draw.Drawer
 import org.openrndr.math.Vector2
+import org.openrndr.shape.Shape
+import org.openrndr.shape.ShapeContour
 
 /**
  * Viewport cache for Drawer.geo() extension function.
@@ -514,17 +516,27 @@ internal fun OptimizedFeature.renderOptimizedToDrawer(
             }
         }
         is OptimizedMultiPolygon -> {
+            // Render as single Shape with all contours combined
+            // This eliminates overdraw at shared boundaries and seams with transparency
+            val allContours = mutableListOf<ShapeContour>()
+
             geom.toScreenCoordinates(projection).forEach { (exterior, interiors) ->
-                if (interiors.isEmpty()) {
-                    drawPolygon(drawer, exterior.toList(), style)
-                } else {
-                    writePolygonWithHoles(
-                        drawer,
-                        exterior.toList(),
-                        interiors.map { it.toList() },
-                        style ?: StyleDefaults.defaultPolygonStyle
-                    )
+                // Add exterior contour with clockwise winding (positive fill)
+                val extContour = ShapeContour.fromPoints(exterior.toList(), closed = true).clockwise
+                allContours.add(extContour)
+
+                // Add interior contours with counter-clockwise winding (negative fill = holes)
+                interiors.forEach { ring ->
+                    if (ring.size >= 3) {
+                        val holeContour = ShapeContour.fromPoints(ring.toList(), closed = true).counterClockwise
+                        allContours.add(holeContour)
+                    }
                 }
+            }
+
+            // Single draw call with all contours
+            if (allContours.isNotEmpty()) {
+                drawer.shape(Shape(allContours))
             }
         }
     }
