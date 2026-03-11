@@ -294,23 +294,37 @@ fun Drawer.geo(source: GeoSource, block: (GeoRenderConfig.() -> Unit)? = null) {
 
     // Render each feature with style resolution
     // Handle optimized sources specially since they don't support standard Feature access
-    when (source) {
-        is OptimizedGeoSource -> {
-            // For optimized sources, render directly without Feature conversion
-            // Apply style configuration (style, styleByType) but not styleByFeature (no Feature objects)
-            source.optimizedFeatureSequence.forEach { optFeature ->
-                val style = resolveOptimizedStyle(optFeature, resolved)
-                optFeature.renderOptimizedToDrawer(this, proj, style)
+when (source) {
+    is OptimizedGeoSource -> {
+        // For optimized sources, render directly without Feature conversion
+        // Intercept the geometry and apply normalization including antimeridian splits
+        source.optimizedFeatureSequence.forEach { optFeature ->
+            val style = resolveOptimizedStyle(optFeature, resolved)
+            // Normalize geometry polygons crossing antimeridian
+            val normalizedGeometry = when (val geom = optFeature.geometry) {
+                is geo.internal.geometry.OptimizedPolygon -> {
+                    val polygons = normalizePolygon(geom.toPolygon())
+                    polygons
+                }
+                is geo.internal.geometry.OptimizedMultiPolygon -> {
+                    val multi = geom.toMultiPolygon()
+                    normalizeMultiPolygon(multi)
+                }
+                else -> listOf(geom)
             }
-        }
-        else -> {
-            // Standard per-feature rendering
-            source.features.forEach { feature ->
-                val style = resolveStyle(feature, resolved)
-                feature.geometry.renderToDrawer(this, proj, style)
+            normalizedGeometry.forEach { poly ->
+                poly.renderToDrawer(this, proj, style)
             }
         }
     }
+    else -> {
+        // Standard per-feature rendering
+        source.features.forEach { feature ->
+            val style = resolveStyle(feature, resolved)
+            feature.geometry.renderToDrawer(this, proj, style)
+        }
+    }
+}
 }
 
 // ============================================================================

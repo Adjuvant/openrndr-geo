@@ -136,17 +136,60 @@ internal fun makeCoordinatesContinuous(ring: List<Vector2>): List<Vector2> {
 internal fun splitAtAntimeridian(ring: List<Vector2>): List<List<Vector2>> {
     if (ring.isEmpty()) return emptyList()
     if (ring.size < 3) return listOf(ring)
-    
+
     // Only split if it actually crosses
     if (!crossesAntimeridian(ring)) {
         return listOf(ring)
     }
-    
-    // Split using interpolation
-    val fragments = splitWithInterpolation(ring)
-    
+
+    // Split using enhanced interpolation
+    val fragments = splitWithEnhancedInterpolation(ring)
+
     // Filter: keep only valid rings (closed, >=4 points, no seam jumps)
     return fragments.filter { isValidRing(it) }
+}
+
+private fun splitWithEnhancedInterpolation(ring: List<Vector2>): List<List<Vector2>> {
+    if (ring.size < 3) return listOf(ring)
+    
+    val result = mutableListOf<MutableList<Vector2>>()
+    var currentFragment = mutableListOf<Vector2>()
+
+    val numEdges = ring.size
+    for (i in 0 until numEdges) {
+        val current = ring[i]
+        currentFragment.add(current)
+
+        val nextIndex = (i + 1) % ring.size
+        val next = ring[nextIndex]
+
+        val diff = next.x - current.x
+        if (abs(diff) > 180.0) {
+            val crossingLat = interpolateAntimeridianCrossing(current, next)
+            val boundaryLon = if (current.x > 0) 180.0 else -180.0
+            
+            currentFragment.add(Vector2(boundaryLon, crossingLat))
+            currentFragment.add(currentFragment.first())
+            result.add(currentFragment)
+
+            val newFragment = mutableListOf(Vector2(-boundaryLon, crossingLat))
+
+            // Adding next point shifted by 360 degrees accordingly
+            val shiftedNext = if (next.x < 0) Vector2(next.x + 360, next.y) else Vector2(next.x - 360, next.y)
+            newFragment.add(shiftedNext)
+
+            currentFragment = newFragment
+        }
+    }
+
+    if (currentFragment.size >= 4) {
+        if (currentFragment.first() != currentFragment.last()) {
+            currentFragment.add(currentFragment.first())
+        }
+        result.add(currentFragment)
+    }
+
+    return result
 }
 
 /**

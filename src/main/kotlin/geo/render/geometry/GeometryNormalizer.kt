@@ -38,6 +38,44 @@ fun normalizePolygon(polygon: Polygon, featureId: String? = null): List<Polygon>
     val closedExteriors = processedExteriors.map { closeRing(it) }.filter { it.size >= 4 }
 
     // Step 4: Process interiors - determine which exterior each interior belongs to
+
+    val result = mutableListOf<Polygon>()
+
+    for (extRing in closedExteriors) {
+        // Find interiors that are contained within this exterior
+        val assignedInteriors = validInteriors.filter { interior ->
+            interior.size >= 3 && pointInPolygon(interior.first(), extRing)
+        }.map { closeRing(it) }.filter { it.size >= 4 }
+
+        // Normalize winding for this exterior and its assigned interiors together
+        val (normalizedExterior, normalizedInteriors) = normalizePolygonWinding(extRing, assignedInteriors)
+
+        result.add(Polygon(normalizedExterior, normalizedInteriors))
+    }
+
+    // STEP 5: Handle normalized polygons crossing antimeridian again if needed
+    val finalResult = mutableListOf<Polygon>()
+    for (poly in result) {
+        if (crossesAntimeridian(poly.exterior)) {
+            finalResult.addAll(normalizePolygon(poly))
+        } else {
+            finalResult.add(poly)
+        }
+    }
+
+    return finalResult
+}
+
+        else -> {
+            // No antimeridian involvement
+            listOf(polygon.exterior)
+        }
+    }
+
+    // Step 3: Close all rings properly (add first point as last if not already closed)
+    val closedExteriors = processedExteriors.map { closeRing(it) }.filter { it.size >= 4 }
+
+    // Step 4: Process interiors - determine which exterior each interior belongs to
     val result = mutableListOf<Polygon>()
     
     for (extRing in closedExteriors) {
