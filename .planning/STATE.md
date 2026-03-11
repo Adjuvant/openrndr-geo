@@ -1,9 +1,9 @@
 # Project State: openrndr-geo
 
 **Current Milestone:** v1.4.0 Developer Experience
-**Phase:** 16 (Rendering Improvements — Complete)
+**Phase:** 16 (Rendering Improvements — Gap closure incomplete)
 **Current Plan:** Not started
-**Last Updated:** 2026-03-08T14:12:51Z
+**Last Updated:** 2026-03-11
 
 ## Project Reference
 
@@ -32,7 +32,7 @@
 | 13 | Integration & Validation | ✓ Complete | 2/2 | - |
 | 14 | Refactoring and Cleanup | ✓ Complete | 6/6 | - |
 | 15 | API Ergonomics | ✓ Complete | 2/2 | - |
-| 16 | Rendering Improvements | ✓ Complete | 3/3 | - |
+| 16 | Rendering Improvements | ◆ Gap closure | 4/4 | Antimeridian |
 | 17 | Performance Fixes | ○ Not Started | 0/1 | - |
 | 18 | Code Organization | ○ Not Started | 0/2 | - |
 | 19 | Documentation Fixes | ○ Not Started | 0/1 | - |
@@ -116,8 +116,14 @@
 - API-03: RawProjection UX improvements
 
 **Phase 16 — Rendering Improvements:**
-- RENDER-01: MultiPolygon rendering for ocean/whole-world data ✓ (implemented with normalization)
-- RENDER-02: Polygon interior/exterior ring handling ✓ (implemented with compound boolean difference)
+- RENDER-01: MultiPolygon rendering for ocean/whole-world data ✓ (normalization implemented)
+- RENDER-02: Polygon interior/exterior ring handling ✓ (winding normalization - holes work)
+
+**Gap Closure Status (16-05 to 16-08):**
+- 16-05 Latitude clamping: ✅ Already implemented
+- 16-06 Winding order: ✅ FIXED - holes now render correctly
+- 16-07 Antimeridian: ❌ NOT RESOLVED - needs different approach
+- 16-08 ViewportCache holes: ✅ Already implemented
 
 **Phase 17 — Performance Fixes:**
 - PERF-11: ViewportCache for OptimizedGeoSource
@@ -164,33 +170,34 @@ None currently.
 
 ## Session Continuity
 
-### Last Actions
+### Last Actions (2026-03-11)
+- ✅ Phase 16 gap closure: Holes now render correctly (winding normalization)
+- ❌ Phase 16 gap closure: Antimeridian handling NOT resolved
+- Created 16-05-PLAN.md through 16-08-PLAN.md for gap closure
+- Created 16-05-UAT.md documenting test results
+- Committed changes: db9eabf
+
+### Previous Actions
 - ✅ Started v1.4.0 Developer Experience milestone
 - ✅ Updated PROJECT.md with current milestone goals and target features
 - ✅ Updated STATE.md for new milestone (phases 15-20 initialized)
-- ✅ Formalized 11 pending todos as v1.4.0 requirements
-- ✅ Created REQUIREMENTS.md with REQ-IDs for all 11 requirements
-
-### Previous Actions
-- ✅ Completed Quick Task 11: Mark batch screen space projection todo as done
-- ✅ Evaluated all 11 pending todos and assigned to roadmap phases
-- ✅ Added Phases 15-20 to ROADMAP.md for v1.4.0 Developer Experience milestone
-- ✅ Updated all todo files with status: scheduled and roadmap_phase references
-- Updated STATE.md pending todos count from 0 to 11 (actual count)
-- Quick Task 11 complete: 2/2 tasks done
 
 ### Next Actions
-1. **Phase 15: API Ergonomics** — Execute plans 15-01 and 15-02
-2. Run `/gsd-start 15-01` to begin implementation
-3. Continue with Phases 16-20 sequentially
+1. **Resume Phase 16 gap closure** - Antimeridian needs different approach
+2. Expert insight: Use continuous coordinates (0-360 range) for rendering, not split rings
+3. Or: Don't transform pre-split data at ±180° at all
+
+### Gap Closure Status
+- Holes: ✅ Working
+- Antimeridian: ❌ Needs more work
 
 ### v1.4.0 Developer Experience (In Progress)
 
-**Current:** Phase 15 planning complete (2/2 plans), ready for execution
+**Current:** Phase 16 gap closure incomplete
 
 **Phases:**
-- Phase 15: API Ergonomics — API-01, API-02, API-03
-- Phase 16: Rendering Improvements — RENDER-01, RENDER-02
+- Phase 15: API Ergonomics — Complete
+- Phase 16: Rendering Improvements — Gap closure (holes ✅, antimeridian ❌)
 - Phase 17: Performance Fixes — PERF-11
 - Phase 18: Code Organization — ORG-01, ORG-02, ORG-03
 - Phase 19: Documentation Fixes — DOCS-01
