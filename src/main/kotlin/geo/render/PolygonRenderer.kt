@@ -1,11 +1,14 @@
+package geo.render
+
 import org.openrndr.draw.Drawer
 import org.openrndr.math.Vector2
 import org.openrndr.shape.ShapeContour
 import org.openrndr.shape.Shape
-import org.openrndr.draw.ColorRGBa
+import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.*
 import org.openrndr.math.*
 import org.openrndr.shape.*
+import geo.render.geometry.normalizePolygonWinding
 
 fun writePolygonWithHoles(
     drawer: Drawer,
@@ -23,29 +26,38 @@ fun writePolygonWithHoles(
     drawer.lineCap = style.lineCap
     drawer.lineJoin = style.lineJoin
 
-    val newExterior = exterior.clockwise()
-    val newInteriors = interiors.map { it.counterClockwise() }
+    // Normalize winding: exterior clockwise, interiors counter-clockwise
+    val (normalizedExterior, normalizedInteriors) = normalizePolygonWinding(exterior, interiors)
 
-    val extContour = ShapeContour.fromPoints(newExterior, closed = true)
-    val holeContours = newInteriors.filter { it.size >= 3 }.map { ring ->
+    // Use non-zero winding rule: add all contours to a single Shape
+    // Exterior clockwise = positive area, Interior counter-clockwise = negative area
+    // Non-zero rule: contributions with opposite signs cancel, leaving holes transparent
+    val allContours = mutableListOf<ShapeContour>()
+    
+    val extContour = ShapeContour.fromPoints(normalizedExterior, closed = true)
+    allContours.add(extContour)
+    
+    val holeContours = normalizedInteriors.filter { it.size >= 3 }.map { ring ->
         ShapeContour.fromPoints(ring, closed = true)
     }
+    allContours.addAll(holeContours)
 
-    if (holeContours.isEmpty()) {
-        drawer.shape(extContour.shape)
-    } else {
-        // compound { difference {} } performs explicit boolean subtraction.
-        // No manual winding enforcement needed - the first shape is the
-        // base, all subsequent shapes are subtracted from it.
-        // Returns List<Shape>.
-        val result = compound {
-            difference {
-                shape(extContour.shape)
-                for (hole in holeContours) {
-                    shape(hole.shape)
-                }
-            }
-        }
-        drawer.shapes(result)
-    }
+    drawer.shape(Shape(allContours))
+}
+
+fun writePolygon(
+    drawer: Drawer,
+    points: List<Vector2>,
+    style: Style
+) {
+    if (points.size < 3) return
+
+    drawer.fill = style.fill ?: ColorRGBa.WHITE.withAlpha(0.0)
+    drawer.stroke = style.stroke ?: ColorRGBa.WHITE
+    drawer.strokeWeight = style.strokeWeight
+    drawer.lineCap = style.lineCap
+    drawer.lineJoin = style.lineJoin
+
+    val contour = ShapeContour.fromPoints(points, closed = true)
+    drawer.shape(contour.shape)
 }

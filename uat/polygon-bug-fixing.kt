@@ -4,11 +4,13 @@ package uat
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import geo.*
+import geo.projection.ProjectionFactory
 import geo.render.*
+import org.openrndr.internal.colorBufferLoader
 
 fun main() = application {
     configure {
-        width = 500
+        width = 1000
         height = 500
     }
 
@@ -16,23 +18,27 @@ fun main() = application {
         val antimeridianData = loadGeo("data/geo/test-antimeridian-crossing.geojson")
         val p = antimeridianData.projectToFit(width, height)
 
-        val polyHolesData = loadGeo("data/geo/polygonsWithHole.geojson")
-        val holeProjection = polyHolesData.projectToFit(width, height)
+        val ocean = geoSource("data/geo/ocean.geojson")
+        val coastline = geoSource("data/geo/coastline.geojson")  // WGS84
+        val cities = geoSource("data/geo/populated_places.geojson")       // WGS84
+        val map = geoStack( coastline, cities) // ocean,
 
+        val oceanProjection = ocean.projectToFit(width,height)
 
         extend {
             drawer.clear(ColorRGBa(0.15, 0.15, 0.15))
 
+//            map.render(drawer)
+            drawer.geo(ocean){
+                projection = oceanProjection
+                stroke = ColorRGBa.PINK
+                fill = ColorRGBa.GREEN
+            }
             drawer.geo(antimeridianData) {
                 projection = p
-                fill = ColorRGBa(0.2, 0.6, 0.3, 0.6)  // Green with transparency
-                stroke = ColorRGBa(0.1, 0.8, 0.1)     // Dark green stroke
-                strokeWeight = 1.0
-            }
-
-            drawer.geo(polyHolesData){
-                projection = holeProjection
                 fill = ColorRGBa.YELLOW
+                stroke = ColorRGBa.BLUE
+                strokeWeight = 1.0
             }
         }
     }

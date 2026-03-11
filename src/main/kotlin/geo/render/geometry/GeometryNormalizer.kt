@@ -21,22 +21,83 @@ fun normalizePolygon(polygon: Polygon, featureId: String? = null): List<Polygon>
     // Step 1: Validate interior rings
     val validInteriors = validateInteriorRings(polygon.exterior, polygon.interiors, featureId)
 
-    // Step 2: Check if exterior crosses antimeridian
-    val exteriorRings = if (crossesAntimeridian(polygon.exterior)) {
-        splitAtAntimeridian(polygon.exterior)
+    // Step 2: Handle antimeridian - split exterior into separate rings
+    // Use split approach for ALL antimeridian cases - more reliable
+    val processedExteriors: List<List<Vector2>> = when {
+        crossesAntimeridian(polygon.exterior) -> {
+            // Crosses the seam - split into separate rings at the seam
+            splitAtAntimeridian(polygon.exterior)
+        }
+        else -> {
+            // No antimeridian involvement
+            listOf(polygon.exterior)
+        }
+    }
+
+    // Step 3: Close all rings properly (add first point as last if not already closed)
+    val closedExteriors = processedExteriors.map { closeRing(it) }.filter { it.size >= 4 }
+
+    // Step 4: Process interiors - determine which exterior each interior belongs to
+    val result = mutableListOf<Polygon>()
+    
+    for (extRing in closedExteriors) {
+        // Find interiors that are contained within this exterior
+        val assignedInteriors = validInteriors.filter { interior ->
+            interior.size >= 3 && pointInPolygon(interior.first(), extRing)
+        }.map { closeRing(it) }.filter { it.size >= 4 }
+        
+        // Normalize winding for this exterior and its assigned interiors together
+        val (normalizedExterior, normalizedInteriors) = normalizePolygonWinding(extRing, assignedInteriors)
+        
+        result.add(Polygon(normalizedExterior, normalizedInteriors))
+    }
+    
+    return result
+}
+
+/**
+ * Checks if a ring has vertices on both +180 and -180 sides.
+ */
+private fun hasBothSides(ring: List<Vector2>): Boolean {
+    val hasPositive = ring.any { it.x > 0 }
+    val hasNegative = ring.any { it.x < 0 }
+    return hasPositive && hasNegative
+}
+
+/**
+ * Closes a ring by adding the first point at the end if not already closed.
+ */
+private fun closeRing(ring: List<Vector2>): List<Vector2> {
+    if (ring.size < 3) return ring
+    return if (ring.first() == ring.last()) {
+        ring
     } else {
-        listOf(polygon.exterior)
+        ring + ring.first()
     }
+}
 
-    // Step 3: Create a Polygon for each exterior ring with normalized winding
-    return exteriorRings.mapNotNull { extRing ->
-        // Filter out any empty or degenerate exterior rings
-        if (extRing.size < 3) return@mapNotNull null
-
-        // Normalize winding for this exterior and all interiors
-        val (normalizedExterior, normalizedInteriors) = normalizePolygonWinding(extRing, validInteriors)
-        Polygon(normalizedExterior, normalizedInteriors)
+/**
+ * Simple point-in-polygon test using ray casting.
+ */
+private fun pointInPolygon(point: Vector2, polygon: List<Vector2>): Boolean {
+    if (polygon.size < 3) return false
+    
+    var crossings = 0
+    val n = polygon.size
+    for (i in 0 until n) {
+        val j = (i + 1) % n
+        val xi = polygon[i].x
+        val yi = polygon[i].y
+        val xj = polygon[j].x
+        val yj = polygon[j].y
+        
+        if (((yi > point.y) != (yj > point.y)) &&
+            (point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi)) {
+            crossings++
+        }
     }
+    
+    return crossings % 2 == 1
 }
 
 /**
