@@ -173,7 +173,8 @@ object GeoJSON {
      */
     private fun parseFeature(geoJsonFeature: GeoJSONFeature): Feature? {
         return try {
-            val geometry = parseGeometry(geoJsonFeature.geometry)
+            var geometry = parseGeometry(geoJsonFeature.geometry)
+    geometry = geometry.clampToMercator()
             val properties = geoJsonFeature.properties?.let { parseProperties(it) } ?: emptyMap()
             Feature(geometry = geometry, properties = properties)
         } catch (e: Exception) {
