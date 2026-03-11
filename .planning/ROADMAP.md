@@ -76,6 +76,16 @@
 
 ---
 
+### Phase 17.1: Antimeridian splitting fixes and validation (INSERTED)
+
+**Goal:** Fix antimeridian splitting logic and validation in optimized rendering path.
+**Requirements:** PERF-11
+**Depends on:** Phase 16
+**Plans:** 1/1 plans defined
+
+Plans:
+- [ ] [`17.1-01-PLAN.md`](phases/17.1-antimeridian-splitting-fixes-and-validation/17.1-01-PLAN.md) — Fix antimeridian splitting and validation in optimized rendering path
+
 ### Phase 18: Code Organization
 
 **Status:** Not Started  
