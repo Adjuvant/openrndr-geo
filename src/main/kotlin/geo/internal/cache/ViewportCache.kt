@@ -1,88 +1,57 @@
 package geo.internal.cache
 
-import geo.Geometry
-import org.openrndr.math.Vector2
+internal const val DEFAULT_MAX_ENTRIES = 500
 
 /**
- * Maximum number of entries in the viewport cache.
- * When exceeded, the entire cache is cleared.
- * This simple size limit avoids complex LRU/LFU logic.
+ * Composite key combining viewport state and feature key.
  */
-internal const val MAX_CACHE_ENTRIES = 1000
+private data class CompositeKey<K>(val viewportState: ViewportState, val feature: K)
 
 /**
- * Viewport-based cache for projected geometry coordinates.
+ * Generic viewport cache implementation with clear-on-change semantics.
+ * Stores Map<CompositeKey<K>, V> internally.
+ * Clears cache if viewport state changes or size limit exceeded.
  *
- * Implements clear-on-change semantics:
- * - Entire cache clears when viewport state changes (zoom, pan, projection size)
- * - Individual entries clear when geometry dirty flag is set
- * - Simple size limit enforcement (clears all when exceeded)
- *
- * Uses MutableMap for storage - OpenRNDR rendering is single-threaded,
- * so no ConcurrentHashMap or synchronization is needed.
- *
- * Per 12-CONTEXT.md: No external caching libraries (Caffeine/Aedile),
- * no LRU/LFU eviction, just simple MutableMap with clear-on-change.
+ * @param K key type representing the feature reference (Geometry or OptimizedFeature)
+ * @param V value type cached (e.g., List<Shape>)
+ * @param maxEntries max number of entries before eviction (default 500)
  */
-internal class ViewportCache {
-    private val cache = mutableMapOf<CacheKey, Array<Vector2>>()
+internal class ViewportCache<K, V>(private val maxEntries: Int = DEFAULT_MAX_ENTRIES) {
+    private val cache = mutableMapOf<CompositeKey<K>, V>()
     private var currentViewportState: ViewportState? = null
 
     /**
-     * Gets projected coordinates for a geometry, using cache if available.
+     * Retrieves a cached value for given feature and viewport state.
+     * If missing, uses factory lambda to create and cache.
+     * Clears cache completely on viewport state change.
+     * Clears entire cache if size limit is exceeded.
      *
-     * Logic:
-     * 1. If viewport state changed: clear entire cache, update current state
-     * 2. If geometry is dirty: remove this geometry's entry from cache, clear dirty flag
-     * 3. If cache size >= MAX_CACHE_ENTRIES: clear entire cache
-     * 4. Use getOrPut to return cached value or compute and store
-     *
-     * @param geometry The geometry to project
-     * @param viewportState The current viewport state
-     * @param projector Lambda that computes projected coordinates when cache miss
-     * @return Array of projected Vector2 coordinates
+     * @param feature key representing the feature
+     * @param viewportState current viewport state
+     * @param factory lambda to create value if missing
+     * @return cached or newly created value
      */
-    fun getProjectedCoordinates(
-        geometry: Geometry,
-        viewportState: ViewportState,
-        projector: () -> Array<Vector2>
-    ): Array<Vector2> {
-        // Step 1: Clear cache on viewport change
+    fun get(feature: K, viewportState: ViewportState, factory: () -> V): V {
         if (viewportState != currentViewportState) {
             cache.clear()
             currentViewportState = viewportState
         }
 
-        // Step 2: Check dirty flag and invalidate specific entry
-        if (geometry.isDirty) {
-            val dirtyKey = CacheKey(viewportState, geometry)
-            cache.remove(dirtyKey)
-            geometry.isDirty = false
-        }
-
-        // Step 3: Check size limit
-        if (cache.size >= MAX_CACHE_ENTRIES) {
+        if (cache.size >= maxEntries) {
             cache.clear()
         }
 
-        // Step 4: Get from cache or compute
-        val key = CacheKey(viewportState, geometry)
-        return cache.getOrPut(key) { projector() }
+        val compositeKey = CompositeKey(viewportState, feature)
+        return cache.getOrPut(compositeKey, factory)
     }
 
-    /**
-     * Manually clears the entire cache.
-     * Useful for testing or when explicit cache invalidation is needed.
-     */
+    /** Clears the entire cache manually. */
     fun clear() {
         cache.clear()
         currentViewportState = null
     }
 
-    /**
-     * Current number of entries in the cache.
-     * Exposed primarily for testing and monitoring.
-     */
+    /** Current cache size for monitoring/testing. */
     val size: Int
         get() = cache.size
 }
