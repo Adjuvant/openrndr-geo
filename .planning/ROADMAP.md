@@ -66,7 +66,10 @@
 ### Phase 17: Performance Fixes
 
 **Status:** In Progress  
-**Plans:** 0/1
+**Plans:** 1/1
+
+**Planned:**
+- [x] [`17-01-PLAN.md`](phases/17-performance-fixes/17-01-PLAN.md) — Extend ViewportCache to optimized path
 
 **Goal:** Extend ViewportCache to OptimizedGeoSource rendering path.
 
