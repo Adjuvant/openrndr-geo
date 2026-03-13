@@ -17,14 +17,18 @@ Extend ViewportCache to work with OptimizedGeoSource rendering path (PERF-11). C
 <decisions>
 ## Implementation Decisions
 
-### Cache Granularity (OpenCode's Discretion)
-- **Key insight from discussion:** Cache actual OpenRNDR primitives (Shape, Contour) rather than just Array<Vector2>
-- Current approach converts arrays to Shapes every frame - wasteful for static viewports
-- Tradeoff: Higher memory usage vs zero per-frame conversion cost
-- **Decision:** OpenCode to analyze and recommend based on:
-  - Memory overhead of Shape objects vs coordinate arrays
-  - Typical creative coding scene sizes (1000-10000 features)
-  - Performance gain from eliminating per-frame Shape construction
+### Cache Value Type: Replacement, Not Extension
+- **Critical realization:** This is NOT an incremental extension of Phase 12 — it replaces the entire cache value type and render-from-cache pathway
+- Phase 12 built a chain around `Array<Vector2>`: `projectGeometryToArray()` → `renderWithCache()` → `renderProjectedCoordinates()`
+- New flow: Check cache → on miss, project AND construct Shape/Contour → cache Shape → on hit, render Shape directly (skip both projection and construction)
+- **Decision:** Replace the chain entirely — single cache value type (Shape), clean implementation. Maintaining parallel array+Shape paths defeats the "unified implementation" goal.
+
+### Memory Overhead: Recalculate MAX_CACHE_ENTRIES
+- Phase 12 set `MAX_CACHE_ENTRIES = 1000` assuming `Array<Vector2>` values
+- ShapeContour stores ~4× memory per vertex (Segments with degenerate linear cubics)
+- Back-of-envelope: 1000 entries × 50 vertices = ~60-80 MB (vs ~15-20 MB for arrays)
+- Still within creative coding budget, but limit must be recalculated for new value type
+- **Decision:** Recalculate early in planning — consider 500 limit or make configurable
 
 ### Scope — Both Render Paths
 - Apply shape caching to **both** standard Geometry path AND OptimizedGeoSource path
@@ -38,23 +42,50 @@ Extend ViewportCache to work with OptimizedGeoSource rendering path (PERF-11). C
   - `styleByFeature` for property-based styling (height → color fade example)
   - Feature properties/data attributes for accessing cached shapes
 - **Avoid:** New API patterns that duplicate existing functionality
-- **Verify during planning:** Does current `styleByFeature` API already support the height → color fade use case? Don't build if it already exists.
+- **Verify before planning:** Does `resolveOptimizedStyle()` invoke the `styleByFeature` callback? 
+  - Standard path: `resolveStyle()` 
+  - Optimized path: `resolveOptimizedStyle()`
+  - If `resolveOptimizedStyle()` does NOT invoke `styleByFeature`, property-based styling silently fails on optimized path
+  - **In scope:** Ensure style resolution parity (not new API, just fixing missing integration)
 
-### Cache Key Strategy
-- Standard Geometry: Continue using object reference (identity) + viewport state
-- Optimized geometries: Use OptimizedFeature reference + viewport state
-- **Consistent with Phase 12 decisions:** Identity-based keys, no content hashing
+### Critical: Sequence Stability for Identity-Based Cache Keys
+- Phase 12 validated identity equality (`===`) against `Geometry` objects in **materialised lists** — worked because stable references
+- Optimized path exposes `optimizedFeatureSequence: Sequence<OptimizedFeature>` — often lazy pipelines
+- **Risk:** If sequence re-evaluates per frame, every iteration produces fresh `OptimizedFeature` instances with new identity hashes → cache becomes write-only (0% hit rate)
+- **Must verify before planning:**
+  1. Is `optimizedFeatureSequence` backed by materialised collection (e.g., `List.asSequence()`)?
+  2. Or is it a lazy pipeline producing new instances per iteration?
+- **Resolution options:**
+  - If materialised: Identity keys work as-is
+  - If lazy: Either materialise on first access and hold references, OR switch to index-based keys (index within source + viewport state)
+
+### Cache Unification: Single Generic Implementation
+- **Don't duplicate `ViewportCache`** — use single generic cache `ViewportCache<K, V>` parameterized on key and value types
+- Standard path: `ViewportCache<Geometry, Shape>` (keys on Geometry identity + viewport state)
+- Optimized path: `ViewportCache<OptimizedFeature, Shape>` (keys on OptimizedFeature identity + viewport state)
+- Same eviction semantics, same clear-on-change, one implementation
+- **Avoid:** Duplicating cache class — looks harmless now, diverges silently later
 
 ### Memory Management
 - **OpenCode's Discretion:** Size limits and eviction strategy
 - Carry forward Phase 12 approach: Simple clear-on-change, no LRU/LFU
-- Consider Shape memory overhead in MAX_CACHE_ENTRIES calculation
+- **Already addressed:** Shape memory overhead in MAX_CACHE_ENTRIES calculation above
 - Creative coding context: Performance > strict memory bounds
 
+### Render Path: Clarify Canonical Location
+- **Ambiguity:** Phase 12-03 integrated cache into `GeoStack.render()`, but Phase 17 context identifies `DrawerGeoExtensions.kt` (`Drawer.geo()`) as render dispatch point
+- **Question:** Which path is canonical going forward? `GeoStack.render()` or `Drawer.geo()`?
+- **Impact:** If `GeoStack` is being phased out in favor of `Drawer.geo()` extension pattern (v1.4 DSL refactor suggests this), then Phase 12 `GeoStack` integration may be dead code
+- **Must clarify before planning:** Build Shape cache into canonical path only
+
 ### Dirty Flag Pattern
-- Standard Geometry: Continue using `isDirty` flag (Phase 12 pattern)
-- Optimized geometries: **OpenCode's Discretion** — evaluate if OptimizedFeature should support dirty flags
-- Consider: Are optimized geometries typically immutable after creation?
+- **Standard Geometry:** Continue using `isDirty` flag (Phase 12 pattern) — geometries are mutable
+- **Optimized geometries:** **DO NOT add dirty flag to `OptimizedFeature`**
+  - `optimizedGeometry: Any` is opaque, type-erased blob from preprocessing
+  - Not intended for mutation — adding dirty flag adds ceremony without utility
+  - Cache invalidation: **source-level**, not per-feature
+  - If `OptimizedGeoSource` changes (replaced or sequence changes), clear entire cache
+- Aligns with Phase 12 pattern: clear-on-change semantics applied at source level
 
 </decisions>
 
@@ -70,6 +101,15 @@ User identified the real bottleneck: "It's all the shifting from data → projec
 Example: Contour lines with height data property, render color fade by height.
 
 **Constraint:** Ensure this is possible through EXISTING API (styleByFeature) before building new access patterns. Creative coding workflow should use consistent patterns.
+
+### Antimeridian Interaction (Phase 17.1)
+- Phase 17.1 handles antimeridian fixes — antimeridian-split geometries produce **multiple Shapes** from single Feature
+- Current Phase 12 cache assumes one-to-one mapping (`CacheKey` → `Array<Vector2>`)
+- **Design constraint:** Cache must handle one-to-many (one feature key → multiple cached Shapes)
+- **Options:**
+  - Cache value type is `List<Shape>` rather than `Shape` (always a list, usually length 1) — **recommended**
+  - Cache key includes split index — more complex, fragments the cache
+- **Decision:** Use `List<Shape>` as cache value type for forward compatibility with 17.1
 
 ### Current Architecture Context
 - `ViewportCache` stores `Array<Vector2>` for standard geometries
@@ -123,7 +163,16 @@ None — discussion stayed within phase scope. Key insight (cache Shapes not arr
 
 </deferred>
 
+## Pre-Planning Checklist (Must Resolve Before Task Breakdown)
+
+- [ ] **Sequence stability:** Verify whether `optimizedFeatureSequence` is backed by materialised collection or lazy pipeline
+- [ ] **Canonical render path:** Confirm whether `GeoStack.render()` or `Drawer.geo()` is target for Shape caching
+- [ ] **Style resolution parity:** Check whether `resolveOptimizedStyle()` invokes `styleByFeature`
+
+**Once these three are resolved, the plan is ready for task breakdown.** Everything else — cache unification, memory recalculation, dirty flag decision, antimeridian one-to-many — can be addressed during planning with information already available.
+
 ---
 
 *Phase: 17-performance-fixes*
 *Context gathered: 2026-03-13*
+*Updated: 2026-03-13 with technical review feedback*
