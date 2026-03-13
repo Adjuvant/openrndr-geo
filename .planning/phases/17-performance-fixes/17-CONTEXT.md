@@ -1,7 +1,8 @@
 # Phase 17: Performance Fixes - Context
 
 **Gathered:** 2026-03-13
-**Status:** Ready for planning
+**Verified:** 2026-03-13 — Code inspection completed, pre-planning checklist resolved
+**Status:** Ready for planning — All blockers cleared
 
 <domain>
 ## Phase Boundary
@@ -42,22 +43,20 @@ Extend ViewportCache to work with OptimizedGeoSource rendering path (PERF-11). C
   - `styleByFeature` for property-based styling (height → color fade example)
   - Feature properties/data attributes for accessing cached shapes
 - **Avoid:** New API patterns that duplicate existing functionality
-- **Verify before planning:** Does `resolveOptimizedStyle()` invoke the `styleByFeature` callback? 
-  - Standard path: `resolveStyle()` 
-  - Optimized path: `resolveOptimizedStyle()`
-  - If `resolveOptimizedStyle()` does NOT invoke `styleByFeature`, property-based styling silently fails on optimized path
-  - **In scope:** Ensure style resolution parity (not new API, just fixing missing integration)
+- **Verified:** `resolveOptimizedStyle()` does NOT invoke `styleByFeature` — gap confirmed ❌
+  - Standard path: `resolveStyle()` calls `styleByFeature?.invoke(feature)` first (line 177)
+  - Optimized path: `resolveOptimizedStyle()` checks `styleByType` and global `style`, never calls `styleByFeature`
+  - **In scope:** Add styleByFeature support to resolveOptimizedStyle() for parity
 
-### Critical: Sequence Stability for Identity-Based Cache Keys
+### Critical: Sequence Stability for Identity-Based Cache Keys ✅
 - Phase 12 validated identity equality (`===`) against `Geometry` objects in **materialised lists** — worked because stable references
 - Optimized path exposes `optimizedFeatureSequence: Sequence<OptimizedFeature>` — often lazy pipelines
 - **Risk:** If sequence re-evaluates per frame, every iteration produces fresh `OptimizedFeature` instances with new identity hashes → cache becomes write-only (0% hit rate)
-- **Must verify before planning:**
-  1. Is `optimizedFeatureSequence` backed by materialised collection (e.g., `List.asSequence()`)?
-  2. Or is it a lazy pipeline producing new instances per iteration?
-- **Resolution options:**
-  - If materialised: Identity keys work as-is
-  - If lazy: Either materialise on first access and hold references, OR switch to index-based keys (index within source + viewport state)
+- **Verified:** `optimizedFeatureSequence` is backed by materialised collection ✅
+  - `GeoJSON.kt:107` — `features.toList()` creates materialised List
+  - `GeoJSON.kt:117` — `featureList.map { ... }` creates List<OptimizedFeature>
+  - `GeoJSON.kt:123` — `optimizedFeatures.asSequence()` — List wrapped as Sequence
+- **Resolution:** Identity keys work as-is — use OptimizedFeature reference + viewport state
 
 ### Cache Unification: Single Generic Implementation
 - **Don't duplicate `ViewportCache`** — use single generic cache `ViewportCache<K, V>` parameterized on key and value types
@@ -72,11 +71,13 @@ Extend ViewportCache to work with OptimizedGeoSource rendering path (PERF-11). C
 - **Already addressed:** Shape memory overhead in MAX_CACHE_ENTRIES calculation above
 - Creative coding context: Performance > strict memory bounds
 
-### Render Path: Clarify Canonical Location
-- **Ambiguity:** Phase 12-03 integrated cache into `GeoStack.render()`, but Phase 17 context identifies `DrawerGeoExtensions.kt` (`Drawer.geo()`) as render dispatch point
-- **Question:** Which path is canonical going forward? `GeoStack.render()` or `Drawer.geo()`?
-- **Impact:** If `GeoStack` is being phased out in favor of `Drawer.geo()` extension pattern (v1.4 DSL refactor suggests this), then Phase 12 `GeoStack` integration may be dead code
-- **Must clarify before planning:** Build Shape cache into canonical path only
+### Render Path: Drawer.geo() is Canonical ✅
+- **Resolved:** `Drawer.geo()` is the modern canonical path (v1.4 DSL pattern)
+- **Current state:**
+  - `GeoStack.render()` — legacy, has Phase 12 cache for standard features, but no optimized path caching
+  - `Drawer.geo()` — modern DSL, used in examples, **has NO caching at all currently**
+- **Decision:** Build Shape cache into `Drawer.geo()` extension (not GeoStack)
+- **Rationale:** GeoStack is legacy pattern; Drawer.geo() is the forward path for v1.4+
 
 ### Dirty Flag Pattern
 - **Standard Geometry:** Continue using `isDirty` flag (Phase 12 pattern) — geometries are mutable
@@ -163,13 +164,58 @@ None — discussion stayed within phase scope. Key insight (cache Shapes not arr
 
 </deferred>
 
-## Pre-Planning Checklist (Must Resolve Before Task Breakdown)
+## Pre-Planning Checklist — RESOLVED
 
-- [ ] **Sequence stability:** Verify whether `optimizedFeatureSequence` is backed by materialised collection or lazy pipeline
-- [ ] **Canonical render path:** Confirm whether `GeoStack.render()` or `Drawer.geo()` is target for Shape caching
-- [ ] **Style resolution parity:** Check whether `resolveOptimizedStyle()` invokes `styleByFeature`
+### ✅ 1. Sequence Stability — Materialised vs Lazy?
+**ANSWER: Materialised ✅**
 
-**Once these three are resolved, the plan is ready for task breakdown.** Everything else — cache unification, memory recalculation, dirty flag decision, antimeridian one-to-many — can be addressed during planning with information already available.
+**Evidence:**
+- `GeoJSON.kt:107` — `val featureList = features.toList()` — features materialized into List
+- `GeoJSON.kt:117` — `val optimizedFeatures = featureList.map { ... }` — creates List<OptimizedFeature>
+- `GeoJSON.kt:123` — `OptimizedGeoSource(optimizedFeatures.asSequence(), ...)` — List wrapped as Sequence
+
+**Implication:** `optimizedFeatureSequence` is backed by a materialised List. OptimizedFeature objects are stable references. **Identity-based cache keys WILL work** — no need for index-based keys.
+
+---
+
+### ⚠️ 2. Canonical Render Path — GeoStack vs Drawer.geo()?
+**ANSWER: Target `Drawer.geo()` (modern pattern)**
+
+**Evidence:**
+- `GeoStack.render()` (`GeoStack.kt:221`) — legacy but functional
+  - Has caching for standard features via `renderWithCache()`
+  - No caching for optimized path (lines 228-230 direct render)
+- `Drawer.geo()` (`DrawerGeoExtensions.kt:270+`) — modern DSL approach
+  - Used in examples and v1.4 API
+  - No caching at all in current implementation
+
+**Implication:** Phase 12 cache is in GeoStack only. Drawer.geo() is the newer, recommended pattern but lacks caching entirely. **Shape cache MUST target Drawer.geo()`** — that's the canonical forward path.
+
+---
+
+### ❌ 3. Style Resolution Parity — styleByFeature on Optimized Path?
+**ANSWER: Gap exists — needs fixing**
+
+**Evidence:**
+- `resolveStyle()` (standard path) — `GeoRenderConfig.kt:177`:
+  ```kotlin
+  config.styleByFeature?.invoke(feature)?.let { return it }  // Called FIRST
+  ```
+- `resolveOptimizedStyle()` (optimized path) — `DrawerGeoExtensions.kt:415-443`:
+  - Checks `styleByType` (line 428)
+  - Checks global `style` (line 431)
+  - **NEVER calls styleByFeature** ❌
+
+**Implication:** Property-based styling (height → color fade) **silently fails** on optimized path. This is in-scope work for Phase 17 — add styleByFeature support to resolveOptimizedStyle().
+
+---
+
+## Planning Readiness
+
+All three items resolved. Ready for task breakdown. Key decisions locked:
+1. ✅ Use identity-based keys (sequence is materialised)
+2. ⚠️ Target Drawer.geo() for Shape cache (modern canonical path)
+3. ❌ Add styleByFeature to resolveOptimizedStyle() (parity gap)
 
 ---
 
