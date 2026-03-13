@@ -129,7 +129,7 @@ Plans:
 | 11-14 | v1.3.0 | 13/13 | ✅ Complete | 2026-03-07 |
 | 15 | v1.4.0 | 2/2 | ✅ Complete | 2026-03-07 |
 | 16 | 3/3 | Complete    | 2026-03-08 | TBD |
-| 17 | 1/1 | Complete   | 2026-03-13 | TBD |
+| 17 | 1/1 | Complete    | 2026-03-13 | TBD |
 | 18 | v1.4.0 | 0/2 | ⏳ Not Started | TBD |
 | 19 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
 | 20 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
