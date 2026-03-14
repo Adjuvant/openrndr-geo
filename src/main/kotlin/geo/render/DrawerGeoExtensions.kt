@@ -204,7 +204,7 @@ fun Drawer.geo(
             }
             else -> {
                 val projectedPoints = projectGeometryToArray(geometry, proj).toList()
-                contours.add(ShapeContour.fromPoints(projectedPoints, closed = true))
+                contours.add(ShapeContour.fromPoints(projectedPoints, closed = false))
             }
         }
 
