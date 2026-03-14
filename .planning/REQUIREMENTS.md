@@ -20,7 +20,7 @@ Requirements for the Developer Experience milestone. Each requirement maps to a 
 
 ### Performance Fixes (Phase 17)
 
-- [ ] **PERF-11**: ViewportCache integration for OptimizedGeoSource — extend caching to optimized rendering path
+- [x] **PERF-11**: ViewportCache integration for OptimizedGeoSource — extend caching to optimized rendering path
 
 ### Code Organization (Phase 18)
 
@@ -74,7 +74,7 @@ Features acknowledged but not in current milestone scope.
 | API-03 | Phase 15 | Complete |
 | RENDER-01 | Phase 16 | Complete |
 | RENDER-02 | Phase 16 | Complete |
-| PERF-11 | Phase 17 | Pending |
+| PERF-11 | Phase 17 | Complete |
 | ORG-01 | Phase 18 | Pending |
 | ORG-02 | Phase 18 | Pending |
 | ORG-03 | Phase 18 | Pending |
