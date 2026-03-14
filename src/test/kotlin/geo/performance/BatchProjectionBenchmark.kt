@@ -6,6 +6,7 @@ import geo.projection.ProjectionFactory
 import geo.projection.ProjectionType
 import org.junit.Test
 import org.junit.Assert.*
+import org.junit.experimental.categories.Category
 import org.openrndr.math.Vector2
 
 /**
@@ -32,6 +33,9 @@ data class BenchmarkResult(
     val speedup: Double
 )
 
+interface Benchmark
+
+@Category(Benchmark::class)
 class BatchProjectionBenchmark {
 
     /**

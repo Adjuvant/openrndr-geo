@@ -5,6 +5,7 @@ import geo.projection.ProjectionFactory
 import geo.projection.ProjectionType
 import org.junit.Test
 import org.junit.Assert.*
+import org.junit.experimental.categories.Category
 import java.io.File
 import kotlin.time.Duration
 import kotlin.time.measureTime
@@ -22,6 +23,7 @@ import kotlin.time.measureTime
  * 
  * Run via: ./gradlew test --tests "geo.performance.PerformanceBenchmark"
  */
+@Category(Benchmark::class)
 class PerformanceBenchmark {
     
     companion object {

@@ -50,6 +50,33 @@ kotlin.sourceSets.getByName("main") {
     kotlin.srcDir("uat")
 }
 
+// Default test task — exclude slow benchmarks
+tasks.test {
+    filter {
+        excludeTestsMatching("geo.performance.*")
+    }
+}
+
+// Run benchmarks explicitly
+tasks.register<Test>("benchmark") {
+    description = "Runs performance benchmarks"
+    group = "verification"
+
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
+
+    filter {
+        includeTestsMatching("geo.performance.*")
+    }
+
+    testLogging {
+        events("passed", "skipped", "failed")
+        showStandardStreams = true
+    }
+
+    timeout = Duration.ofMinutes(15)
+    jvmArgs = listOf("-Xmx2g")
+}
 // ============================================================================
 // Regression Testing
 // ============================================================================
@@ -62,7 +89,6 @@ kotlin.sourceSets.getByName("main") {
 // The regressionTest task validates that all v1.2.0 examples continue to work
 // with the Phase 11-12 optimizations (batch projection and viewport caching).
 // ============================================================================
-
 tasks.register<Test>("regressionTest") {
     description = "Runs regression tests for all examples to verify backward compatibility"
     group = "verification"
@@ -95,4 +121,89 @@ tasks.register<Test>("regressionTest") {
 // Add regression tests to the check lifecycle
 tasks.named("check") {
     dependsOn("regressionTest")
+}
+
+tasks.register("fileIndex") {
+    description = "Generates .planning/FILE_INDEX.md with class-to-file mapping"
+    group = "documentation"
+
+    // Depend on compilation so the class metadata is available
+    dependsOn("compileKotlin")
+
+    doLast {
+        val outputFile = file(".planning/FILE_INDEX.md")
+        outputFile.parentFile.mkdirs()
+
+        val sourceRoots = listOf("src/main/kotlin", "src/test/kotlin", "examples", "uat")
+        val entries = mutableListOf<String>()
+
+        sourceRoots.forEach { root ->
+            val rootDir = file(root)
+            if (!rootDir.exists()) return@forEach
+
+            rootDir.walkTopDown()
+                .filter { it.extension == "kt" }
+                .sortedBy { it.relativeTo(projectDir).path }
+                .forEach { ktFile ->
+                    val relativePath = ktFile.relativeTo(projectDir).path
+                    val content = ktFile.readText()
+
+                    // Extract @file:JvmName
+                    val jvmName = Regex("""@file:JvmName\("([^"]+)"\)""")
+                        .find(content)?.groupValues?.get(1)
+
+                    // Extract class/object/interface declarations
+                    val declarations = Regex("""^(?:enum class|data class|sealed class|sealed interface|abstract class|open class|class|object|interface)\s+([A-Z][A-Za-z0-9_]+)""", RegexOption.MULTILINE)
+                        .findAll(content)
+                        .map { it.groupValues[1] }
+                        .distinct()
+                        .sorted()
+                        .toList()
+
+                    // Extract top-level fun declarations (not inside a class)
+                    val topFuns = Regex("""^fun\s+(?:<[^>]+>\s+)?([a-zA-Z][A-Za-z0-9_]+)\s*\(""", RegexOption.MULTILINE)
+                        .findAll(content)
+                        .map { it.groupValues[1] }
+                        .distinct()
+                        .sorted()
+                        .toList()
+
+                    val parts = mutableListOf<String>()
+
+                    if (jvmName != null) {
+                        parts.add("@JvmName($jvmName)")
+                    }
+
+                    if (declarations.isNotEmpty()) {
+                        parts.add(declarations.joinToString(", "))
+                    } else if (jvmName == null) {
+                        // No classes, no JvmName — infer effective class name
+                        val baseName = ktFile.nameWithoutExtension
+                            .replaceFirstChar { it.uppercaseChar() }
+                        parts.add("${baseName}Kt (top-level)")
+                    }
+
+                    if (topFuns.isNotEmpty() && declarations.isEmpty()) {
+                        parts.add("fns: ${topFuns.joinToString(", ")}")
+                    }
+
+                    val annotation = parts.joinToString("  ")
+                    entries.add("%-75s → %s".format(relativePath, annotation))
+                }
+        }
+
+        val output = buildString {
+            appendLine("# FILE_INDEX")
+            appendLine()
+            appendLine("Auto-generated class-to-file lookup for openrndr-geo.")
+            appendLine("Run `./gradlew fileIndex` to regenerate.")
+            appendLine()
+            appendLine("```")
+            entries.forEach { appendLine(it) }
+            appendLine("```")
+        }
+
+        outputFile.writeText(output)
+        println("Written ${entries.size} entries to ${outputFile.relativeTo(projectDir).path}")
+    }
 }

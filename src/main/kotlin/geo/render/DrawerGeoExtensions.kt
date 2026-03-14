@@ -353,21 +353,58 @@ when (source) {
     is OptimizedGeoSource -> {
         // For optimized sources, render directly without Feature conversion
         // Normalization (including antimeridian) happens at load time via GeometryNormalizer
-source.optimizedFeatureSequence.forEach { optFeature ->
-    val style = resolveOptimizedStyle(optFeature, resolved)
-
-    val viewportState = ViewportState.fromProjection(proj)
-
-    val shapes: List<Shape> = drawerGeoCache.get(optFeature as Any, viewportState) {
-        // Build shapes from optimized feature projected points
-        val contours = mutableListOf<ShapeContour>()
-        val projectedPoints = optFeature.toScreenCoordinates(proj).toList()
-        contours.add(ShapeContour.fromPoints(projectedPoints, closed = true))
-        listOf(Shape(contours))
-    }
-
-    renderShapeList(this, shapes, style)
-}
+        // 
+        // NOTE: Shape caching is currently disabled for optimized sources pending
+        // proper geometry type handling. The previous implementation incorrectly
+        // treated all geometries as closed polygons.
+        source.optimizedFeatureSequence.forEach { optFeature ->
+            val style = resolveOptimizedStyle(optFeature, resolved)
+            val geom = optFeature.optimizedGeometry
+            
+            when (geom) {
+                is OptimizedPoint -> {
+                    val screenPoint = geom.toScreenCoordinatesList(proj).firstOrNull()
+                    if (screenPoint != null) {
+                        drawPoint(this, screenPoint, style)
+                    }
+                }
+                is OptimizedLineString -> {
+                    val screenPoints = geom.toScreenCoordinatesList(proj)
+                    if (screenPoints.size >= 2) {
+                        drawLineString(this, screenPoints, style)
+                    }
+                }
+                is OptimizedMultiLineString -> {
+                    geom.toScreenCoordinatesList(proj).forEach { linePoints ->
+                        if (linePoints.size >= 2) {
+                            drawLineString(this, linePoints, style)
+                        }
+                    }
+                }
+                is OptimizedPolygon -> {
+                    val (exterior, interiors) = geom.toScreenCoordinates(proj)
+                    if (exterior.size >= 3) {
+                        val screenExterior = exterior.toList()
+                        val screenInteriors = interiors.map { it.toList() }
+                        writePolygonWithHoles(this, screenExterior, screenInteriors, 
+                            style ?: StyleDefaults.defaultPolygonStyle)
+                    }
+                }
+                is OptimizedMultiPolygon -> {
+                    geom.toScreenCoordinates(proj).forEach { (exterior, interiors) ->
+                        if (exterior.size >= 3) {
+                            val screenExterior = exterior.toList()
+                            val screenInteriors = interiors.map { it.toList() }
+                            writePolygonWithHoles(this, screenExterior, screenInteriors,
+                                style ?: StyleDefaults.defaultPolygonStyle)
+                        }
+                    }
+                }
+                else -> {
+                    // Fallback: skip unknown geometry types
+                }
+            }
+        }
     }
     else -> {
         // Standard per-feature rendering

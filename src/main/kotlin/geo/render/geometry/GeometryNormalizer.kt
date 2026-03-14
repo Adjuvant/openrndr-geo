@@ -66,33 +66,6 @@ fun normalizePolygon(polygon: Polygon, featureId: String? = null): List<Polygon>
     return finalResult
 }
 
-        else -> {
-            // No antimeridian involvement
-            listOf(polygon.exterior)
-        }
-    }
-
-    // Step 3: Close all rings properly (add first point as last if not already closed)
-    val closedExteriors = processedExteriors.map { closeRing(it) }.filter { it.size >= 4 }
-
-    // Step 4: Process interiors - determine which exterior each interior belongs to
-    val result = mutableListOf<Polygon>()
-    
-    for (extRing in closedExteriors) {
-        // Find interiors that are contained within this exterior
-        val assignedInteriors = validInteriors.filter { interior ->
-            interior.size >= 3 && pointInPolygon(interior.first(), extRing)
-        }.map { closeRing(it) }.filter { it.size >= 4 }
-        
-        // Normalize winding for this exterior and its assigned interiors together
-        val (normalizedExterior, normalizedInteriors) = normalizePolygonWinding(extRing, assignedInteriors)
-        
-        result.add(Polygon(normalizedExterior, normalizedInteriors))
-    }
-    
-    return result
-}
-
 /**
  * Checks if a ring has vertices on both +180 and -180 sides.
  */

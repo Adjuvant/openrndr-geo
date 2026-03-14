@@ -57,6 +57,8 @@ fun writeLineString(
     if (points.size < 2) return
 
     // Apply style properties to drawer
+    // IMPORTANT: Disable fill to prevent accidental polygon filling
+    drawer.fill = null
     drawer.stroke = style.stroke ?: ColorRGBa.WHITE
     drawer.strokeWeight = style.strokeWeight
     drawer.lineCap = style.lineCap

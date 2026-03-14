@@ -75,6 +75,9 @@ object StyleDefaults {
         lineJoin = LineJoin.MITER
     )
 
+    val defaultStyle = defaultLineStyle
+
+
     /**
      * Get default style for a geometry type.
      *

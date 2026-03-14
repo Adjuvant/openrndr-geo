@@ -54,10 +54,12 @@ internal fun touchesAntimeridian(ring: List<Vector2>): Boolean {
  * @return The latitude where the segment crosses the antimeridian
  */
 internal fun interpolateAntimeridianCrossing(p1: Vector2, p2: Vector2): Double {
-    // Calculate interpolation factor t for the crossing
-    val lonDiff = p2.x - p1.x
+    // Calculate the shortest longitude difference (handles wraparound)
+    var lonDiff = p2.x - p1.x
+    if (lonDiff > 180.0) lonDiff -= 360.0
+    if (lonDiff < -180.0) lonDiff += 360.0
     
-    // How much longitude change to reach the boundary
+    // How much longitude change to reach the boundary from p1
     val lonToBoundary = if (p1.x > 0) {
         180.0 - p1.x  // heading toward +180
     } else {
@@ -142,11 +144,8 @@ internal fun splitAtAntimeridian(ring: List<Vector2>): List<List<Vector2>> {
         return listOf(ring)
     }
 
-    // Split using enhanced interpolation
-    val fragments = splitWithEnhancedInterpolation(ring)
-
-    // Filter: keep only valid rings (closed, >=4 points, no seam jumps)
-    return fragments.filter { isValidRing(it) }
+    // Split using enhanced interpolation - return all fragments without filtering
+    return splitWithEnhancedInterpolation(ring)
 }
 
 private fun splitWithEnhancedInterpolation(ring: List<Vector2>): List<List<Vector2>> {
@@ -165,27 +164,23 @@ private fun splitWithEnhancedInterpolation(ring: List<Vector2>): List<List<Vecto
 
         val diff = next.x - current.x
         if (abs(diff) > 180.0) {
+            // This edge crosses the antimeridian
             val crossingLat = interpolateAntimeridianCrossing(current, next)
             val boundaryLon = if (current.x > 0) 180.0 else -180.0
             
+            // Add boundary intersection point - this becomes the LAST point
             currentFragment.add(Vector2(boundaryLon, crossingLat))
-            currentFragment.add(currentFragment.first())
+            
+            // Save fragment (don't close with first - boundary should be last)
             result.add(currentFragment)
-
-            val newFragment = mutableListOf(Vector2(-boundaryLon, crossingLat))
-
-            // Adding next point shifted by 360 degrees accordingly
-            val shiftedNext = if (next.x < 0) Vector2(next.x + 360, next.y) else Vector2(next.x - 360, next.y)
-            newFragment.add(shiftedNext)
-
-            currentFragment = newFragment
+            
+            // Start new fragment with opposite boundary point
+            currentFragment = mutableListOf(Vector2(-boundaryLon, crossingLat))
         }
     }
 
-    if (currentFragment.size >= 4) {
-        if (currentFragment.first() != currentFragment.last()) {
-            currentFragment.add(currentFragment.first())
-        }
+    // Add final fragment 
+    if (currentFragment.isNotEmpty()) {
         result.add(currentFragment)
     }
 
@@ -199,7 +194,9 @@ private fun splitWithEnhancedInterpolation(ring: List<Vector2>): List<List<Vecto
  * - No edges cross the antimeridian (including closing edge)
  */
 private fun isValidRing(ring: List<Vector2>): Boolean {
-    if (ring.size < 4) return false
+    // Allow fragments with 3 points (boundary + one vertex + boundary closure)
+    // This handles the case where a fragment has just the crossing edge
+    if (ring.size < 3) return false
     if (ring.first() != ring.last()) return false
     
     // Check all edges including closing edge

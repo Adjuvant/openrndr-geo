@@ -1,6 +1,7 @@
 package geo.performance
 
 import geo.*
+import org.junit.experimental.categories.Category
 import org.openrndr.math.Vector2
 import kotlin.time.Duration
 import kotlin.time.measureTime
@@ -16,6 +17,7 @@ import kotlin.time.measureTime
  * Used to measure speedup achieved by Phase 11 (batch projection) and 
  * Phase 12 (viewport caching) optimizations.
  */
+@Category(Benchmark::class)
 object BaselineSimulator {
     
     /**

@@ -1,11 +1,10 @@
 {
   "mode": "yolo",
-  "depth": "standard",
   "parallelization": true,
   "commit_docs": true,
-  "model_profile": "simple",
+  "model_profile": "genius",
   "profiles": {
-    "active_profile": "simple",
+    "active_profile": "genius",
     "presets": {
       "quality": {
         "planning": "opencode-go/glm-5",
@@ -31,6 +30,11 @@
         "planning": "opencode-go/kimi-k2.5",
         "execution": "opencode-go/kimi-k2.5",
         "verification": "opencode-go/kimi-k2.5"
+      },
+      "genius": {
+        "planning": "openai/o4-mini",
+        "execution": "openai/gpt-4.1-mini",
+        "verification": "opencode-go/glm-5"
       }
     },
     "custom_overrides": {
@@ -38,7 +42,8 @@
       "balanced": {},
       "budget": {},
       "smart": {},
-      "simple": {}
+      "simple": {},
+      "genius": {}
     }
   },
   "workflow": {
@@ -50,5 +55,6 @@
   },
   "git": {
     "branching_strategy": "none"
-  }
+  },
+  "granularity": "standard"
 }
