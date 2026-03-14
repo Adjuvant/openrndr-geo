@@ -23,12 +23,56 @@ import org.openrndr.draw.Drawer
 import org.openrndr.math.Vector2
 import org.openrndr.shape.Shape
 import org.openrndr.shape.ShapeContour
+import geo.render.StyleDefaults
 
 /**
  * Viewport cache for Drawer.geo() extension function.
  * Shared across all calls to Drawer.geo() for performance optimization.
  */
-private val drawerViewportCache = ViewportCache()
+private val drawerGeoCache = ViewportCache<Any, List<Shape>>()
+
+// Helper to render list of shapes to drawer
+private fun renderShapeList(drawer: Drawer, shapes: List<Shape>, style: Style?) {
+    shapes.forEach {
+        drawer.shape(it)
+    }
+}
+
+// Extension for OptimizedFeature to mimic toScreenCoordinates
+
+package geo.render
+
+import geo.internal.geometry.OptimizedMultiLineString
+import geo.internal.geometry.OptimizedMultiPolygon
+import geo.internal.geometry.OptimizedPoint
+import geo.internal.geometry.OptimizedPolygon
+import geo.internal.geometry.OptimizedLineString
+import geo.internal.geometry.toScreenCoordinates
+import geo.internal.geometry.toScreenCoordinatesList
+import geo.internal.OptimizedFeature
+import geo.projection.GeoProjection
+import org.openrndr.math.Vector2
+
+private fun geo.internal.OptimizedFeature.toScreenCoordinates(projection: geo.projection.GeoProjection): List<org.openrndr.math.Vector2> {
+    val geom = this.optimizedGeometry
+    return when (geom) {
+        is OptimizedPoint,
+        is OptimizedLineString,
+        is OptimizedMultiLineString -> geom.toScreenCoordinatesList(projection)
+        is OptimizedPolygon,
+        is OptimizedMultiPolygon -> {
+            val (exterior, interiors) = geom.toScreenCoordinates(projection)
+            exterior.toList() + interiors.flatMap { it.toList() }
+        }
+        else -> emptyList()
+    }
+}
+
+
+
+
+
+// end of additions
 
 /**
  * Extension functions for Drawer providing simplified GeoJSON rendering.
@@ -145,18 +189,37 @@ fun Drawer.geo(
         projection = ProjectionType.MERCATOR
     )
 
-    // Use viewport caching for coordinate projection
     val viewportState = ViewportState.fromProjection(proj)
-    val projectedCoords = drawerViewportCache.getProjectedCoordinates(
-        geometry = geometry,
-        viewportState = viewportState
-    ) {
-        // Projector lambda - only called on cache miss
-        projectGeometryToArray(geometry, proj)
+
+    // Cache key for standard path is geometry
+    val shapes: List<Shape> = drawerGeoCache.get(geometry as Any, viewportState) {
+        // Build shapes from geometry exterior and interiors for caching
+        val contours = mutableListOf<ShapeContour>()
+        when (geometry) {
+            is geo.Polygon -> {
+                contours.add(ShapeContour.fromPoints(geometry.exterior, closed = true).clockwise)
+                geometry.interiors.forEach { ring ->
+                    if (ring.size >= 3) contours.add(ShapeContour.fromPoints(ring, closed = true).counterClockwise)
+                }
+            }
+            is geo.MultiPolygon -> {
+                geometry.polygons.forEach { poly ->
+                    contours.add(ShapeContour.fromPoints(poly.exterior, closed = true).clockwise)
+                    poly.interiors.forEach { ring ->
+                        if (ring.size >= 3) contours.add(ShapeContour.fromPoints(ring, closed = true).counterClockwise)
+                    }
+                }
+            }
+            else -> {
+                val projectedPoints = projectGeometryToArray(geometry, proj).toList()
+                contours.add(ShapeContour.fromPoints(projectedPoints, closed = true))
+            }
+        }
+
+        listOf(Shape(contours))
     }
 
-    // Render using cached coordinates
-    renderProjectedCoordinates(geometry, projectedCoords, this, style)
+    renderShapeList(this, shapes, style)
 }
 
 /**
@@ -297,25 +360,22 @@ fun Drawer.geo(source: GeoSource, block: (GeoRenderConfig.() -> Unit)? = null) {
 when (source) {
     is OptimizedGeoSource -> {
         // For optimized sources, render directly without Feature conversion
-        // Intercept the geometry and apply normalization including antimeridian splits
-        source.optimizedFeatureSequence.forEach { optFeature ->
-            val style = resolveOptimizedStyle(optFeature, resolved)
-            // Normalize geometry polygons crossing antimeridian
-            val normalizedGeometry = when (val geom = optFeature.geometry) {
-                is geo.internal.geometry.OptimizedPolygon -> {
-                    val polygons = normalizePolygon(geom.toPolygon())
-                    polygons
-                }
-                is geo.internal.geometry.OptimizedMultiPolygon -> {
-                    val multi = geom.toMultiPolygon()
-                    normalizeMultiPolygon(multi)
-                }
-                else -> listOf(geom)
-            }
-            normalizedGeometry.forEach { poly ->
-                poly.renderToDrawer(this, proj, style)
-            }
-        }
+        // Normalization (including antimeridian) happens at load time via GeometryNormalizer
+source.optimizedFeatureSequence.forEach { optFeature ->
+    val style = resolveOptimizedStyle(optFeature, resolved)
+
+    val viewportState = ViewportState.fromProjection(proj)
+
+    val shapes: List<Shape> = drawerGeoCache.get(optFeature as Any, viewportState) {
+        // Build shapes from optimized feature projected points
+        val contours = mutableListOf<ShapeContour>()
+        val projectedPoints = optFeature.toScreenCoordinates(proj).toList()
+        contours.add(ShapeContour.fromPoints(projectedPoints, closed = true))
+        listOf(Shape(contours))
+    }
+
+    renderShapeList(this, shapes, style)
+}
     }
     else -> {
         // Standard per-feature rendering
@@ -427,6 +487,9 @@ private fun Geometry.renderToDrawer(drawer: Drawer, projection: GeoProjection, s
  * 3. Geometry-type default (StyleDefaults) — Fallback
  */
 private fun resolveOptimizedStyle(optFeature: OptimizedFeature, config: GeoRenderConfig): Style {
+    // First check styleByFeature invocation
+    config.styleByFeature?.invoke(optFeature)?.let { return it }
+
     // 1. Determine geometry type from optimized geometry
     val typeName = when (val geom = optFeature.optimizedGeometry) {
         is OptimizedPoint -> "Point"
@@ -444,19 +507,9 @@ private fun resolveOptimizedStyle(optFeature: OptimizedFeature, config: GeoRende
     // 3. Global style
     config.resolvedStyle()?.let { return it }
 
-    // 4. Default based on geometry type
-    return when (optFeature.optimizedGeometry) {
-        is OptimizedPoint -> StyleDefaults.defaultPointStyle
-        is OptimizedLineString -> StyleDefaults.defaultLineStyle
-        is OptimizedPolygon -> StyleDefaults.defaultPolygonStyle
-        is OptimizedMultiPoint -> StyleDefaults.defaultPointStyle
-        is OptimizedMultiLineString -> StyleDefaults.defaultLineStyle
-        is OptimizedMultiPolygon -> StyleDefaults.defaultPolygonStyle
-        else -> StyleDefaults.defaultLineStyle
-    }
-}
-
-/**
+    // 4. Default fallback
+    return StyleDefaults.defaultStyle
+}/**
  * Render an optimized feature to the given Drawer using batch projection.
  */
 internal fun OptimizedFeature.renderOptimizedToDrawer(
