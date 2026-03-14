@@ -66,10 +66,12 @@
 ### Phase 17: Performance Fixes
 
 **Status:** In Progress  
-**Plans:** 2/2 plans complete
+**Plans:** 3/3 plans complete
 
 **Planned:**
 - [x] [`17-01-PLAN.md`](phases/17-performance-fixes/17-01-PLAN.md) — Extend ViewportCache to optimized path
+- [x] [`17-02-PLAN.md`](phases/17-performance-fixes/17-02-PLAN.md) — Fix optimized feature stub and add tests
+- [x] [`17-03-PLAN.md`](phases/17-performance-fixes/17-03-PLAN.md) — Use open contours for lines and points in cache path
 
 **Goal:** Extend ViewportCache to OptimizedGeoSource rendering path.
 
