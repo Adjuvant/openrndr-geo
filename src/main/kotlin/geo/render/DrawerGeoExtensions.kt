@@ -38,41 +38,33 @@ private fun renderShapeList(drawer: Drawer, shapes: List<Shape>, style: Style?) 
     }
 }
 
-// Extension for OptimizedFeature to mimic toScreenCoordinates
-
-package geo.render
-
-import geo.internal.geometry.OptimizedMultiLineString
-import geo.internal.geometry.OptimizedMultiPolygon
-import geo.internal.geometry.OptimizedPoint
-import geo.internal.geometry.OptimizedPolygon
-import geo.internal.geometry.OptimizedLineString
-import geo.internal.geometry.toScreenCoordinates
-import geo.internal.geometry.toScreenCoordinatesList
-import geo.internal.OptimizedFeature
-import geo.projection.GeoProjection
-import org.openrndr.math.Vector2
-
-private fun geo.internal.OptimizedFeature.toScreenCoordinates(projection: geo.projection.GeoProjection): List<org.openrndr.math.Vector2> {
+/**
+ * Extension for OptimizedFeature to provide screen coordinates.
+ * Delegates to the underlying optimized geometry's projection methods.
+ */
+private fun OptimizedFeature.toScreenCoordinates(projection: GeoProjection): List<Vector2> {
     val geom = this.optimizedGeometry
     return when (geom) {
-        is OptimizedPoint,
-        is OptimizedLineString,
-        is OptimizedMultiLineString -> geom.toScreenCoordinatesList(projection)
-        is OptimizedPolygon,
-        is OptimizedMultiPolygon -> {
+        is OptimizedPoint -> geom.toScreenCoordinatesList(projection)
+        is OptimizedLineString -> geom.toScreenCoordinatesList(projection)
+        is OptimizedMultiLineString -> geom.toScreenCoordinatesList(projection).flatten()
+        is OptimizedPolygon -> {
             val (exterior, interiors) = geom.toScreenCoordinates(projection)
             exterior.toList() + interiors.flatMap { it.toList() }
+        }
+        is OptimizedMultiPolygon -> {
+            val result = mutableListOf<Vector2>()
+            for ((exterior, interiors) in geom.toScreenCoordinates(projection)) {
+                result.addAll(exterior.toList())
+                for (interior in interiors) {
+                    result.addAll(interior.toList())
+                }
+            }
+            result
         }
         else -> emptyList()
     }
 }
-
-
-
-
-
-// end of additions
 
 /**
  * Extension functions for Drawer providing simplified GeoJSON rendering.
@@ -487,8 +479,10 @@ private fun Geometry.renderToDrawer(drawer: Drawer, projection: GeoProjection, s
  * 3. Geometry-type default (StyleDefaults) — Fallback
  */
 private fun resolveOptimizedStyle(optFeature: OptimizedFeature, config: GeoRenderConfig): Style {
-    // First check styleByFeature invocation
-    config.styleByFeature?.invoke(optFeature)?.let { return it }
+    // TODO: styleByFeature is not supported for OptimizedFeature because
+    // styleByFeature expects a Feature type, but OptimizedFeature is a separate type.
+    // This requires a broader architectural change to unify or convert between these types.
+    // For now, we skip styleByFeature for optimized features and fall through to styleByType.
 
     // 1. Determine geometry type from optimized geometry
     val typeName = when (val geom = optFeature.optimizedGeometry) {

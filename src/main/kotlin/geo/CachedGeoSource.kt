@@ -39,7 +39,7 @@ class CachedGeoSource(
      * Internal viewport cache for projected coordinates.
      * Shared across all CachedGeoSource instances.
      */
-    private val viewportCache = ViewportCache()
+    private val viewportCache = ViewportCache<Any, Any>()
 
     /**
      * Features from the underlying source.
@@ -93,5 +93,5 @@ class CachedGeoSource(
      * Internal access to the viewport cache for drawer.geo() integration.
      * Not intended for direct use - used by rendering pipeline.
      */
-    internal fun getViewportCache(): ViewportCache = viewportCache
+    internal fun getViewportCache(): ViewportCache<Any, Any> = viewportCache
 }

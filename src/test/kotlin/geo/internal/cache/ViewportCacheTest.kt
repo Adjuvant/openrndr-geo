@@ -4,6 +4,8 @@ import org.junit.Assert.*
 import org.junit.Test
 import org.openrndr.math.Vector2
 import geo.Geometry
+import geo.Point
+import geo.LineString
 import geo.internal.cache.ViewportCache
 import geo.internal.cache.ViewportState
 
@@ -14,9 +16,7 @@ class ViewportCacheTest {
         val cache = ViewportCache<Geometry, Array<Vector2>>()
         val viewportState = ViewportState(1.0, 0.0, 0.0, 100.0, 100.0)
 
-        val geometry = object : Geometry() {
-            override val boundingBox = geo.Bounds.empty()
-        }
+        val geometry = Point(0.0, 0.0)
 
         val projectedPoints = arrayOf(Vector2(1.0, 1.0), Vector2(2.0, 2.0))
 
@@ -33,9 +33,7 @@ class ViewportCacheTest {
         val viewport1 = ViewportState(1.0, 0.0, 0.0, 100.0, 100.0)
         val viewport2 = ViewportState(2.0, 0.0, 0.0, 100.0, 100.0)
 
-        val geometry = object : Geometry() {
-            override val boundingBox = geo.Bounds.empty()
-        }
+        val geometry = Point(0.0, 0.0)
 
         val projected1 = arrayOf(Vector2(1.0, 1.0))
         val projected2 = arrayOf(Vector2(2.0, 2.0))
@@ -52,21 +50,13 @@ class ViewportCacheTest {
         val viewportState = ViewportState(1.0, 0.0, 0.0, 100.0, 100.0)
 
         repeat(10) { i ->
-            val geometry = object : Geometry() {
-                override val boundingBox = geo.Bounds.empty()
-                override fun equals(other: Any?) = other === this
-                override fun hashCode() = System.identityHashCode(this)
-            }
+            val geometry = Point(i.toDouble(), i.toDouble())
             val projected = arrayOf(Vector2(i.toDouble(), i.toDouble()))
             cache.get(geometry, viewportState) { projected }
         }
 
         // Adding one more causes cache clear
-        val freshGeom = object : Geometry() {
-            override val boundingBox = geo.Bounds.empty()
-            override fun equals(other: Any?) = true
-            override fun hashCode() = 123
-        }
+        val freshGeom = Point(42.0, 42.0)
         val freshProj = arrayOf(Vector2(42.0, 42.0))
 
         val result = cache.get(freshGeom, viewportState) { freshProj }

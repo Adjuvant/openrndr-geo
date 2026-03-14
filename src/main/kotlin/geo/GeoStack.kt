@@ -69,7 +69,7 @@ class GeoStack(
     private var viewBounds: Bounds? = null
     
     /** Viewport cache for projected geometry coordinates */
-    private val viewportCache = geo.internal.cache.ViewportCache()
+    private val viewportCache = geo.internal.cache.ViewportCache<Geometry, Array<Vector2>>()
     
     /**
      * The unified CRS used by this stack.
@@ -249,8 +249,8 @@ class GeoStack(
         projection: geo.projection.GeoProjection,
         viewportState: geo.internal.cache.ViewportState
     ) {
-        val projectedCoords = viewportCache.getProjectedCoordinates(
-            geometry = geometry,
+        val projectedCoords = viewportCache.get(
+            feature = geometry,
             viewportState = viewportState
         ) {
             // Projector lambda - only called on cache miss
