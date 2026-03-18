@@ -1,10 +1,6 @@
 ---
-name: Performance Engineering Standards
-description: Universal standards for high-performance software development across all frameworks.
-metadata:
-  labels: [performance, optimization, scalability, profiling]
-  triggers:
-    keywords: [performance, optimize, profile, scalability]
+name: performance-engineering
+description: Universal standards for high-performance software development across all frameworks. performance, optimization, scalability, profiling, optimize
 ---
 
 # Performance Engineering Standards

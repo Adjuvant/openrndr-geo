@@ -1,10 +1,6 @@
 ---
-name: Code Review Expert
-description: Standards for high-quality, persona-driven code reviews.
-metadata:
-  labels: [common, review, quality, best-practices]
-  triggers:
-    keywords: [review, pr, critique, analyze code]
+name: code-review
+description: Standards for high-quality, persona-driven code reviews. common, quality, best-practices, review, pr, critique, analyze code
 ---
 
 # Code Review Expert

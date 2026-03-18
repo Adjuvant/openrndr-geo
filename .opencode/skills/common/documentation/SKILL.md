@@ -1,10 +1,6 @@
 ---
-name: Documentation Standards
-description: Essential rules for code comments, READMEs, and technical documentation.
-metadata:
-  labels: [documentation, comments, docstrings, readme]
-  triggers:
-    keywords: [comment, docstring, readme, documentation]
+name: documentation
+description: Essential rules for code comments, READMEs, and technical documentation. docstrings, readme
 ---
 
 # Documentation Standards - High-Density Standards

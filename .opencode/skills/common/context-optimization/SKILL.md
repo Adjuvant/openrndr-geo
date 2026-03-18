@@ -1,11 +1,6 @@
 ---
-name: Context Optimization
-description: Techniques to maximize context window efficiency, reduce latency, and prevent 'lost in middle' issues through strategic masking and compaction.
-metadata:
-  labels: [context, optimization, tokens, memory, performance]
-  triggers:
-    files: ['*.log', 'chat-history.json']
-    keywords: [reduce tokens, optimize context, summarize history, clear output]
+name: context-optimization
+description: Techniques to maximize context window efficiency, reduce latency, and prevent 'lost in middle' issues through strategic masking and compaction. context, optimization, tokens, memory, performance. reduce tokens, optimize context, summarize history, clear output
 ---
 
 ## **Priority: P1 (OPTIMIZATION)**

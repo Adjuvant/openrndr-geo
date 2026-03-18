@@ -1,10 +1,6 @@
 ---
-name: Global Best Practices
-description: Universal principles for clean, maintainable, and robust code across all environments.
-metadata:
-  labels: [best-practices, solid, clean-code, architecture]
-  triggers:
-    keywords: [solid, kiss, dry, yagni, naming, conventions]
+name: best-practices
+description: Universal principles for clean, maintainable, and robust code across all environments. best-practices, solid, clean-code, architecture. solid, kiss, dry, yagni, naming, conventions
 ---
 
 # Global Best Practices

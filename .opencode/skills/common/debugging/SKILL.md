@@ -1,10 +1,6 @@
 ---
-name: Debugging Expert
-description: Systematic troubleshooting using the Scientific Method (Observe, Hypothesize, Experiment, Fix).
-metadata:
-  labels: [debugging, troubleshooting, bug-fixing, root-cause]
-  triggers:
-    keywords: [debug, fix bug, crash, error, exception, troubleshooting]
+name: debugging
+description: Systematic troubleshooting using the Scientific Method (Observe, Hypothesize, Experiment, Fix). debugging, troubleshooting, bug-fixing, root-cause, debug, fix bug, crash, error, exception
 ---
 
 # Debugging Expert

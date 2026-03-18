@@ -1,10 +1,6 @@
 ---
-name: Git & Collaboration Standards
-description: Universal standards for version control, branching, and team collaboration.
-metadata:
-  labels: [git, collaboration, commits, branching]
-  triggers:
-    keywords: [commit, branch, merge, pull-request, git]
+name: git-collaboration
+description: Universal standards for version control, branching, and team collaboration. git, collaboration, commits, branching, commit, branch, merge, pull-request
 ---
 
 # Git & Collaboration - High-Density Standards
@@ -24,13 +20,8 @@ Universal standards for effective version control, branching strategies, and tea
 
 ## 🌿 Branching & History Management
 
-- **Naming**: Use prefixes: `feat/`, `fix/`, `hotfix/`, `refactor/`, `docs/`.
-- **Branch for Everything**: Create a new branch for every task to keep the main branch stable and deployable.
 - **Main Branch Protection**: Never push directly to `main` or `develop`. Use Pull Requests.
-- **Sync Early**: "Pull Before You Push" to identify and resolve merge conflicts locally.
-- **Prefer Rebase**: Use `git rebase` (instead of merge) to keep a linear history when updating local branches from `develop` or `main`.
-- **Interactive Rebase**: Use `git rebase -i` to squash or fixup small, messy commits before pushing to a shared branch.
-- **No Merge Commits**: Avoid "Merge branch 'main' into..." commits in feature branches. Always rebase onto the latest upstream.
+- **History Changes Are User Actions**: Pushing, merging, and rebasing are user-controlled actions and must not be performed or implied by the agent without explicit permission.
 
 ## 🤝 Pull Request (PR) Standards
 
@@ -39,6 +30,8 @@ Universal standards for effective version control, branching strategies, and tea
 - **Description**: State what changed, why, and how to test. Link issues (`Closes #123`).
 - **Self-Review**: Review your own code for obvious errors/formatting before requesting peers.
 - **CI/CD**: PRs must pass all automated checks (lint, test, build) before merging.
+- **Merge Permission**: Merging is a user action and requires explicit user permission.
+- **Rebase Permission**: Rebasing is a user action and requires explicit user permission.
 
 ## 🛡 Security & Metadata
 
