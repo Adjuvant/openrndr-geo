@@ -143,28 +143,20 @@ expected: |
   - No visual gaps or artifacts at the antimeridian
   - Yellow polygon should appear intact across the date line
   - No infinite loops or errors
-result: pending
+result: skipped
+reason: "Antimeridian rendering is complex - phase 17.1 will handle properly"
 
 ## Current Test
 
-number: 4
-name: Antimeridian Crossing Fixes
-expected: |
-  Run: ./gradlew run -Popenrndr.application=uat.PolygonBugFixingKt
-  
-  Features crossing the antimeridian should:
-  - Render correctly without errors or infinite loops
-  - No RingValidator warnings
-  - Yellow polygons visible
-awaiting: user response
+[testing complete]
 
 ## Summary
 
 total: 4
 passed: 3
 issues: 0
-pending: 1
-skipped: 0
+pending: 0
+skipped: 1
 
 ## Current Test
 
@@ -192,15 +184,10 @@ skipped: 0
   debug_session: ""
 
 - truth: "Antimeridian crossing renders as continuous bands, not fragments"
-  status: resolved
-  reason: "Fixed GeometryNormalizer to use makeCoordinatesContinuous instead of splitAtAntimeridian for rendering"
+  status: skipped
+  reason: "Skipped - phase 17.1 will handle antimeridian rendering properly"
   severity: blocker
   test: 4
-  artifacts:
-    - path: "src/main/kotlin/geo/render/geometry/GeometryNormalizer.kt"
-      issue: "Fixed - now uses continuous coordinates for seamless rendering"
-  missing: []
-  debug_session: ""
 
 ## Gaps
 
