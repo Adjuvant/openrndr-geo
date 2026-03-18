@@ -42,7 +42,7 @@ private fun renderShapeList(drawer: Drawer, shapes: List<Shape>, style: Style?) 
  * Extension for OptimizedFeature to provide screen coordinates.
  * Delegates to the underlying optimized geometry's projection methods.
  */
-private fun OptimizedFeature.toScreenCoordinates(projection: GeoProjection): List<Vector2> {
+internal fun OptimizedFeature.toScreenCoordinates(projection: GeoProjection): List<Vector2> {
     val geom = this.optimizedGeometry
     return when (geom) {
         is OptimizedPoint -> geom.toScreenCoordinatesList(projection)
