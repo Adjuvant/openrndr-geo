@@ -1,6 +1,7 @@
 package geo.render
 
 import geo.Feature
+import geo.internal.OptimizedFeature
 import geo.projection.GeoProjection
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.LineCap
@@ -88,6 +89,7 @@ class GeoRenderConfig {
     // -- Advanced style config --------------------------------------------
     var styleByType: Map<String, Style> = emptyMap()
     var styleByFeature: ((Feature) -> Style?)? = null
+    internal var styleByOptimizedFeature: ((OptimizedFeature) -> Style?)? = null
 
     // -- Helpers -----------------------------------------------------------
 
@@ -117,6 +119,7 @@ class GeoRenderConfig {
         }
         copy.styleByType = styleByType.toMap()
         copy.styleByFeature = styleByFeature
+        copy.styleByOptimizedFeature = styleByOptimizedFeature
         return copy
     }
 

@@ -511,17 +511,37 @@ private fun Geometry.renderToDrawer(drawer: Drawer, projection: GeoProjection, s
 
 /**
  * Resolve style for an optimized feature using precedence chain:
- * 1. By-type map (styleByType) — Keyed by geometry type name
- * 2. Global style (style) — Applied to all features if specified
- * 3. Geometry-type default (StyleDefaults) — Fallback
+ * 1. Per-optimized-feature function (styleByOptimizedFeature) — Highest priority
+ * 2. By-type map (styleByType) — Keyed by geometry type name
+ * 3. Global style (style) — Applied to all features if specified
+ * 4. Geometry-type default (StyleDefaults) — Fallback
+ * 
+ * ## Example
+ * ```kotlin
+ * drawer.geo(optimizedSource) {
+ *     // Per-optimized-feature styling (highest priority)
+ *     styleByOptimizedFeature = { optFeature ->
+ *         val pop = optFeature.properties["population"] as? Double
+ *         if (pop != null && pop > 1_000_000) {
+ *             Style { stroke = ColorRGBa.YELLOW; strokeWeight = 3.0 }
+ *         } else null  // Fall through to styleByType/style
+ *     }
+ *     
+ *     // Type-based styling
+ *     styleByType = mapOf(
+ *         "Polygon" to Style { fill = ColorRGBa.RED }
+ *     )
+ *     
+ *     // Global style (lowest priority)
+ *     fill = ColorRGBa.WHITE
+ * }
+ * ```
  */
-private fun resolveOptimizedStyle(optFeature: OptimizedFeature, config: GeoRenderConfig): Style {
-    // TODO: styleByFeature is not supported for OptimizedFeature because
-    // styleByFeature expects a Feature type, but OptimizedFeature is a separate type.
-    // This requires a broader architectural change to unify or convert between these types.
-    // For now, we skip styleByFeature for optimized features and fall through to styleByType.
+internal fun resolveOptimizedStyle(optFeature: OptimizedFeature, config: GeoRenderConfig): Style {
+    // 1. Per-optimized-feature function
+    config.styleByOptimizedFeature?.invoke(optFeature)?.let { return it }
 
-    // 1. Determine geometry type from optimized geometry
+    // 2. Determine geometry type from optimized geometry
     val typeName = when (val geom = optFeature.optimizedGeometry) {
         is OptimizedPoint -> "Point"
         is OptimizedLineString -> "LineString"
@@ -532,13 +552,13 @@ private fun resolveOptimizedStyle(optFeature: OptimizedFeature, config: GeoRende
         else -> "Unknown"
     }
 
-    // 2. By-type map
+    // 3. By-type map
     config.styleByType[typeName]?.let { return it }
 
-    // 3. Global style
+    // 4. Global style
     config.resolvedStyle()?.let { return it }
 
-    // 4. Default fallback
+    // 5. Default fallback
     return StyleDefaults.defaultStyle
 }/**
  * Render an optimized feature to the given Drawer using batch projection.
