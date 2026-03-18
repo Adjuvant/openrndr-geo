@@ -163,7 +163,11 @@ private fun splitWithEnhancedInterpolation(ring: List<Vector2>): List<List<Vecto
         val next = ring[nextIndex]
 
         val diff = next.x - current.x
-        if (abs(diff) > 180.0) {
+        // Only count as crossing if |diff| > 180 AND endpoints have different signs.
+        // This prevents false positives on closing edges where both points
+        // are on the same side of the antimeridian (e.g., 179,1 -> 179,0).
+        val crossesBoundary = abs(diff) > 180.0 && (current.x >= 0) != (next.x >= 0)
+        if (crossesBoundary) {
             // This edge crosses the antimeridian
             val crossingLat = interpolateAntimeridianCrossing(current, next)
             val boundaryLon = if (current.x > 0) 180.0 else -180.0

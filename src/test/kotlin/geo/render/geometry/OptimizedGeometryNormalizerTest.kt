@@ -10,18 +10,21 @@ class OptimizedGeometryNormalizerTest {
 
     @Test
     fun `splitAtAntimeridian splits single crossing correctly`() {
-        // A ring that crosses longitude 180 once
+        // A ring that crosses the antimeridian twice (edges 0→1 and 2→3)
+        // 2 crossings produces 3 fragments (N crossings = N+1 fragments)
         val ring = listOf(
-            Vector2(179.0, 0.0),
-            Vector2(-179.0, 0.0),
-            Vector2(-179.0, 1.0),
-            Vector2(179.0, 1.0)
+            Vector2(170.0, 0.0),
+            Vector2(-170.0, 0.0),
+            Vector2(-170.0, 1.0),
+            Vector2(170.0, 1.0)
         )
         val result = splitAtAntimeridian(ring)
-        assertEquals(2, result.size)
+        // For a ring with 2 crossings, we get 3 fragments
+        assertEquals(3, result.size)
         // Each fragment should not cross antimeridian
         assertFalse("Fragment 0 out of bounds", result[0].any { it.x > 180.0 || it.x < -180.0 })
         assertFalse("Fragment 1 out of bounds", result[1].any { it.x > 180.0 || it.x < -180.0 })
+        assertFalse("Fragment 2 out of bounds", result[2].any { it.x > 180.0 || it.x < -180.0 })
     }
 
     @Test
