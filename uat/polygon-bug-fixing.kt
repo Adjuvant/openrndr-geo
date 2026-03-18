@@ -31,7 +31,7 @@ fun main() = application {
 
     program {
         val antimeridianData = loadGeo("data/geo/test-antimeridian-crossing.geojson")
-        val projection = antimeridianData.projectToFit(width, height)
+        val antimeridianProjection = antimeridianData.projectToFit(width, height)
 
         extend {
             drawer.clear(ColorRGBa(0.1, 0.1, 0.15))
@@ -43,7 +43,7 @@ fun main() = application {
 
             // Render test data
             drawer.geo(antimeridianData) {
-                projection = projection
+                projection = antimeridianProjection
                 fill = ColorRGBa.YELLOW
                 stroke = ColorRGBa.BLUE
                 strokeWeight = 1.0
