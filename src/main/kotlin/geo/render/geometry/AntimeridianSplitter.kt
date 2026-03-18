@@ -59,6 +59,11 @@ internal fun interpolateAntimeridianCrossing(p1: Vector2, p2: Vector2): Double {
     if (lonDiff > 180.0) lonDiff -= 360.0
     if (lonDiff < -180.0) lonDiff += 360.0
     
+    // If lonDiff is effectively 0, no interpolation needed (vertical edge at boundary)
+    if (kotlin.math.abs(lonDiff) < 1e-10) {
+        return p1.y  // Return the starting latitude
+    }
+    
     // How much longitude change to reach the boundary from p1
     val lonToBoundary = if (p1.x > 0) {
         180.0 - p1.x  // heading toward +180
