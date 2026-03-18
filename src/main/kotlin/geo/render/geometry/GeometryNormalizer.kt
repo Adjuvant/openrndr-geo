@@ -7,63 +7,56 @@ import org.openrndr.math.Vector2
 /**
  * Normalizes a polygon by applying all normalization steps:
  * 1. Validate interior rings (drop degenerate, log warnings)
- * 2. Split exterior at antimeridian if needed
- * 3. Normalize winding of exterior and all interiors for each split part
+ * 2. Make coordinates continuous across antimeridian for seamless rendering
+ * 3. Normalize winding of exterior and all interiors
  *
- * When a polygon's exterior crosses the antimeridian multiple times, it is split
- * into multiple polygons, each with a portion of the exterior and all valid interiors.
+ * Uses continuous coordinates instead of splitting, so polygons render as
+ * continuous bands across the antimeridian rather than separate fragments.
  *
  * @param polygon The polygon to normalize
  * @param featureId Optional feature ID for logging
- * @return List of normalized polygons (one per exterior ring, or single polygon if no split)
+ * @return List of normalized polygons (single polygon for antimeridian-crossing polygons)
  */
 fun normalizePolygon(polygon: Polygon, featureId: String? = null): List<Polygon> {
     // Step 1: Validate interior rings
     val validInteriors = validateInteriorRings(polygon.exterior, polygon.interiors, featureId)
 
-    // Step 2: Handle antimeridian - split exterior into separate rings
-    // Use split approach for ALL antimeridian cases - more reliable
-    val processedExteriors: List<List<Vector2>> = when {
-        crossesAntimeridian(polygon.exterior) -> {
-            // Crosses the seam - split into separate rings at the seam
-            splitAtAntimeridian(polygon.exterior)
+    // Step 2: Handle antimeridian - use continuous coordinates for rendering
+    // This keeps the polygon as one piece that renders as a band across the antimeridian
+    val continuousExterior = makeCoordinatesContinuous(polygon.exterior)
+
+    // Step 3: Close ring properly
+    val closedExterior = closeRing(continuousExterior)
+
+    // Step 4: Process interiors - shift them by the same offset as exterior if needed
+    val shiftedInteriors = if (continuousExterior != polygon.exterior) {
+        // Calculate the offset applied to the first point
+        val offset = continuousExterior.firstOrNull()?.x?.minus(polygon.exterior.firstOrNull()?.x ?: 0.0) ?: 0.0
+        if (kotlin.math.abs(offset) > 1e-10) {
+            polygon.interiors.map { interior ->
+                val shiftedFirst = interior.first()
+                val interiorOffset = if (shiftedFirst.x < 0 && polygon.exterior.any { it.x > 0 }) {
+                    offset  // Exterior shifted positive, shift interiors the same
+                } else 0.0
+                interior.map { Vector2(it.x + interiorOffset, it.y) }
+            }
+        } else {
+            polygon.interiors
         }
-        else -> {
-            // No antimeridian involvement
-            listOf(polygon.exterior)
-        }
+    } else {
+        polygon.interiors
     }
 
-    // Step 3: Close all rings properly (add first point as last if not already closed)
-    val closedExteriors = processedExteriors.map { closeRing(it) }.filter { it.size >= 4 }
+    // Step 5: Find interiors that belong to this exterior
+    val assignedInteriors = shiftedInteriors.map { closeRing(it) }.filter { it.size >= 4 }
 
-    // Step 4: Process interiors - determine which exterior each interior belongs to
+    // Step 6: Normalize winding for exterior and its assigned interiors together
+    val (normalizedExterior, normalizedInteriors) = normalizePolygonWinding(closedExterior, assignedInteriors)
 
     val result = mutableListOf<Polygon>()
+    result.add(Polygon(normalizedExterior, normalizedInteriors))
 
-    for (extRing in closedExteriors) {
-        // Find interiors that are contained within this exterior
-        val assignedInteriors = validInteriors.filter { interior ->
-            interior.size >= 3 && pointInPolygon(interior.first(), extRing)
-        }.map { closeRing(it) }.filter { it.size >= 4 }
-
-        // Normalize winding for this exterior and its assigned interiors together
-        val (normalizedExterior, normalizedInteriors) = normalizePolygonWinding(extRing, assignedInteriors)
-
-        result.add(Polygon(normalizedExterior, normalizedInteriors))
-    }
-
-    // STEP 5: Handle normalized polygons crossing antimeridian again if needed
-    val finalResult = mutableListOf<Polygon>()
-    for (poly in result) {
-        if (crossesAntimeridian(poly.exterior)) {
-            finalResult.addAll(normalizePolygon(poly))
-        } else {
-            finalResult.add(poly)
-        }
-    }
-
-    return finalResult
+    return result
 }
 
 /**
