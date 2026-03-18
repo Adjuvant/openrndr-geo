@@ -66,7 +66,7 @@
 ### Phase 17: Performance Fixes
 
 **Status:** In Progress  
-**Plans:** 6/6 plans complete
+**Plans:** 5/5 plans complete
 
 **Planned:**
 - [x] [`17-01-PLAN.md`](phases/17-performance-fixes/17-01-PLAN.md) — Extend ViewportCache to optimized path
@@ -133,7 +133,7 @@ Plans:
 | 11-14 | v1.3.0 | 13/13 | ✅ Complete | 2026-03-07 |
 | 15 | v1.4.0 | 2/2 | ✅ Complete | 2026-03-07 |
 | 16 | 5/5 | Complete    | 2026-03-08 | TBD |
-| 17 | 6/6 | ✅ Complete   | 2026-03-18 | TBD |
+| 17 | 6/6 | Complete    | 2026-03-18 | TBD |
 | 18 | v1.4.0 | 0/2 | ⏳ Not Started | TBD |
 | 19 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
 | 20 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
