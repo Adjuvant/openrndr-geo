@@ -66,12 +66,14 @@
 ### Phase 17: Performance Fixes
 
 **Status:** In Progress  
-**Plans:** 3/3 plans complete
+**Plans:** 5/5 plans complete
 
 **Planned:**
 - [x] [`17-01-PLAN.md`](phases/17-performance-fixes/17-01-PLAN.md) — Extend ViewportCache to optimized path
 - [x] [`17-02-PLAN.md`](phases/17-performance-fixes/17-02-PLAN.md) — Fix optimized feature stub and add tests
 - [x] [`17-03-PLAN.md`](phases/17-performance-fixes/17-03-PLAN.md) — Use open contours for lines and points in cache path
+- [x] [`17-04-PLAN.md`](phases/17-performance-fixes/17-04-PLAN.md) — Gap analysis and fix planning
+- [x] [`17-05-PLAN.md`](phases/17-performance-fixes/17-05-PLAN.md) — styleByOptimizedFeature and tests
 
 **Goal:** Extend ViewportCache to OptimizedGeoSource rendering path.
 
@@ -130,8 +132,8 @@ Plans:
 |-------|-----------|-------|--------|--------|
 | 11-14 | v1.3.0 | 13/13 | ✅ Complete | 2026-03-07 |
 | 15 | v1.4.0 | 2/2 | ✅ Complete | 2026-03-07 |
-| 16 | 3/3 | Complete    | 2026-03-08 | TBD |
-| 17 | 3/3 | Complete   | 2026-03-14 | TBD |
+| 16 | 5/5 | Complete    | 2026-03-08 | TBD |
+| 17 | 5/5 | ✅ Complete   | 2026-03-18 | TBD |
 | 18 | v1.4.0 | 0/2 | ⏳ Not Started | TBD |
 | 19 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
 | 20 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
