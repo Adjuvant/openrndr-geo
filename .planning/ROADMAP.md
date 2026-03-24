@@ -111,12 +111,15 @@ Plans:
 
 ### Phase 19: Documentation Fixes
 
-**Status:** Not Started  
-**Plans:** 0/1
+**Status:** Planned  
+**Plans:** 1/1
 
 **Goal:** Fix README run commands and data paths.
 
 **Requirements:** DOCS-01
+
+**Plans:**
+- [ ] [`19-01-PLAN.md`](phases/19-documentation-fixes/19-01-PLAN.md) — Fix Kt suffix in run commands
 
 ---
 
@@ -140,7 +143,7 @@ Plans:
 | 16 | 5/5 | Complete    | 2026-03-08 | TBD |
 | 17 | 6/6 | Complete    | 2026-03-18 | TBD |
 | 18 | 3/3 | Complete   | 2026-03-24 | TBD |
-| 19 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
+| 19 | v1.4.0 | 1/1 | ⏳ In Progress | TBD |
 | 20 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
 
 ---
