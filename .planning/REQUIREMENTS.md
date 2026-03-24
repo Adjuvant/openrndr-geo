@@ -30,7 +30,7 @@ Requirements for the Developer Experience milestone. Each requirement maps to a 
 
 ### Documentation Fixes (Phase 19)
 
-- [ ] **DOCS-01**: Fix README run commands and data paths — ensure all examples run correctly
+- [x] **DOCS-01**: Fix README run commands and data paths — ensure all examples run correctly
 
 ### Layer Features (Phase 20)
 
@@ -78,7 +78,7 @@ Features acknowledged but not in current milestone scope.
 | ORG-01 | Phase 18 | Complete |
 | ORG-02 | Phase 18 | Complete |
 | ORG-03 | Phase 18 | Pending |
-| DOCS-01 | Phase 19 | Pending |
+| DOCS-01 | Phase 19 | Complete |
 | LAYER-01 | Phase 20 | Pending |
 
 **Coverage:**

@@ -112,7 +112,7 @@ Plans:
 ### Phase 19: Documentation Fixes
 
 **Status:** In Progress  
-**Plans:** 1/1
+**Plans:** 1/1 plans complete
 
 **Goal:** Fix README run commands and data paths.
 
@@ -143,7 +143,7 @@ Plans:
 | 16 | 5/5 | Complete    | 2026-03-08 | TBD |
 | 17 | 6/6 | Complete    | 2026-03-18 | TBD |
 | 18 | 3/3 | Complete   | 2026-03-24 | TBD |
-| 19 | v1.4.0 | 1/1 | ✅ Complete | 2026-03-24 |
+| 19 | v1.4.0 | Complete    | 2026-03-24 | 2026-03-24 |
 | 20 | v1.4.0 | 0/1 | ⏳ Not Started | TBD |
 
 ---
