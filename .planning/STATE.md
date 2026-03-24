@@ -3,17 +3,17 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-24T22:02:01.020Z"
+last_updated: "2026-03-24T22:02:02Z"
 progress:
   total_phases: 7
   completed_phases: 3
   total_plans: 20
-  completed_plans: 14
+  completed_plans: 15
 ---
 
-# Phase 17 Plan 04 State
+# Phase 18 Plan 01 State
 
-Plan 17-04 marked as complete with all tasks done.
+Plan 18-01 completed - cleaned up necro examples from src/main/kotlin/geo/examples/.
 
 ## Completed Plans in Phase 17
 - Plan 17-01: Complete (style resolution infrastructure)
@@ -31,9 +31,9 @@ Plan 17-04 marked as complete with all tasks done.
 - All test failures resolved
 
 ## Completed Plans in Phase 18
-- Plan 18-01: Complete (move necro examples to examples/)
+- Plan 18-01: Complete (move 4 necro examples to examples/, delete 6 duplicates)
 - Plan 18-02: Complete (move 13 geo files to geo.core/)
 
 ## Last Session
-- Stopped at: Completed 18-02-PLAN.md
-- Timestamp: 2026-03-24T22:00:58Z
+- Stopped at: Completed 18-01-PLAN.md
+- Timestamp: 2026-03-24T22:02:02Z

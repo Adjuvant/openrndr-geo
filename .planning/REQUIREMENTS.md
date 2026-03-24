@@ -24,7 +24,7 @@ Requirements for the Developer Experience milestone. Each requirement maps to a 
 
 ### Code Organization (Phase 18)
 
-- [ ] **ORG-01**: Clean up necro examples — remove dead example code from src/main/kotlin/geo/examples
+- [x] **ORG-01**: Clean up necro examples — remove dead example code from src/main/kotlin/geo/examples
 - [x] **ORG-02**: Move geo root files to core/ subdirectory — better package structure
 - [ ] **ORG-03**: Organize file contents — logical grouping for better code navigation
 
@@ -75,7 +75,7 @@ Features acknowledged but not in current milestone scope.
 | RENDER-01 | Phase 16 | Complete |
 | RENDER-02 | Phase 16 | Complete |
 | PERF-11 | Phase 17 | Complete |
-| ORG-01 | Phase 18 | Pending |
+| ORG-01 | Phase 18 | Complete |
 | ORG-02 | Phase 18 | Complete |
 | ORG-03 | Phase 18 | Pending |
 | DOCS-01 | Phase 19 | Pending |
