@@ -24,7 +24,7 @@ import geo.projection.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.anim.LineStringColorAnimKt
+ * ./gradlew run -Popenrndr.application=examples.anim.LineStringColorAnim
  * ```
  */
 fun main() = application {

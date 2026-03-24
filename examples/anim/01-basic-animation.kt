@@ -23,7 +23,7 @@ import geo.render.withAlpha
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.anim.BasicAnimationKt
+ * ./gradlew run -Popenrndr.application=examples.anim.BasicAnimation
  * ```
  */
 fun main() = application {

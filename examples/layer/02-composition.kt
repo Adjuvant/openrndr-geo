@@ -29,7 +29,7 @@ import geo.render.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.layer.CompositionKt
+ * ./gradlew run -Popenrndr.application=examples.layer.Composition
  * ```
  */
 fun main() = application {

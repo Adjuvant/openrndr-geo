@@ -19,7 +19,7 @@ import geo.render.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.render.LinestringsKt
+ * ./gradlew run -Popenrndr.application=examples.render.Linestrings
  * ```
  */
 fun main() = application {

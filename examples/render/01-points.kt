@@ -20,7 +20,7 @@ import geo.render.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.render.PointsKt
+ * ./gradlew run -Popenrndr.application=examples.render.Points
  * ```
  */
 fun main() = application {

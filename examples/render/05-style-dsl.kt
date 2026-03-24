@@ -22,7 +22,7 @@ import geo.render.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.render.StyleDslKt
+ * ./gradlew run -Popenrndr.application=examples.render.StyleDsl
  * ```
  */
 fun main() = application {

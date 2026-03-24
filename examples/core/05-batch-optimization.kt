@@ -25,7 +25,7 @@ import geo.render.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.core.BatchOptimizationKt
+ * ./gradlew run -Popenrndr.application=examples.core.BatchOptimization
  * ```
  */
 fun main() = application {

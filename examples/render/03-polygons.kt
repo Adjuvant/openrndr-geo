@@ -20,7 +20,7 @@ import geo.render.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.render.PolygonsKt
+ * ./gradlew run -Popenrndr.application=examples.render.Polygons
  * ```
  */
 fun main() = application {

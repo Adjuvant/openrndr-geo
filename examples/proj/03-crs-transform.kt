@@ -19,7 +19,7 @@ import geo.projection.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.proj.CrsTransformKt
+ * ./gradlew run -Popenrndr.application=examples.proj.CrsTransform
  * ```
  */
 fun main() {

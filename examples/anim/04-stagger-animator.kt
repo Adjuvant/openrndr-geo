@@ -22,7 +22,7 @@ import geo.render.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.anim.StaggerAnimatorKt
+ * ./gradlew run -Popenrndr.application=examples.anim.StaggerAnimator
  * ```
  */
 fun main() = application {

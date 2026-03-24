@@ -21,7 +21,7 @@ import geo.render.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.proj.FitBoundsKt
+ * ./gradlew run -Popenrndr.application=examples.proj.FitBounds
  * ```
  */
 fun main() = application {

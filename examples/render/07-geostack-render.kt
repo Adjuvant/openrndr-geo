@@ -31,7 +31,7 @@ import geo.core.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.render.GeoStackRenderKt
+ * ./gradlew run -Popenrndr.application=examples.render.GeoStackRender
  * ```
  */
 fun main() = application {

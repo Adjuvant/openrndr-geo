@@ -25,13 +25,13 @@ This examples directory is organized into the following categories:
 Each example can be run using Gradle:
 
 ```bash
-./gradlew run -Popenrndr.application=examples.category.FileNameKt
+./gradlew run -Popenrndr.application=examples.category.FileName
 ```
 
 For example, to run an example in the core category:
 
 ```bash
-./gradlew run -Popenrndr.application=examples.core.ExampleNameKt
+./gradlew run -Popenrndr.application=examples.core.ExampleName
 ```
 
 ## Sample Data

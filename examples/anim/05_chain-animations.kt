@@ -22,7 +22,7 @@ import geo.animation.composition.animate
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.anim.ChainAnimationsKt
+ * ./gradlew run -Popenrndr.application=examples.anim.ChainAnimations
  * ```
  */
 fun main() = application {

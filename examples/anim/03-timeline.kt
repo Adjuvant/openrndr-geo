@@ -21,7 +21,7 @@ import geo.render.withAlpha
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.anim.TimelineKt
+ * ./gradlew run -Popenrndr.application=examples.anim.Timeline
  * ```
  */
 fun main() = application {

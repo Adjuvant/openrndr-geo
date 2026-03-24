@@ -18,7 +18,7 @@ import geo.core.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.core.GeoStackKt
+ * ./gradlew run -Popenrndr.application=examples.core.GeoStack
  * ```
  */
 fun main() {

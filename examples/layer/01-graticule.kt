@@ -24,7 +24,7 @@ import geo.render.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.layer.GraticuleKt
+ * ./gradlew run -Popenrndr.application=examples.layer.Graticule
  * ```
  */
 fun main() = application {

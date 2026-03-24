@@ -23,7 +23,7 @@ import geo.projection.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.render.FeatureIterationKt
+ * ./gradlew run -Popenrndr.application=examples.render.FeatureIteration
  * ```
  */
 fun main() = application {

@@ -24,7 +24,7 @@ import geo.render.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.anim.GeoAnimatorKt
+ * ./gradlew run -Popenrndr.application=examples.anim.GeoAnimator
  * ```
  */
 fun main() = application {

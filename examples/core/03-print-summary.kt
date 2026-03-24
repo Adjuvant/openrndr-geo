@@ -18,7 +18,7 @@ import geo.core.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.core.PrintSummaryKt
+ * ./gradlew run -Popenrndr.application=examples.core.PrintSummary
  * ```
  */
 fun main() {

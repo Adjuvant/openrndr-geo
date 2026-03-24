@@ -21,7 +21,7 @@ import geo.render.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.proj.MercatorKt
+ * ./gradlew run -Popenrndr.application=examples.proj.Mercator
  * ```
  */
 fun main() = application {

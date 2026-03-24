@@ -22,7 +22,7 @@ import geo.render.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.render.MultipolygonsKt
+ * ./gradlew run -Popenrndr.application=examples.render.Multipolygons
  * ```
  */
 fun main() = application {

@@ -15,7 +15,7 @@ import geo.core.*
  *
  * ### To Run
  * ```
- * ./gradlew run -Popenrndr.application=examples.core.LoadGeojsonKt
+ * ./gradlew run -Popenrndr.application=examples.core.LoadGeojson
  * ```
  */
 fun main() {
