@@ -18,23 +18,23 @@
       },
       "budget": {
         "planning": "opencode-go/kimi-k2.5",
-        "execution": "opencode-go/minimax-m2.5",
+        "execution": "opencode-go/kimi-k2.5",
         "verification": "opencode-go/kimi-k2.5"
       },
       "smart": {
         "planning": "opencode-go/glm-5",
-        "execution": "opencode-go/minimax-m2.5",
-        "verification": "opencode-go/kimi-k2.5"
+        "execution": "opencode-go/kimi-k2.5",
+        "verification": "opencode-go/minimax-m2.7"
       },
       "simple": {
-        "planning": "opencode-go/kimi-k2.5",
-        "execution": "opencode-go/kimi-k2.5",
-        "verification": "opencode-go/kimi-k2.5"
+        "planning": "opencode-go/minimax-m2.7",
+        "execution": "opencode-go/minimax-m2.7",
+        "verification": "opencode-go/minimax-m2.7"
       },
       "genius": {
-        "planning": "openai/o4-mini",
-        "execution": "openai/gpt-4.1-mini",
-        "verification": "opencode-go/glm-5"
+        "planning": "opencode/claude-opus-4-6",
+        "execution": "opencode-go/kimi-k2.5",
+        "verification": "opencode/claude-sonnet-4-6"
       }
     },
     "custom_overrides": {
@@ -51,7 +51,8 @@
     "plan_check": true,
     "verifier": true,
     "auto_advance": false,
-    "nyquist_validation": true
+    "nyquist_validation": true,
+    "_auto_chain_active": false
   },
   "git": {
     "branching_strategy": "none"

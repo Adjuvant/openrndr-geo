@@ -1,0 +1,19 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "gsd-planner": { "model": "openai/o4-mini" },
+    "gsd-plan-checker": { "model": "openai/o4-mini" },
+    "gsd-phase-researcher": { "model": "opencode-go/minimax-m2.5" },
+    "gsd-roadmapper": { "model": "opencode-go/minimax-m2.5" },
+    "gsd-project-researcher": { "model": "opencode-go/minimax-m2.5" },
+    "gsd-research-synthesizer": { "model": "openai/o4-mini" },
+    "gsd-codebase-mapper": { "model": "opencode-go/minimax-m2.5" },
+    "gsd-executor": { "model": "openai/gpt-4.1-mini" },
+    "gsd-debugger": { "model": "openai/gpt-4.1-mini" },
+    "gsd-verifier": { "model": "openai/o4-mini" },
+    "gsd-integration-checker": { "model": "openai/o4-mini" },
+    "gsd-set-profile": { "model": "opencode-go/minimax-m2.5" },
+    "gsd-settings": { "model": "opencode-go/minimax-m2.5" },
+    "gsd-set-model": { "model": "opencode-go/minimax-m2.5" }
+  }
+}

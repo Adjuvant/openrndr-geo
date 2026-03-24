@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "presets": {
+      "simple": {
+        "planning": "opencode-go/minimax-m2.7",
+        "execution": "opencode-go/minimax-m2.7",
+        "verification": "opencode-go/minimax-m2.7"
+      }
+    }
+  },
+  "current_oc_profile": "simple"
+}

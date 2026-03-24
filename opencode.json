@@ -1,19 +1,52 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "agent": {
-    "gsd-planner": { "model": "openai/o4-mini" },
-    "gsd-plan-checker": { "model": "openai/o4-mini" },
-    "gsd-phase-researcher": { "model": "opencode-go/minimax-m2.5" },
-    "gsd-roadmapper": { "model": "opencode-go/minimax-m2.5" },
-    "gsd-project-researcher": { "model": "opencode-go/minimax-m2.5" },
-    "gsd-research-synthesizer": { "model": "openai/o4-mini" },
-    "gsd-codebase-mapper": { "model": "opencode-go/minimax-m2.5" },
-    "gsd-executor": { "model": "openai/gpt-4.1-mini" },
-    "gsd-debugger": { "model": "openai/gpt-4.1-mini" },
-    "gsd-verifier": { "model": "openai/o4-mini" },
-    "gsd-integration-checker": { "model": "openai/o4-mini" },
-    "gsd-set-profile": { "model": "opencode-go/minimax-m2.5" },
-    "gsd-settings": { "model": "opencode-go/minimax-m2.5" },
-    "gsd-set-model": { "model": "opencode-go/minimax-m2.5" }
+    "gsd-planner": {
+      "model": "opencode-go/minimax-m2.7"
+    },
+    "gsd-plan-checker": {
+      "model": "opencode-go/minimax-m2.7"
+    },
+    "gsd-phase-researcher": {
+      "model": "opencode-go/minimax-m2.7"
+    },
+    "gsd-roadmapper": {
+      "model": "opencode-go/minimax-m2.7"
+    },
+    "gsd-project-researcher": {
+      "model": "opencode-go/minimax-m2.7"
+    },
+    "gsd-research-synthesizer": {
+      "model": "opencode-go/minimax-m2.7"
+    },
+    "gsd-codebase-mapper": {
+      "model": "opencode-go/minimax-m2.7"
+    },
+    "gsd-executor": {
+      "model": "opencode-go/minimax-m2.7"
+    },
+    "gsd-debugger": {
+      "model": "opencode-go/minimax-m2.7"
+    },
+    "gsd-verifier": {
+      "model": "opencode-go/minimax-m2.7"
+    },
+    "gsd-integration-checker": {
+      "model": "opencode-go/minimax-m2.7"
+    },
+    "gsd-set-profile": {
+      "model": "opencode-go/minimax-m2.5"
+    },
+    "gsd-settings": {
+      "model": "opencode-go/minimax-m2.5"
+    },
+    "gsd-set-model": {
+      "model": "opencode-go/minimax-m2.5"
+    }
+  },
+  "permission": {
+    "external_directory": {
+      "/Users/thomas/.config/opencode/get-shit-done/**": "allow"
+    }
   }
 }
