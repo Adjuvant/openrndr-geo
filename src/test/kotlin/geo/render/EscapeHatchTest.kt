@@ -1,6 +1,6 @@
 package geo.render
 
-import geo.*
+import geo.core.*
 import geo.projection.RawProjection
 import org.junit.Test
 import org.junit.Assert.*

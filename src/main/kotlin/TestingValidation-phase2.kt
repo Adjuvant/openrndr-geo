@@ -1,7 +1,7 @@
-import geo.LineString
-import geo.MultiLineString
-import geo.MultiPoint
-import geo.Point
+import geo.core.LineString
+import geo.core.MultiLineString
+import geo.core.MultiPoint
+import geo.core.Point
 import geo.render.Shape
 import geo.render.Style
 import geo.render.drawMultiLineString

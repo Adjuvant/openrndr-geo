@@ -3,11 +3,11 @@ package geo.internal.cache
 import org.junit.Assert.*
 import org.junit.Test
 import org.openrndr.math.Vector2
-import geo.Geometry
-import geo.Point
-import geo.LineString
-import geo.Polygon
-import geo.MultiPolygon
+import geo.core.Geometry
+import geo.core.Point
+import geo.core.LineString
+import geo.core.Polygon
+import geo.core.MultiPolygon
 
 /**
  * Integration tests for ViewportCache.

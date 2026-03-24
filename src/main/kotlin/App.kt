@@ -11,7 +11,7 @@
  * and advanced features, see TemplateProgram.kt.
  */
 
-import geo.*
+import geo.core.*
 import geo.crs.CRS
 import geo.render.*
 import geo.projection.*

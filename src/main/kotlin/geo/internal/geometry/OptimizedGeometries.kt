@@ -1,6 +1,6 @@
 package geo.internal.geometry
 
-import geo.Bounds
+import geo.core.Bounds
 import geo.internal.batch.CoordinateBatch
 import geo.internal.batch.batchProjectBatch
 import geo.projection.GeoProjection

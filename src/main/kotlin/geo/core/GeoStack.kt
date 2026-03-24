@@ -269,12 +269,12 @@ class GeoStack(
         geometry: Geometry,
         projection: geo.projection.GeoProjection
     ): Array<Vector2> = when (geometry) {
-        is geo.Point -> arrayOf(projection.project(Vector2(geometry.x, geometry.y)))
-        is geo.LineString -> geometry.points.map { projection.project(it) }.toTypedArray()
-        is geo.Polygon -> geometry.exterior.map { projection.project(it) }.toTypedArray()
-        is geo.MultiPoint -> geometry.points.map { projection.project(Vector2(it.x, it.y)) }.toTypedArray()
-        is geo.MultiLineString -> geometry.lineStrings.flatMap { it.points.map { pt -> projection.project(pt) } }.toTypedArray()
-        is geo.MultiPolygon -> geometry.polygons.flatMap { it.exterior.map { pt -> projection.project(pt) } }.toTypedArray()
+        is geo.core.Point -> arrayOf(projection.project(Vector2(geometry.x, geometry.y)))
+        is geo.core.LineString -> geometry.points.map { projection.project(it) }.toTypedArray()
+        is geo.core.Polygon -> geometry.exterior.map { projection.project(it) }.toTypedArray()
+        is geo.core.MultiPoint -> geometry.points.map { projection.project(Vector2(it.x, it.y)) }.toTypedArray()
+        is geo.core.MultiLineString -> geometry.lineStrings.flatMap { it.points.map { pt -> projection.project(pt) } }.toTypedArray()
+        is geo.core.MultiPolygon -> geometry.polygons.flatMap { it.exterior.map { pt -> projection.project(pt) } }.toTypedArray()
     }
     
     /**
@@ -341,21 +341,21 @@ private fun renderProjectedCoordinates(
     drawer: Drawer
 ) {
     when (geometry) {
-        is geo.Point -> {
+        is geo.core.Point -> {
             geo.render.drawPoint(drawer, projectedCoords[0], null)
         }
-        is geo.LineString -> {
+        is geo.core.LineString -> {
             geo.render.drawLineString(drawer, projectedCoords.toList(), null)
         }
-        is geo.Polygon -> {
+        is geo.core.Polygon -> {
             geo.render.drawPolygon(drawer, projectedCoords.toList(), null)
         }
-        is geo.MultiPoint -> {
+        is geo.core.MultiPoint -> {
             projectedCoords.forEach { pt ->
                 geo.render.drawPoint(drawer, pt, null)
             }
         }
-        is geo.MultiLineString -> {
+        is geo.core.MultiLineString -> {
             // MultiLineString flattens all points, need to reconstruct line segments
             var idx = 0
             geometry.lineStrings.forEach { line ->
@@ -363,7 +363,7 @@ private fun renderProjectedCoordinates(
                 geo.render.drawLineString(drawer, linePoints.toList(), null)
             }
         }
-        is geo.MultiPolygon -> {
+        is geo.core.MultiPolygon -> {
             // MultiPolygon flattens all exterior points
             var idx = 0
             geometry.polygons.forEach { poly ->
@@ -379,31 +379,31 @@ private fun renderProjectedCoordinates(
  */
 private fun Geometry.renderToDrawer(drawer: Drawer, projection: geo.projection.GeoProjection, style: geo.render.Style?) {
     when (this) {
-        is geo.Point -> {
+        is geo.core.Point -> {
             val screen = projection.project(Vector2(x, y))
             geo.render.drawPoint(drawer, screen, style)
         }
-        is geo.LineString -> {
+        is geo.core.LineString -> {
             val screenPoints = points.map { projection.project(it) }
             geo.render.drawLineString(drawer, screenPoints, style)
         }
-        is geo.Polygon -> {
+        is geo.core.Polygon -> {
             val screenPoints = exterior.map { projection.project(it) }
             geo.render.drawPolygon(drawer, screenPoints, style)
         }
-        is geo.MultiPoint -> {
+        is geo.core.MultiPoint -> {
             points.forEach { pt ->
                 val screen = projection.project(Vector2(pt.x, pt.y))
                 geo.render.drawPoint(drawer, screen, style)
             }
         }
-        is geo.MultiLineString -> {
+        is geo.core.MultiLineString -> {
             lineStrings.forEach { line ->
                 val screenPoints = line.points.map { projection.project(it) }
                 geo.render.drawLineString(drawer, screenPoints, style)
             }
         }
-        is geo.MultiPolygon -> {
+        is geo.core.MultiPolygon -> {
             polygons.forEach { poly ->
                 val screenPoints = poly.exterior.map { projection.project(it) }
                 geo.render.drawPolygon(drawer, screenPoints, style)

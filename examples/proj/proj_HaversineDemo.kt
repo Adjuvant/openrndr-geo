@@ -3,7 +3,7 @@ package geo.examples
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.math.Vector2
-import geo.Point
+import geo.core.Point
 import geo.animation.interpolators.haversineInterpolate
 import geo.animation.interpolators.Position
 import geo.render.Shape

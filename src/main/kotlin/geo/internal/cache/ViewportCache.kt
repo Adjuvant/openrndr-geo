@@ -1,6 +1,6 @@
 package geo.internal.cache
 
-import geo.Geometry
+import geo.core.Geometry
 
 internal const val DEFAULT_MAX_ENTRIES = 500
 

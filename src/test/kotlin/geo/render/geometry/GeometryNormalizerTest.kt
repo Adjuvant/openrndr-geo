@@ -1,6 +1,6 @@
 package geo.render.geometry
 
-import geo.Polygon
+import geo.core.Polygon
 import org.junit.Test
 import org.junit.Assert.*
 import org.openrndr.math.Vector2

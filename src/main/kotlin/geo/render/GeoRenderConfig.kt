@@ -1,6 +1,6 @@
 package geo.render
 
-import geo.Feature
+import geo.core.Feature
 import geo.internal.OptimizedFeature
 import geo.projection.GeoProjection
 import org.openrndr.color.ColorRGBa
@@ -181,12 +181,12 @@ fun resolveStyle(feature: Feature, config: GeoRenderConfig): Style {
     
     // 2. By-type map
     val typeName = when (feature.geometry) {
-        is geo.Point -> "Point"
-        is geo.LineString -> "LineString"
-        is geo.Polygon -> "Polygon"
-        is geo.MultiPoint -> "MultiPoint"
-        is geo.MultiLineString -> "MultiLineString"
-        is geo.MultiPolygon -> "MultiPolygon"
+        is geo.core.Point -> "Point"
+        is geo.core.LineString -> "LineString"
+        is geo.core.Polygon -> "Polygon"
+        is geo.core.MultiPoint -> "MultiPoint"
+        is geo.core.MultiLineString -> "MultiLineString"
+        is geo.core.MultiPolygon -> "MultiPolygon"
     }
     config.styleByType[typeName]?.let { return it }
     

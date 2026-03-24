@@ -84,13 +84,13 @@ object StyleDefaults {
      * @param geometry The geometry to get default style for
      * @return Default style for the geometry type
      */
-    fun forGeometry(geometry: geo.Geometry): Style = when (geometry) {
-        is geo.Point -> defaultPointStyle
-        is geo.LineString -> defaultLineStyle
-        is geo.Polygon -> defaultPolygonStyle
-        is geo.MultiPoint -> defaultPointStyle
-        is geo.MultiLineString -> defaultLineStyle
-        is geo.MultiPolygon -> defaultPolygonStyle
+    fun forGeometry(geometry: geo.core.Geometry): Style = when (geometry) {
+        is geo.core.Point -> defaultPointStyle
+        is geo.core.LineString -> defaultLineStyle
+        is geo.core.Polygon -> defaultPolygonStyle
+        is geo.core.MultiPoint -> defaultPointStyle
+        is geo.core.MultiLineString -> defaultLineStyle
+        is geo.core.MultiPolygon -> defaultPolygonStyle
     }
 }
 

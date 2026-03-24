@@ -144,7 +144,7 @@ public typealias GeoRenderConfigExport = GeoRenderConfig
  * Resolve style for a feature using precedence chain.
  * Available via wildcard import.
  */
-public typealias ResolveStyleFunc = (geo.Feature, GeoRenderConfig) -> Style
+public typealias ResolveStyleFunc = (geo.core.Feature, GeoRenderConfig) -> Style
 
 // Utility functions available via wildcard import:
 // - resolveStyle(feature, config)

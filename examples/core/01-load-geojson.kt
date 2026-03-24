@@ -1,7 +1,7 @@
 @file:JvmName("LoadGeojson")
 package examples.core
 
-import geo.*
+import geo.core.*
 
 /**
  * ## 01 - Load GeoJSON

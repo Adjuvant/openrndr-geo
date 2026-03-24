@@ -3,9 +3,9 @@ package geo.internal.cache
 import org.junit.Assert.*
 import org.junit.Test
 import org.openrndr.math.Vector2
-import geo.Geometry
-import geo.Point
-import geo.LineString
+import geo.core.Geometry
+import geo.core.Point
+import geo.core.LineString
 import geo.internal.cache.ViewportCache
 import geo.internal.cache.ViewportState
 

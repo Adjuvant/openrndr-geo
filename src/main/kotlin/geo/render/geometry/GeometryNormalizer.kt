@@ -1,7 +1,7 @@
 package geo.render.geometry
 
-import geo.MultiPolygon
-import geo.Polygon
+import geo.core.MultiPolygon
+import geo.core.Polygon
 import org.openrndr.math.Vector2
 
 /**

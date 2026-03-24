@@ -1,6 +1,6 @@
-import geo.Bounds
-import geo.GeoPackage
-import geo.GeoPackageSource
+import geo.core.Bounds
+import geo.core.GeoPackage
+import geo.core.GeoPackageSource
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.loadFont

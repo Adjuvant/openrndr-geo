@@ -45,7 +45,7 @@ class OptimizedGeometryNormalizerTest {
         // TODO: Prepare a polygon that crosses antimeridian and test winding of normalized
         // For now, just ensure normalizePolygon returns non-empty list
         // Minimal polygon crossing antimeridian
-        val crossingPolygon = geo.Polygon(
+        val crossingPolygon = geo.core.Polygon(
             exterior = listOf(
                 Vector2(179.0, 0.0),
                 Vector2(-179.0, 0.0),

@@ -1,6 +1,6 @@
 package geo.projection
 
-import geo.Bounds
+import geo.core.Bounds
 import org.openrndr.math.Vector2
 import org.openrndr.shape.IntRectangle
 import kotlin.math.PI

@@ -3,10 +3,10 @@ package geo.examples
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.extra.olive.oliveProgram
-import geo.GeoPackage
-import geo.Point
-import geo.LineString
-import geo.Polygon
+import geo.core.GeoPackage
+import geo.core.Point
+import geo.core.LineString
+import geo.core.Polygon
 import geo.render.drawPoint
 import geo.render.drawLineString
 import geo.render.drawPolygon

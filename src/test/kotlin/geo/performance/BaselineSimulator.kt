@@ -1,6 +1,6 @@
 package geo.performance
 
-import geo.*
+import geo.core.*
 import org.junit.experimental.categories.Category
 import org.openrndr.math.Vector2
 import kotlin.time.Duration

@@ -100,7 +100,7 @@ class PolygonRendererTest {
 
     @Test
     fun testPolygonWithHoles() {
-        val poly = geo.Polygon(
+        val poly = geo.core.Polygon(
             exterior = listOf(
                 Vector2(0.0, 0.0),
                 Vector2(10.0, 0.0),
@@ -124,7 +124,7 @@ class PolygonRendererTest {
 
     @Test
     fun testPolygonBoundingBox() {
-        val poly = geo.Polygon(listOf(
+        val poly = geo.core.Polygon(listOf(
             Vector2(0.0, 0.0),
             Vector2(10.0, 0.0),
             Vector2(5.0, 10.0)
@@ -174,7 +174,7 @@ class PolygonRendererTest {
     @Test
     fun testHolesAreTransparent() {
         // Verify that holes appear as transparent cutouts
-        val poly = geo.Polygon(
+        val poly = geo.core.Polygon(
             exterior = listOf(
                 Vector2(0.0, 0.0),
                 Vector2(100.0, 0.0),
@@ -201,7 +201,7 @@ class PolygonRendererTest {
     @Test
     fun testPolygonWithMultipleHoles() {
         // Polygon with two holes
-        val poly = geo.Polygon(
+        val poly = geo.core.Polygon(
             exterior = listOf(
                 Vector2(0.0, 0.0),
                 Vector2(100.0, 0.0),

@@ -7,7 +7,7 @@ import org.openrndr.KEY_ARROW_LEFT
 import org.openrndr.KEY_ARROW_RIGHT
 import org.openrndr.KEY_ARROW_UP
 import org.openrndr.KEY_ARROW_DOWN
-import geo.*
+import geo.core.*
 
 /**
  * ## 07 - GeoStack Rendering with Zoom/Pan

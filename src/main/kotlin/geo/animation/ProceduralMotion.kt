@@ -1,6 +1,6 @@
 package geo.animation
 
-import geo.Feature
+import geo.core.Feature
 import org.openrndr.math.Vector2
 
 /**

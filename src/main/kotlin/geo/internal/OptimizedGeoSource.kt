@@ -1,8 +1,8 @@
 package geo.internal
 
-import geo.Bounds
-import geo.Feature
-import geo.GeoSource
+import geo.core.Bounds
+import geo.core.Feature
+import geo.core.GeoSource
 
 /**
  * A GeoSource wrapper that holds features with optimized geometries.
@@ -84,7 +84,7 @@ internal data class OptimizedFeature(
     /**
      * Returns the bounding box of this feature's optimized geometry.
      */
-    fun boundingBox(): geo.Bounds {
+    fun boundingBox(): geo.core.Bounds {
         return when (val geom = optimizedGeometry) {
             is geo.internal.geometry.OptimizedPoint -> geom.boundingBox
             is geo.internal.geometry.OptimizedLineString -> geom.boundingBox
@@ -92,7 +92,7 @@ internal data class OptimizedFeature(
             is geo.internal.geometry.OptimizedMultiPoint -> geom.boundingBox
             is geo.internal.geometry.OptimizedMultiLineString -> geom.boundingBox
             is geo.internal.geometry.OptimizedMultiPolygon -> geom.boundingBox
-            else -> geo.Bounds.empty()
+            else -> geo.core.Bounds.empty()
         }
     }
 }

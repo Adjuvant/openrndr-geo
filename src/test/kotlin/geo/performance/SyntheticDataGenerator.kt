@@ -1,6 +1,6 @@
 package geo.performance
 
-import geo.*
+import geo.core.*
 import org.openrndr.math.Vector2
 import kotlin.random.Random
 

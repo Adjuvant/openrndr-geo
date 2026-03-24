@@ -3,7 +3,7 @@ package examples.core
 
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import geo.*
+import geo.core.*
 import geo.render.*
 
 /**

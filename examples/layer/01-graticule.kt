@@ -4,7 +4,7 @@ package examples.layer
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.extra.color.presets.*
-import geo.*
+import geo.core.*
 import geo.layer.*
 import geo.projection.*
 import geo.render.*
@@ -43,7 +43,7 @@ fun main() = application {
         }
 
         // Define geographic bounds for the graticule
-        val bounds = geo.Bounds(-180.0, -90.0, 180.0, 90.0)
+        val bounds = geo.core.Bounds(-180.0, -90.0, 180.0, 90.0)
 
         // Create projection
         val proj = ProjectionFactory.fitWorldMercator(

@@ -1,9 +1,9 @@
 package geo.render
 
-import geo.MultiLineString
-import geo.MultiPoint
-import geo.MultiPolygon
-import geo.Polygon
+import geo.core.MultiLineString
+import geo.core.MultiPoint
+import geo.core.MultiPolygon
+import geo.core.Polygon
 import geo.projection.GeoProjection
 import geo.projection.MAX_MERCATOR_LAT
 import geo.projection.ProjectionMercator

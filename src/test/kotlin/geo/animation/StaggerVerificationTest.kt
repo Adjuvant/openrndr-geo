@@ -1,7 +1,7 @@
 package geo.animation
 
-import geo.Feature
-import geo.Point
+import geo.core.Feature
+import geo.core.Point
 import org.junit.Test
 import org.junit.Assert.*
 import org.openrndr.math.Vector2

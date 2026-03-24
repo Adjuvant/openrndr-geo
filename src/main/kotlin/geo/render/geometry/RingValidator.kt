@@ -1,6 +1,6 @@
 package geo.render.geometry
 
-import geo.Bounds
+import geo.core.Bounds
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.openrndr.math.Vector2
 import kotlin.math.abs

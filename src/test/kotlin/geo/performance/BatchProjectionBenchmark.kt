@@ -1,6 +1,6 @@
 package geo.performance
 
-import geo.*
+import geo.core.*
 import geo.internal.geometry.*
 import geo.projection.ProjectionFactory
 import geo.projection.ProjectionType

@@ -1,6 +1,6 @@
 package geo.performance
 
-import geo.Bounds
+import geo.core.Bounds
 import geo.projection.ProjectionFactory
 import geo.projection.ProjectionType
 import org.junit.Test

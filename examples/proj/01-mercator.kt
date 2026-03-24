@@ -4,7 +4,7 @@ package examples.proj
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.extra.color.presets.*
-import geo.*
+import geo.core.*
 import geo.render.*
 
 /**

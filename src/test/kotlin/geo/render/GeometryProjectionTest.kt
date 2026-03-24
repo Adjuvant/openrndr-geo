@@ -15,7 +15,7 @@ class GeometryProjectionTest {
         }
         
         // London coordinates
-        val point = geo.Point(-0.1, 51.5)
+        val point = geo.core.Point(-0.1, 51.5)
         val screen = point.toScreen(projection)
         
         // Verify result is Vector2 with positive coordinates
@@ -33,7 +33,7 @@ class GeometryProjectionTest {
         }
         
         // Equator/Prime Meridian
-        val point = geo.Point(0.0, 0.0)
+        val point = geo.core.Point(0.0, 0.0)
         val screen = point.toScreen(projection)
         
         // Should be near center
@@ -44,7 +44,7 @@ class GeometryProjectionTest {
     @Test
     fun testPointToScreenReturnsVector2() {
         val projection = ProjectionFactory.mercator(800.0, 600.0)
-        val point = geo.Point(-0.1, 51.5)
+        val point = geo.core.Point(-0.1, 51.5)
         val screen = point.toScreen(projection)
         
         // Verify the result is OpenRNDR Vector2 type
@@ -62,7 +62,7 @@ class GeometryProjectionTest {
         }
         
         // London UK coordinates
-        val point = geo.Point(-0.1, 51.5)
+        val point = geo.core.Point(-0.1, 51.5)
         val screen = point.toScreen(projection)
         
         // Verify valid screen coordinates for UK
@@ -74,7 +74,7 @@ class GeometryProjectionTest {
 
     @Test
     fun testPointToScreenWithDifferentProjections() {
-        val point = geo.Point(-0.1, 51.5)
+        val point = geo.core.Point(-0.1, 51.5)
         
         // Test with default zoomLevel - projections should still work
         val mercator = ProjectionFactory.mercator(800.0, 600.0)
@@ -93,7 +93,7 @@ class GeometryProjectionTest {
 
     @Test
     fun testPointCoordinatesPreserved() {
-        val point = geo.Point(123.456, 789.012)
+        val point = geo.core.Point(123.456, 789.012)
         
         assertEquals(123.456, point.x, 0.0001)
         assertEquals(789.012, point.y, 0.0001)
@@ -101,7 +101,7 @@ class GeometryProjectionTest {
 
     @Test
     fun testPointToVector2() {
-        val point = geo.Point(10.0, 20.0)
+        val point = geo.core.Point(10.0, 20.0)
         val vec = point.toVector2()
         
         assertEquals(10.0, vec.x, 0.0001)
@@ -111,7 +111,7 @@ class GeometryProjectionTest {
     @Test
     fun testPointFromVector2() {
         val vec = Vector2(10.0, 20.0)
-        val point = geo.Point.fromVector2(vec)
+        val point = geo.core.Point.fromVector2(vec)
         
         assertEquals(10.0, point.x, 0.0001)
         assertEquals(20.0, point.y, 0.0001)

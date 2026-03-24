@@ -103,7 +103,7 @@ class LineRendererTest {
 
     @Test
     fun testLineStringBoundingBox() {
-        val ls = geo.LineString(listOf(
+        val ls = geo.core.LineString(listOf(
             Vector2(0.0, 0.0),
             Vector2(50.0, 100.0),
             Vector2(100.0, 0.0)

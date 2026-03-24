@@ -10,7 +10,7 @@ import org.openrndr.extra.compositor.draw
 import org.openrndr.extra.compositor.blend
 import org.openrndr.extra.fx.blend.Add
 import org.openrndr.extra.fx.blend.Multiply
-import geo.*
+import geo.core.*
 import geo.layer.*
 import geo.projection.*
 import geo.render.*

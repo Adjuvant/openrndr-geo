@@ -1,7 +1,7 @@
 @file:JvmName("CrsTransform")
 package examples.proj
 
-import geo.*
+import geo.core.*
 import geo.crs.CRS
 import geo.projection.*
 

@@ -247,7 +247,7 @@ public fun bng(
  * @return Configured projection fitted to bounds
  */
 public fun fitBounds(
-    bounds: geo.Bounds,
+    bounds: geo.core.Bounds,
     width: Double,
     height: Double,
     padding: Double = 20.0,

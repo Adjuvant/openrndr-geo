@@ -1,6 +1,6 @@
 package geo.tools
 
-import geo.*
+import geo.core.*
 import org.openrndr.math.Vector2
 import kotlin.math.cos
 import kotlin.math.sin

@@ -1,12 +1,12 @@
 package geo.cache
 
-import geo.Geometry
-import geo.LineString
-import geo.Point
-import geo.Polygon
-import geo.MultiPoint
-import geo.MultiLineString
-import geo.MultiPolygon
+import geo.core.Geometry
+import geo.core.LineString
+import geo.core.Point
+import geo.core.Polygon
+import geo.core.MultiPoint
+import geo.core.MultiLineString
+import geo.core.MultiPolygon
 import geo.internal.cache.ViewportCache
 import geo.internal.cache.ViewportState
 import org.junit.Test

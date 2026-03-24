@@ -1,11 +1,11 @@
 package geo.examples
 
-import geo.GeoPackage
-import geo.GeoJSON
-import geo.GeoSource
-import geo.Point
-import geo.LineString
-import geo.Polygon
+import geo.core.GeoPackage
+import geo.core.GeoJSON
+import geo.core.GeoSource
+import geo.core.Point
+import geo.core.LineString
+import geo.core.Polygon
 import geo.render.Style
 import geo.render.drawPoint
 import geo.render.drawLineString

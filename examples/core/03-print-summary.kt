@@ -1,7 +1,7 @@
 @file:JvmName("PrintSummary")
 package examples.core
 
-import geo.*
+import geo.core.*
 
 /**
  * ## 03 - Print Summary

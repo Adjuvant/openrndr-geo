@@ -1,11 +1,11 @@
 package geo.render
 
-import geo.Bounds
-import geo.Feature
-import geo.GeoJSON
-import geo.GeoJSONSource
-import geo.GeoSource
-import geo.Geometry
+import geo.core.Bounds
+import geo.core.Feature
+import geo.core.GeoJSON
+import geo.core.GeoJSONSource
+import geo.core.GeoSource
+import geo.core.Geometry
 import geo.internal.OptimizedFeature
 import geo.internal.OptimizedGeoSource
 import geo.internal.cache.ViewportCache
@@ -188,13 +188,13 @@ fun Drawer.geo(
         // Build shapes from geometry exterior and interiors for caching
         val contours = mutableListOf<ShapeContour>()
         when (geometry) {
-            is geo.Polygon -> {
+            is geo.core.Polygon -> {
                 contours.add(ShapeContour.fromPoints(geometry.exterior, closed = true).clockwise)
                 geometry.interiors.forEach { ring ->
                     if (ring.size >= 3) contours.add(ShapeContour.fromPoints(ring, closed = true).counterClockwise)
                 }
             }
-            is geo.MultiPolygon -> {
+            is geo.core.MultiPolygon -> {
                 geometry.polygons.forEach { poly ->
                     contours.add(ShapeContour.fromPoints(poly.exterior, closed = true).clockwise)
                     poly.interiors.forEach { ring ->
@@ -458,15 +458,15 @@ private fun applyStyleDefaults(style: Style, source: GeoSource): Style {
  */
 private fun Geometry.renderToDrawer(drawer: Drawer, projection: GeoProjection, style: Style?) {
     when (this) {
-        is geo.Point -> {
+        is geo.core.Point -> {
             val screen = projection.project(Vector2(x, y))
             drawPoint(drawer, screen, style)
         }
-        is geo.LineString -> {
+        is geo.core.LineString -> {
             val screenPoints = points.map { projection.project(it) }
             drawLineString(drawer, screenPoints, style)
         }
-        is geo.Polygon -> {
+        is geo.core.Polygon -> {
             if (interiors.isNotEmpty()) {
                 val screenExterior = exterior.map { projection.project(it) }
                 val screenInteriors = interiors.map { ring ->
@@ -479,19 +479,19 @@ private fun Geometry.renderToDrawer(drawer: Drawer, projection: GeoProjection, s
                 drawPolygon(drawer, screenPoints, style)
             }
         }
-        is geo.MultiPoint -> {
+        is geo.core.MultiPoint -> {
             points.forEach { pt ->
                 val screen = projection.project(Vector2(pt.x, pt.y))
                 drawPoint(drawer, screen, style)
             }
         }
-        is geo.MultiLineString -> {
+        is geo.core.MultiLineString -> {
             lineStrings.forEach { line ->
                 val screenPoints = line.points.map { projection.project(it) }
                 drawLineString(drawer, screenPoints, style)
             }
         }
-        is geo.MultiPolygon -> {
+        is geo.core.MultiPolygon -> {
             polygons.forEach { poly ->
                 if (poly.interiors.isNotEmpty()) {
                     val screenExterior = poly.exterior.map { projection.project(it) }
@@ -635,18 +635,18 @@ private fun projectGeometryToArray(
     geometry: Geometry,
     projection: GeoProjection
 ): Array<Vector2> = when (geometry) {
-    is geo.Point -> arrayOf(projection.project(Vector2(geometry.x, geometry.y)))
-    is geo.LineString -> geometry.points.map { projection.project(it) }.toTypedArray()
-    is geo.Polygon -> {
+    is geo.core.Point -> arrayOf(projection.project(Vector2(geometry.x, geometry.y)))
+    is geo.core.LineString -> geometry.points.map { projection.project(it) }.toTypedArray()
+    is geo.core.Polygon -> {
         val exteriorProjected = geometry.exterior.map { projection.project(it) }
         val interiorProjected = geometry.interiors.flatMap { ring ->
             ring.map { projection.project(it) }
         }
         (exteriorProjected + interiorProjected).toTypedArray()
     }
-    is geo.MultiPoint -> geometry.points.map { projection.project(Vector2(it.x, it.y)) }.toTypedArray()
-    is geo.MultiLineString -> geometry.lineStrings.flatMap { it.points.map { pt -> projection.project(pt) } }.toTypedArray()
-    is geo.MultiPolygon -> {
+    is geo.core.MultiPoint -> geometry.points.map { projection.project(Vector2(it.x, it.y)) }.toTypedArray()
+    is geo.core.MultiLineString -> geometry.lineStrings.flatMap { it.points.map { pt -> projection.project(pt) } }.toTypedArray()
+    is geo.core.MultiPolygon -> {
         geometry.polygons.flatMap { poly ->
             val ext = poly.exterior.map { projection.project(it) }
             val ints = poly.interiors.flatMap { ring ->
@@ -667,13 +667,13 @@ private fun renderProjectedCoordinates(
     style: Style?
 ) {
     when (geometry) {
-        is geo.Point -> {
+        is geo.core.Point -> {
             drawPoint(drawer, projectedCoords[0], style)
         }
-        is geo.LineString -> {
+        is geo.core.LineString -> {
             drawLineString(drawer, projectedCoords.toList(), style)
         }
-        is geo.Polygon -> {
+        is geo.core.Polygon -> {
             if (geometry.interiors.isNotEmpty()) {
                 val exteriorSize = geometry.exterior.size
                 val screenExterior = projectedCoords.slice(0 until exteriorSize)
@@ -691,12 +691,12 @@ private fun renderProjectedCoordinates(
                 drawPolygon(drawer, projectedCoords.toList(), style)
             }
         }
-        is geo.MultiPoint -> {
+        is geo.core.MultiPoint -> {
             projectedCoords.forEach { pt ->
                 drawPoint(drawer, pt, style)
             }
         }
-        is geo.MultiLineString -> {
+        is geo.core.MultiLineString -> {
             // MultiLineString flattens all points, need to reconstruct line segments
             var idx = 0
             geometry.lineStrings.forEach { line ->
@@ -704,7 +704,7 @@ private fun renderProjectedCoordinates(
                 drawLineString(drawer, linePoints.toList(), style)
             }
         }
-        is geo.MultiPolygon -> {
+        is geo.core.MultiPolygon -> {
             // MultiPolygon flattens all exterior and interior points
             var idx = 0
             geometry.polygons.forEach { poly ->

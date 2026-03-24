@@ -1,7 +1,7 @@
 @file:JvmName("LoadGeopackage")
 package examples.core
 
-import geo.*
+import geo.core.*
 
 /**
  * ## 02 - Load GeoPackage

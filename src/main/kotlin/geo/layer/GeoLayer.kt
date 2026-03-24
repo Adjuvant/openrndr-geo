@@ -1,7 +1,7 @@
 package geo.layer
 
-import geo.Bounds
-import geo.GeoSource
+import geo.core.Bounds
+import geo.core.GeoSource
 import geo.render.Style
 
 /**

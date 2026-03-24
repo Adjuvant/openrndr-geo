@@ -1,7 +1,7 @@
 @file:JvmName("SyntheticDataGen")
 package examples.tools
 
-import geo.geoSource
+import geo.render.geoSource
 import geo.render.geo
 import geo.tools.SyntheticData
 import geo.tools.SyntheticDataConfig

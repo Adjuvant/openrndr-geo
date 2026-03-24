@@ -9,10 +9,10 @@ class MultiRendererTest {
 
     @Test
     fun testDrawMultiPoint() {
-        val multiPoint = geo.MultiPoint(listOf(
-            geo.Point(0.0, 0.0),
-            geo.Point(100.0, 50.0),
-            geo.Point(200.0, 100.0)
+        val multiPoint = geo.core.MultiPoint(listOf(
+            geo.core.Point(0.0, 0.0),
+            geo.core.Point(100.0, 50.0),
+            geo.core.Point(200.0, 100.0)
         ))
         
         assertEquals(3, multiPoint.size)
@@ -24,10 +24,10 @@ class MultiRendererTest {
     @Test
     fun testDrawMultiLineString() {
         val lines = listOf(
-            geo.LineString(listOf(Vector2.ZERO, Vector2.ONE)),
-            geo.LineString(listOf(Vector2.ONE, Vector2(2.0, 2.0)))
+            geo.core.LineString(listOf(Vector2.ZERO, Vector2.ONE)),
+            geo.core.LineString(listOf(Vector2.ONE, Vector2(2.0, 2.0)))
         )
-        val multiLineString = geo.MultiLineString(lines)
+        val multiLineString = geo.core.MultiLineString(lines)
         
         assertEquals(2, multiLineString.size)
         assertEquals(2, multiLineString.lineStrings[0].size)
@@ -37,18 +37,18 @@ class MultiRendererTest {
     @Test
     fun testDrawMultiPolygon() {
         val polygons = listOf(
-            geo.Polygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(0.0, 0.0),
                 Vector2(10.0, 0.0),
                 Vector2(5.0, 10.0)
             )),
-            geo.Polygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(20.0, 20.0),
                 Vector2(30.0, 20.0),
                 Vector2(25.0, 30.0)
             ))
         )
-        val multiPolygon = geo.MultiPolygon(polygons)
+        val multiPolygon = geo.core.MultiPolygon(polygons)
         
         assertEquals(2, multiPolygon.size)
         assertEquals(3, multiPolygon.polygons[0].exterior.size)
@@ -57,10 +57,10 @@ class MultiRendererTest {
 
     @Test
     fun testDrawMultiPointWithCustomStyle() {
-        val multiPoint = geo.MultiPoint(listOf(
-            geo.Point(0.0, 0.0),
-            geo.Point(10.0, 10.0),
-            geo.Point(20.0, 20.0)
+        val multiPoint = geo.core.MultiPoint(listOf(
+            geo.core.Point(0.0, 0.0),
+            geo.core.Point(10.0, 10.0),
+            geo.core.Point(20.0, 20.0)
         ))
         
         val customStyle = Style {
@@ -81,18 +81,18 @@ class MultiRendererTest {
     @Test
     fun testDrawMultiLineStringWithStyle() {
         val lines = listOf(
-            geo.LineString(listOf(
+            geo.core.LineString(listOf(
                 Vector2(0.0, 0.0),
                 Vector2(50.0, 50.0),
                 Vector2(100.0, 0.0)
             )),
-            geo.LineString(listOf(
+            geo.core.LineString(listOf(
                 Vector2(100.0, 0.0),
                 Vector2(150.0, 50.0),
                 Vector2(200.0, 0.0)
             ))
         )
-        val multiLineString = geo.MultiLineString(lines)
+        val multiLineString = geo.core.MultiLineString(lines)
         
         val style = Style {
             stroke = ColorRGBa.BLUE
@@ -108,18 +108,18 @@ class MultiRendererTest {
     @Test
     fun testDrawMultiPolygonWithStyle() {
         val polygons = listOf(
-            geo.Polygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(0.0, 0.0),
                 Vector2(10.0, 0.0),
                 Vector2(5.0, 10.0)
             )),
-            geo.Polygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(15.0, 0.0),
                 Vector2(25.0, 0.0),
                 Vector2(20.0, 10.0)
             ))
         )
-        val multiPolygon = geo.MultiPolygon(polygons)
+        val multiPolygon = geo.core.MultiPolygon(polygons)
         
         val style = Style {
             fill = ColorRGBa.GREEN.withAlpha(0.3)
@@ -136,10 +136,10 @@ class MultiRendererTest {
 
     @Test
     fun testMultiPointBoundingBox() {
-        val multiPoint = geo.MultiPoint(listOf(
-            geo.Point(0.0, 0.0),
-            geo.Point(10.0, 5.0),
-            geo.Point(5.0, 10.0)
+        val multiPoint = geo.core.MultiPoint(listOf(
+            geo.core.Point(0.0, 0.0),
+            geo.core.Point(10.0, 5.0),
+            geo.core.Point(5.0, 10.0)
         ))
         
         val bbox = multiPoint.boundingBox
@@ -151,12 +151,12 @@ class MultiRendererTest {
 
     @Test
     fun testMultiLineStringBoundingBox() {
-        val mls = geo.MultiLineString(listOf(
-            geo.LineString(listOf(
+        val mls = geo.core.MultiLineString(listOf(
+            geo.core.LineString(listOf(
                 Vector2(0.0, 0.0),
                 Vector2(10.0, 10.0)
             )),
-            geo.LineString(listOf(
+            geo.core.LineString(listOf(
                 Vector2(20.0, 0.0),
                 Vector2(30.0, 10.0)
             ))
@@ -171,13 +171,13 @@ class MultiRendererTest {
 
     @Test
     fun testMultiPolygonBoundingBox() {
-        val mp = geo.MultiPolygon(listOf(
-            geo.Polygon(listOf(
+        val mp = geo.core.MultiPolygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(0.0, 0.0),
                 Vector2(10.0, 0.0),
                 Vector2(5.0, 10.0)
             )),
-            geo.Polygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(20.0, 20.0),
                 Vector2(30.0, 20.0),
                 Vector2(25.0, 30.0)
@@ -194,7 +194,7 @@ class MultiRendererTest {
     @Test
     fun testMultiPolygonWithHoles() {
         val polygons = listOf(
-            geo.Polygon(
+            geo.core.Polygon(
                 exterior = listOf(
                     Vector2(0.0, 0.0),
                     Vector2(50.0, 0.0),
@@ -210,7 +210,7 @@ class MultiRendererTest {
                     )
                 )
             ),
-            geo.Polygon(
+            geo.core.Polygon(
                 exterior = listOf(
                     Vector2(100.0, 0.0),
                     Vector2(150.0, 0.0),
@@ -219,7 +219,7 @@ class MultiRendererTest {
                 )
             )
         )
-        val multiPolygon = geo.MultiPolygon(polygons)
+        val multiPolygon = geo.core.MultiPolygon(polygons)
         
         assertEquals(2, multiPolygon.size)
         assertTrue(multiPolygon.polygons[0].hasHoles())
@@ -230,7 +230,7 @@ class MultiRendererTest {
     fun testMultiPolygonWithHolesClamped() {
         // Create a MultiPolygon with polygons that have holes at extreme latitudes
         val polygons = listOf(
-            geo.Polygon(
+            geo.core.Polygon(
                 exterior = listOf(
                     Vector2(0.0, 0.0),
                     Vector2(50.0, 0.0),
@@ -246,7 +246,7 @@ class MultiRendererTest {
                     )
                 )
             ),
-            geo.Polygon(
+            geo.core.Polygon(
                 exterior = listOf(
                     Vector2(100.0, 0.0),
                     Vector2(150.0, 0.0),
@@ -256,14 +256,14 @@ class MultiRendererTest {
                 // No holes
             )
         )
-        val multiPolygon = geo.MultiPolygon(polygons)
+        val multiPolygon = geo.core.MultiPolygon(polygons)
         
         assertEquals("MultiPolygon should have 2 polygons", 2, multiPolygon.size)
         assertTrue("First polygon should have holes", multiPolygon.polygons[0].hasHoles())
         assertFalse("Second polygon should not have holes", multiPolygon.polygons[1].hasHoles())
         
         // Test clamping behavior for coordinates beyond Mercator bounds
-        val polyAtExtremeLat = geo.Polygon(
+        val polyAtExtremeLat = geo.core.Polygon(
             exterior = listOf(
                 Vector2(0.0, 89.0),
                 Vector2(10.0, 89.0),

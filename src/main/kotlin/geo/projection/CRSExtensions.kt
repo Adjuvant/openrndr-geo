@@ -1,6 +1,6 @@
 package geo.projection
 
-import geo.GeoSource
+import geo.core.GeoSource
 
 /**
  * Convenience extension to transform source to WGS84 (EPSG:4326).
@@ -41,6 +41,6 @@ fun GeoSource.materialize(): GeoSource {
     val materializedFeatures = listFeatures()
 
     return object : GeoSource(crs) {
-        override val features: Sequence<geo.Feature> = materializedFeatures.asSequence()
+        override val features: Sequence<geo.core.Feature> = materializedFeatures.asSequence()
     }
 }

@@ -76,7 +76,7 @@ class SyntheticDataGeneratorTest {
         val source = SyntheticDataGenerator.createLineStringDataset(100, pointsPerLine = pointsPerLine)
         
         source.features.take(10).forEach { feature ->
-            val lineString = feature.geometry as geo.LineString
+            val lineString = feature.geometry as geo.core.LineString
             assertEquals(
                 "Each LineString should have $pointsPerLine points",
                 pointsPerLine,
@@ -91,7 +91,7 @@ class SyntheticDataGeneratorTest {
         val source = SyntheticDataGenerator.createPolygonDataset(100, pointsPerPolygon = pointsPerPolygon)
         
         source.features.take(10).forEach { feature ->
-            val polygon = feature.geometry as geo.Polygon
+            val polygon = feature.geometry as geo.core.Polygon
             assertEquals(
                 "Each Polygon should have $pointsPerPolygon exterior points",
                 pointsPerPolygon,
@@ -108,8 +108,8 @@ class SyntheticDataGeneratorTest {
         val source1 = SyntheticDataGenerator.createPointDataset(count, seed = seed)
         val source2 = SyntheticDataGenerator.createPointDataset(count, seed = seed)
         
-        val points1 = source1.features.map { it.geometry as geo.Point }.toList()
-        val points2 = source2.features.map { it.geometry as geo.Point }.toList()
+        val points1 = source1.features.map { it.geometry as geo.core.Point }.toList()
+        val points2 = source2.features.map { it.geometry as geo.core.Point }.toList()
         
         assertEquals("Same seed should produce same number of features", points1.size, points2.size)
         
@@ -126,8 +126,8 @@ class SyntheticDataGeneratorTest {
         val source1 = SyntheticDataGenerator.createPointDataset(count, seed = 1L)
         val source2 = SyntheticDataGenerator.createPointDataset(count, seed = 2L)
         
-        val points1 = source1.features.map { it.geometry as geo.Point }.toList()
-        val points2 = source2.features.map { it.geometry as geo.Point }.toList()
+        val points1 = source1.features.map { it.geometry as geo.core.Point }.toList()
+        val points2 = source2.features.map { it.geometry as geo.core.Point }.toList()
         
         // At least some points should be different
         val allSame = points1.zip(points2).all { (p1, p2) ->

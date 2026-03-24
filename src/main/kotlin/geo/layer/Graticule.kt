@@ -1,9 +1,9 @@
 package geo.layer
 
-import geo.Bounds
-import geo.Feature
-import geo.GeoSource
-import geo.Point
+import geo.core.Bounds
+import geo.core.Feature
+import geo.core.GeoSource
+import geo.core.Point
 
 /**
  * Generate graticule (latitude/longitude grid) features for reference layers.

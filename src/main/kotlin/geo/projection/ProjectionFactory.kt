@@ -1,6 +1,6 @@
 package geo.projection
 
-import geo.Bounds
+import geo.core.Bounds
 import org.openrndr.math.Vector2
 import org.openrndr.shape.IntRectangle
 import kotlin.math.PI
@@ -115,7 +115,7 @@ object ProjectionFactory {
      * @return Configured projection fitted to bounds with padding
      */
     fun fitBounds(
-        bounds: geo.Bounds,
+        bounds: geo.core.Bounds,
         width: Double,
         height: Double,
         padding: Double = 20.0,

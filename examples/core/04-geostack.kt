@@ -1,7 +1,7 @@
 @file:JvmName("GeoStack")
 package examples.core
 
-import geo.*
+import geo.core.*
 
 /**
  * ## 04 - GeoStack

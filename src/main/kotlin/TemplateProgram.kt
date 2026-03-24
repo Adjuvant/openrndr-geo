@@ -12,12 +12,12 @@
  * Note: This file serves as both a runnable example and a starting point for new projects.
  */
 
-import geo.GeoPackage
-import geo.GeoSource
+import geo.core.GeoPackage
+import geo.core.GeoSource
 import geo.animation.animator
-import geo.forEachWithProjection
-import geo.geoSource
-import geo.geoStack
+import geo.render.forEachWithProjection
+import geo.render.geoSource
+import geo.render.geoStack
 import geo.projection.ProjectionFactory
 import geo.projection.ProjectionType
 import geo.projection.toWGS84

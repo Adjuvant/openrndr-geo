@@ -2,7 +2,7 @@ package geo.render
 
 import org.openrndr.draw.Drawer
 import org.openrndr.math.Vector2
-import geo.Polygon
+import geo.core.Polygon
 import geo.projection.GeoProjection
 
 /**
@@ -142,7 +142,7 @@ fun drawPolygon(
  * ```kotlin
  * extend {
  *     // Polygon with holes (holes render automatically)
- *     val polygon = geo.Polygon(
+ *     val polygon = geo.core.Polygon(
  *         exterior = listOf(Vector2(0.0, 0.0), Vector2(100.0, 0.0), Vector2(50.0, 100.0)),
  *         interiors = listOf(
  *             listOf(Vector2(20.0, 20.0), Vector2(40.0, 20.0), Vector2(30.0, 40.0))
@@ -160,7 +160,7 @@ fun drawPolygon(
  * @param userStyle Style configuration (null = use defaultPolygonStyle)
  *
  * @see writePolygonWithHoles Internal implementation for polygons with holes
- * @see geo.Polygon Geometry class with exterior and interior rings
+ * @see geo.core.Polygon Geometry class with exterior and interior rings
  */
 fun drawPolygon(
     drawer: Drawer,

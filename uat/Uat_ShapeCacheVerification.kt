@@ -1,6 +1,6 @@
 package uat
 
-import geo.*
+import geo.core.*
 import geo.render.*
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
@@ -35,6 +35,10 @@ fun main() = application {
         val standardSource = geoSource(geoJsonPath)
         val optimizedSource = GeoJSON.load(geoJsonPath, optimize = true)
 
+        // Create projection that fits the geo data into top half of screen
+        val topProjection = standardSource.projectToFit(width, height / 2 - 60)
+        // Create projection that fits the geo data into bottom half
+        val bottomProjection = optimizedSource.projectToFit(width, height / 2 - 60)
         extend {
             drawer.clear(ColorRGBa.WHITE)
 
@@ -44,9 +48,6 @@ fun main() = application {
             drawer.text("Standard Path (elevation colors)", 20.0, 25.0)
             drawer.text("TOP HALF", 20.0, 45.0)
 
-            // Create projection that fits the geo data into top half of screen
-            val topProjection = standardSource.projectToFit(width, height / 2 - 60)
-            
             drawer.geo(standardSource) {
                 projection = topProjection
                 styleByFeature = { feature ->
@@ -77,9 +78,6 @@ fun main() = application {
             // Offset to bottom half using translate
             drawer.translate(0.0, height / 2.0)
 
-            // Create projection that fits the geo data into bottom half
-            val bottomProjection = optimizedSource.projectToFit(width, height / 2 - 60)
-            
             drawer.geo(optimizedSource) {
                 projection = bottomProjection
                 stroke = ColorRGBa(0.2, 0.6, 0.2)  // Dark green

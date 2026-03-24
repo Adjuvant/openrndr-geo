@@ -30,14 +30,14 @@ class MultiPolygonRenderingTest {
 
     @Test
     fun `simple multipolygon renders as single shape with multiple contours`() {
-        val multiPolygon = geo.MultiPolygon(listOf(
-            geo.Polygon(listOf(
+        val multiPolygon = geo.core.MultiPolygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(0.0, 0.0),
                 Vector2(50.0, 0.0),
                 Vector2(50.0, 50.0),
                 Vector2(0.0, 50.0)
             )),
-            geo.Polygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(60.0, 0.0),
                 Vector2(110.0, 0.0),
                 Vector2(110.0, 50.0),
@@ -58,14 +58,14 @@ class MultiPolygonRenderingTest {
 
     @Test
     fun `simple multipolygon contours have clockwise winding`() {
-        val multiPolygon = geo.MultiPolygon(listOf(
-            geo.Polygon(listOf(
+        val multiPolygon = geo.core.MultiPolygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(0.0, 0.0),
                 Vector2(50.0, 0.0),
                 Vector2(50.0, 50.0),
                 Vector2(0.0, 50.0)
             )),
-            geo.Polygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(60.0, 0.0),
                 Vector2(110.0, 0.0),
                 Vector2(110.0, 50.0),
@@ -91,8 +91,8 @@ class MultiPolygonRenderingTest {
 
     @Test
     fun `multipolygon with holes has correct number of contours`() {
-        val multiPolygon = geo.MultiPolygon(listOf(
-            geo.Polygon(
+        val multiPolygon = geo.core.MultiPolygon(listOf(
+            geo.core.Polygon(
                 exterior = listOf(
                     Vector2(0.0, 0.0),
                     Vector2(100.0, 0.0),
@@ -121,8 +121,8 @@ class MultiPolygonRenderingTest {
 
     @Test
     fun `multipolygon exterior has clockwise winding`() {
-        val multiPolygon = geo.MultiPolygon(listOf(
-            geo.Polygon(
+        val multiPolygon = geo.core.MultiPolygon(listOf(
+            geo.core.Polygon(
                 exterior = listOf(
                     Vector2(0.0, 0.0),
                     Vector2(100.0, 0.0),
@@ -152,8 +152,8 @@ class MultiPolygonRenderingTest {
 
     @Test
     fun `multipolygon holes have counterClockwise winding`() {
-        val multiPolygon = geo.MultiPolygon(listOf(
-            geo.Polygon(
+        val multiPolygon = geo.core.MultiPolygon(listOf(
+            geo.core.Polygon(
                 exterior = listOf(
                     Vector2(0.0, 0.0),
                     Vector2(100.0, 0.0),
@@ -183,8 +183,8 @@ class MultiPolygonRenderingTest {
 
     @Test
     fun `multipolygon with multiple holes maintains correct winding`() {
-        val multiPolygon = geo.MultiPolygon(listOf(
-            geo.Polygon(
+        val multiPolygon = geo.core.MultiPolygon(listOf(
+            geo.core.Polygon(
                 exterior = listOf(
                     Vector2(0.0, 0.0),
                     Vector2(100.0, 0.0),
@@ -226,9 +226,9 @@ class MultiPolygonRenderingTest {
 
     @Test
     fun `multipolygon with multiple polygons and mixed holes combines correctly`() {
-        val multiPolygon = geo.MultiPolygon(listOf(
+        val multiPolygon = geo.core.MultiPolygon(listOf(
             // First polygon with hole
-            geo.Polygon(
+            geo.core.Polygon(
                 exterior = listOf(
                     Vector2(0.0, 0.0),
                     Vector2(50.0, 0.0),
@@ -245,7 +245,7 @@ class MultiPolygonRenderingTest {
                 )
             ),
             // Second polygon without hole
-            geo.Polygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(60.0, 0.0),
                 Vector2(110.0, 0.0),
                 Vector2(110.0, 50.0),
@@ -266,14 +266,14 @@ class MultiPolygonRenderingTest {
     @Test
     fun `adjacent polygons combine without error`() {
         // Two polygons sharing an edge at x=50
-        val multiPolygon = geo.MultiPolygon(listOf(
-            geo.Polygon(listOf(
+        val multiPolygon = geo.core.MultiPolygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(0.0, 0.0),
                 Vector2(50.0, 0.0),
                 Vector2(50.0, 50.0),
                 Vector2(0.0, 50.0)
             )),
-            geo.Polygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(50.0, 0.0),
                 Vector2(100.0, 0.0),
                 Vector2(100.0, 50.0),
@@ -293,8 +293,8 @@ class MultiPolygonRenderingTest {
 
     @Test
     fun `single polygon multipolygon creates shape with one contour`() {
-        val multiPolygon = geo.MultiPolygon(listOf(
-            geo.Polygon(listOf(
+        val multiPolygon = geo.core.MultiPolygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(0.0, 0.0),
                 Vector2(50.0, 0.0),
                 Vector2(50.0, 50.0),
@@ -314,8 +314,8 @@ class MultiPolygonRenderingTest {
 
     @Test
     fun `multipolygon with projection preserves winding rules`() {
-        val multiPolygon = geo.MultiPolygon(listOf(
-            geo.Polygon(
+        val multiPolygon = geo.core.MultiPolygon(listOf(
+            geo.core.Polygon(
                 exterior = listOf(
                     Vector2(0.0, 0.0),
                     Vector2(100.0, 0.0),
@@ -356,8 +356,8 @@ class MultiPolygonRenderingTest {
     @Test
     fun `multipolygon with incorrect winding gets normalized`() {
         // Polygon with counter-clockwise exterior (wrong for screen space)
-        val multiPolygon = geo.MultiPolygon(listOf(
-            geo.Polygon(
+        val multiPolygon = geo.core.MultiPolygon(listOf(
+            geo.core.Polygon(
                 exterior = listOf(
                     Vector2(0.0, 0.0),
                     Vector2(0.0, 100.0),
@@ -400,14 +400,14 @@ class MultiPolygonRenderingTest {
 
     @Test
     fun `render multipolygon uses combined shape approach`() {
-        val multiPolygon = geo.MultiPolygon(listOf(
-            geo.Polygon(listOf(
+        val multiPolygon = geo.core.MultiPolygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(0.0, 0.0),
                 Vector2(50.0, 0.0),
                 Vector2(50.0, 50.0),
                 Vector2(0.0, 50.0)
             )),
-            geo.Polygon(listOf(
+            geo.core.Polygon(listOf(
                 Vector2(60.0, 0.0),
                 Vector2(110.0, 0.0),
                 Vector2(110.0, 50.0),
@@ -438,7 +438,7 @@ class MultiPolygonRenderingTest {
  * @return A Shape with all contours combined (exteriors clockwise, holes counter-clockwise)
  */
 fun createMultiPolygonShape(
-    multiPolygon: geo.MultiPolygon,
+    multiPolygon: geo.core.MultiPolygon,
     projection: (Vector2) -> Vector2 = { it }
 ): Shape {
     val contours = prepareMultiPolygonContours(multiPolygon, projection)
@@ -453,7 +453,7 @@ fun createMultiPolygonShape(
  * @return List of normalized ShapeContours ready for Shape creation
  */
 fun prepareMultiPolygonContours(
-    multiPolygon: geo.MultiPolygon,
+    multiPolygon: geo.core.MultiPolygon,
     projection: (Vector2) -> Vector2 = { it }
 ): List<ShapeContour> {
     val contours = mutableListOf<ShapeContour>()

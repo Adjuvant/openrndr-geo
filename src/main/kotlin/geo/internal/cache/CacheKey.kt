@@ -1,6 +1,6 @@
 package geo.internal.cache
 
-import geo.Geometry
+import geo.core.Geometry
 
 /**
  * Composite cache key combining viewport state and geometry reference.

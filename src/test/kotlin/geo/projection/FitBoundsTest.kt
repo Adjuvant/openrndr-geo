@@ -2,7 +2,7 @@ package geo.projection
 
 import org.junit.Test
 import org.junit.Assert.*
-import geo.Bounds
+import geo.core.Bounds
 import org.openrndr.math.Vector2
 import kotlin.math.ln
 import kotlin.math.tan
