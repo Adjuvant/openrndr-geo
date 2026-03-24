@@ -1,7 +1,7 @@
 @file:JvmName("QuickGeo")
 package examples.anim
 
-import geo.render.geoSource
+import geo.core.geoSource
 import geo.render.geo
 import org.openrndr.application
 

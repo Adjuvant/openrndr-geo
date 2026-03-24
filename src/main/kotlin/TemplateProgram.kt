@@ -13,11 +13,10 @@
  */
 
 import geo.core.GeoPackage
-import geo.core.GeoSource
 import geo.animation.animator
-import geo.render.forEachWithProjection
-import geo.render.geoSource
-import geo.render.geoStack
+import geo.core.forEachWithProjection
+import geo.core.geoSource
+import geo.core.geoStack
 import geo.projection.ProjectionFactory
 import geo.projection.ProjectionType
 import geo.projection.toWGS84

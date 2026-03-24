@@ -1,4 +1,4 @@
-package geo
+package geo.core
 
 import geo.projection.CRSTransformer
 import org.junit.Test

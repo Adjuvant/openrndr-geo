@@ -1,10 +1,9 @@
 @file:JvmName("SyntheticDataGen")
 package examples.tools
 
-import geo.render.geoSource
+import geo.core.geoSource
 import geo.render.geo
 import geo.tools.SyntheticData
-import geo.tools.SyntheticDataConfig
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.math.Vector2

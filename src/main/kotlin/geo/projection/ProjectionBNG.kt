@@ -26,7 +26,7 @@ import org.openrndr.math.Vector2
  * ```
  */
 class ProjectionBNG(
-    private val config: ProjectionConfig
+    private val _config: ProjectionConfig
 ) : GeoProjection {
 
     companion object {
@@ -94,16 +94,16 @@ class ProjectionBNG(
         }
 
         // Project BNG to screen (easting/northing in meters)
-        val x = (bng.x / MAX_EASTING) * config.width
-        val y = config.height - (bng.y / MAX_NORTHING) * config.height
+        val x = (bng.x / MAX_EASTING) * _config.width
+        val y = _config.height - (bng.y / MAX_NORTHING) * _config.height
 
         return Vector2(x, y)
     }
 
     override fun unproject(screen: Vector2): Vector2 {
         // De-project screen to BNG
-        val easting = (screen.x / config.width) * MAX_EASTING
-        val northing = ((config.height - screen.y) / config.height) * MAX_NORTHING
+        val easting = (screen.x / _config.width) * MAX_EASTING
+        val northing = ((_config.height - screen.y) / _config.height) * MAX_NORTHING
 
         // Transform BNG to lat/lng
         return bngToLatLng(Vector2(easting, northing))

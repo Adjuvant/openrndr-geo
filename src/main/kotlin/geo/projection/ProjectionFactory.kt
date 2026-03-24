@@ -9,7 +9,7 @@ import kotlin.math.tan
 import kotlin.math.min
 import kotlin.math.log2
 
-enum class ProjectionType { EQUIRECTANGULAR, MERCATOR }
+enum class ProjectionType { EQUIRECTANGULAR, MERCATOR, BNG }
 
 object ProjectionFactory {
 
@@ -168,11 +168,17 @@ object ProjectionFactory {
 
                 ProjectionConfig(width, height, center, zoomLevel, null)
             }
+            ProjectionType.BNG -> {
+                // TODO Add british national grid projection setup
+                val zoomLevel = 1.0
+                ProjectionConfig(width, height, center, zoomLevel, null)
+            }
         }
 
         return when (projection) {
             ProjectionType.EQUIRECTANGULAR -> ProjectionEquirectangular(config)
             ProjectionType.MERCATOR -> ProjectionMercator(config)
+            ProjectionType.BNG -> ProjectionBNG(config)
         }
     }
 }

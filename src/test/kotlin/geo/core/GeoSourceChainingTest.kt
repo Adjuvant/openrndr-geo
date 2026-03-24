@@ -1,4 +1,4 @@
-package geo
+package geo.core
 
 import org.junit.Test
 import org.junit.Assert.*

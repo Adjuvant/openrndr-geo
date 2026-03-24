@@ -1,8 +1,7 @@
-package geo
+package geo.core
 
 import geo.projection.toWGS84
 import geo.projection.toWebMercator
-import geo.projection.materialize
 import org.junit.Test
 import org.junit.Assert.*
 import java.io.File
