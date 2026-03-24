@@ -1,4 +1,4 @@
-package geo
+package geo.core
 
 import org.openrndr.math.Vector2
 

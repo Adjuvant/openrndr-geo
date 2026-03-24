@@ -1,4 +1,4 @@
-package geo
+package geo.core
 
 /**
  * Represents a rectangular bounding box in 2D space.

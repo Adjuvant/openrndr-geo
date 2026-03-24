@@ -1,4 +1,4 @@
-package geo
+package geo.core
 
 import geo.crs.CRS
 import geo.internal.OptimizedFeature

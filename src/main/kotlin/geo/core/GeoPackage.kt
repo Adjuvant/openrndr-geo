@@ -1,4 +1,4 @@
-package geo
+package geo.core
 
 import mil.nga.geopackage.GeoPackageManager
 import mil.nga.geopackage.features.user.FeatureDao

@@ -1,4 +1,4 @@
-package geo
+package geo.core
 
 import geo.internal.OptimizedGeoSource
 import geo.internal.cache.ViewportCache

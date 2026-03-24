@@ -1,4 +1,4 @@
-package geo
+package geo.core
 
 private const val MAX_CAPACITY = 16
 

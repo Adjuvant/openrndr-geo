@@ -1,4 +1,4 @@
-package geo
+package geo.core
 
 import geo.internal.OptimizedFeature
 import geo.internal.OptimizedGeoSource

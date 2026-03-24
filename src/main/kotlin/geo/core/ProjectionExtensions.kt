@@ -1,4 +1,4 @@
-package geo
+package geo.core
 
 import geo.internal.batch.CoordinateBatch
 import geo.internal.batch.batchProject
