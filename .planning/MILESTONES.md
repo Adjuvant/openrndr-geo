@@ -1,5 +1,14 @@
 # Milestones
 
+## v1.4.0 Developer Experience (Shipped: 2026-03-25)
+
+**Phases completed:** 7 phases, 23 plans, 6 tasks
+
+**Key accomplishments:**
+- (none recorded)
+
+---
+
 ## v1.2.0 API Improvements & Examples (Shipped: 2026-02-27)
 
 **Phases completed:** 4 phases, 13 plans, 0 tasks

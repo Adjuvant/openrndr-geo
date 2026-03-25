@@ -8,21 +8,13 @@ A Kotlin/OpenRNDR prototyping library for creative geospatial visualization. It 
 
 An expressive, well-architected API that makes exploring intersections of geo datasets feel fluid and creative — decoupling data operations from rendering so new visual ideas can be prototyped quickly.
 
-## Current Milestone: v1.4.0 Developer Experience
+## Current Milestone: v1.5.0 (Planning)
 
-**Status:** In Progress  
-**Started:** 2026-03-07  
-**Goal:** Improve API ergonomics, fix rendering edge cases, and enhance developer workflow.
+**Status:** Planning  
+**Started:** 2026-03-25  
+**Goal:** TBD
 
-**Target features:**
-- Single-import API (`import geo.*`) — 3-line workflow from data to render
-- Reduced boilerplate for common creative coding patterns
-- Fixed MultiPolygon rendering for ocean/whole-world data
-- Improved polygon interior/exterior ring handling
-- ViewportCache integration for OptimizedGeoSource
-- Better code organization (core/ subdirectory)
-- Documentation fixes (README corrections)
-- Graticule layer improvements for zoomed-in maps
+**Previous:** [v1.4.0 Developer Experience](milestones/v1.4.0-ROADMAP.md) shipped 2026-03-25
 
 ## Requirements
 
@@ -66,20 +58,22 @@ An expressive, well-architected API that makes exploring intersections of geo da
 - ✓ Regression testing — All 26 v1.2.0 examples work unchanged (PERF-10) — v1.3.0
 - ✓ Code cleanup — Zero TODOs, 278 tests passing — v1.3.0
 
+**v1.4.0 Developer Experience:**
+- ✓ Single-import API — `import geo.*` gets everything needed (API-01) — v1.4.0
+- ✓ Reduced boilerplate — 3-line rendering workflow (API-02) — v1.4.0
+- ✓ RawProjection UX improvements for advanced workflows (API-03) — v1.4.0
+- ✓ MultiPolygon rendering fixes for ocean/whole-world data (RENDER-01) — v1.4.0
+- ✓ Polygon ring handling — proper interior/exterior support (RENDER-02) — v1.4.0
+- ✓ OptimizedGeoSource caching — extend ViewportCache (PERF-11) — v1.4.0
+- ✓ Clean up necro examples from src/main/kotlin/geo/examples (ORG-01) — v1.4.0
+- ✓ Move geo root files to core/ subdirectory (ORG-02) — v1.4.0
+- ✓ Organize file contents for better code navigation (ORG-03) — v1.4.0
+- ✓ Fix README run commands and data paths (DOCS-01) — v1.4.0
+- ✓ Graticule improvements for zoomed-in maps (LAYER-01) — v1.4.0
+
 ### Active
 
-**v1.4.0 Developer Experience:**
-- [ ] **API-01:** Single-import API — `import geo.*` gets everything needed
-- [ ] **API-02:** Reduced boilerplate — 3-line rendering workflow
-- [ ] **API-03:** RawProjection UX improvements for advanced workflows
-- [x] **RENDER-01:** MultiPolygon rendering fixes for ocean/whole-world data
-- [x] **RENDER-02:** Polygon ring handling — proper interior/exterior support
-- [ ] **PERF-11:** OptimizedGeoSource caching — extend ViewportCache
-- [ ] **ORG-01:** Clean up necro examples from src/main/kotlin/geo/examples
-- [ ] **ORG-02:** Move geo root files to core/ subdirectory
-- [ ] **ORG-03:** Organize file contents for better code navigation
-- [ ] **DOCS-01:** Fix README run commands and data paths
-- [ ] **LAYER-01:** Graticule improvements for zoomed-in maps
+*No active requirements — use `/gsd-new-milestone` to plan next release.*
 
 **Deferred:**
 - [ ] Clip geometries at projection bounds (vs current clamp) (ADV-01)
@@ -141,6 +135,14 @@ An expressive, well-architected API that makes exploring intersections of geo da
 - Code cleanup: zero TODOs remain, all tests pass
 - Two entry points: App.kt (minimal, 54 lines) and TemplateProgram.kt (comprehensive, 147 lines)
 
+**v1.4.0 Improvements:**
+- Single-import API: `import geo.*` provides loadGeo(), geoSource(), projectToFit()
+- 3-line rendering workflow: load → project → render
+- Polygon hole rendering via OpenRNDR compound difference
+- Graticule layer with adaptive 1°/10°/30°/90° spacing
+- Cartographic label formatting (45°N, 120°W) with auto-thinning
+- Code reorganization: geo.core/ subpackage with clean imports
+
 ## Constraints
 
 - **Tech Stack:** Kotlin/JVM with OPENRNDR 0.4.5 — creative coding framework choice
@@ -173,6 +175,10 @@ An expressive, well-architected API that makes exploring intersections of geo da
 | Clear-on-change caching | Simple invalidation vs LRU/LFU | ✓ Shipped in v1.3.0 — creative coding appropriate |
 | Opt-in optimization flag | Backward compatibility | ✓ Shipped in v1.3.0 — `optimize=true` parameter |
 | Two canonical entry points | Minimal vs comprehensive workflows | ✓ Shipped in v1.3.0 — App.kt and TemplateProgram.kt |
+| Single-import API | `import geo.*` for essentials | ✓ Shipped in v1.4.0 — loadGeo(), projectToFit() |
+| Compound shape for holes | OpenRNDR difference() for transparency | ✓ Shipped in v1.4.0 — holes show background |
+| Power-of-10 graticule | Adaptive spacing based on viewport | ✓ Shipped in v1.4.0 — 1°/10°/30°/90° |
+| geo.core subpackage | Package reorganization | ✓ Shipped in v1.4.0 — cleaner imports |
 
 ---
-*Last updated: 2026-03-07 after starting v1.4.0 Developer Experience milestone*
+*Last updated: 2026-03-25 after v1.4.0 Developer Experience milestone shipped*
