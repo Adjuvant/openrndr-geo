@@ -3,17 +3,24 @@ gsd_state_version: 1.0
 milestone: v1.3
 milestone_name: milestone
 status: unknown
-last_updated: "2026-03-24T22:50:53.206Z"
+last_updated: "2026-03-25T07:50:00Z"
 progress:
   total_phases: 7
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 21
-  completed_plans: 17
+  completed_plans: 19
 ---
 
-# Phase 19 Plan 01 State
+# Phase 20 Layer Features State
 
-Plan 19-01 completed - fixed Kt suffix in run commands across 23 source files and README template.
+Plans 20-01 and 20-02 completed - LineString-based graticule with adaptive spacing and labels.
+
+## Completed Plans in Phase 20
+- Plan 20-01: Complete (LineString-based graticule with adaptive spacing and antimeridian handling)
+- Plan 20-02: Complete (Graticule labels with cartographic formatting and auto-thinning)
+
+## Completed Plans in Phase 19
+- Plan 19-01: Complete (fix Kt suffix in run commands)
 
 ## Completed Plans in Phase 18
 - Plan 18-01: Complete (move 4 necro examples to examples/, delete 6 duplicates)
@@ -28,28 +35,16 @@ Plan 19-01 completed - fixed Kt suffix in run commands across 23 source files an
 - Plan 17-05: Complete (styleByOptimizedFeature + tests)
 
 ## Key Decisions Made
-- Added dirty flag support to ViewportCache with identity-based bypass
-- Fixed splitAtAntimeridian to check sign of endpoints (not just |diff| > 180)
-- Updated OptimizedGeometryNormalizerTest to expect correct fragment counts
+- GraticuleLines data class holds latLines and lngLines GeoSource separately
+- GeoLayer has latLines, lngLines, and labels properties for graticule-specific features
+- Labels off by default (includeLabels=false) for backward compatibility
+- Degree formatting: 45°N, 30.5°S, 120°E, 90°W, 0°, 180°
+- Auto-thinning maintains 20px minimum spacing between labels
+- Latitude labels at left edge, longitude labels at bottom edge
 
 ## Issues
-- All test failures resolved
-
-## Completed Plans in Phase 18
-- Plan 18-01: Complete (move 4 necro examples to examples/, delete 6 duplicates)
-- Plan 18-02: Complete (move 13 geo files to geo.core/)
-- Plan 18-03: Complete (update all imports from geo.X to geo.core.X)
-
-## Completed Plans in Phase 19
-- Plan 19-01: Complete (fix Kt suffix in run commands)
+- None - all implementations completed successfully
 
 ## Last Session
-- Stopped at: Completed 19-01-PLAN.md - Kt suffix fixes
-- Timestamp: 2026-03-24T22:47:28Z
-
-## Key Decisions Made
-- All example files use @file:JvmName which generates class names without Kt suffix
-- Gradle run commands must use actual class name (e.g., examples.proj.Mercator) not Kotlin-generated default (e.g., examples.proj.MercatorKt)
-
-## Issues
-- None - straightforward documentation fixes
+- Stopped at: Completed 20-02-PLAN.md - Graticule label generation
+- Timestamp: 2026-03-25T07:50:00Z

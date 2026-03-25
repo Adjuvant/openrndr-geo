@@ -34,7 +34,7 @@ Requirements for the Developer Experience milestone. Each requirement maps to a 
 
 ### Layer Features (Phase 20)
 
-- [ ] **LAYER-01**: Graticule layer for zoomed-in maps — adaptive grid spacing and proper labeling
+- [x] **LAYER-01**: Graticule layer for zoomed-in maps — adaptive grid spacing and proper labeling ✅ COMPLETE
 
 ## v2 Requirements (Deferred)
 

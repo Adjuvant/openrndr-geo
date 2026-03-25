@@ -125,16 +125,16 @@ Plans:
 
 ### Phase 20: Layer Features
 
-**Status:** In Planning  
-**Plans:** 2/2
+**Status:** Complete  
+**Plans:** 2/2 plans complete
 
 **Goal:** Fix and enhance graticule layer for zoomed-in maps.
 
-**Requirements:** LAYER-01
+**Requirements:** LAYER-01 ✅ Complete
 
-**Plans:**
-- [ ] [`20-01-PLAN.md`](phases/20-layer-features/20-01-PLAN.md) — LineString-based graticule with adaptive spacing
-- [ ] [`20-02-PLAN.md`](phases/20-layer-features/20-02-PLAN.md) — Label generation and density management
+**Completed:**
+- [x] [`20-01-PLAN.md`](phases/20-layer-features/20-01-PLAN.md) — LineString-based graticule with adaptive spacing ✅ COMPLETE
+- [x] [`20-02-PLAN.md`](phases/20-layer-features/20-02-PLAN.md) — Label generation and density management ✅ COMPLETE
 
 ---
 
@@ -148,7 +148,7 @@ Plans:
 | 17 | 6/6 | Complete    | 2026-03-18 | TBD |
 | 18 | 3/3 | Complete   | 2026-03-24 | TBD |
 | 19 | v1.4.0 | Complete    | 2026-03-24 | 2026-03-24 |
-| 20 | v1.4.0 | 2/2 | ⏳ In Planning | TBD |
+| 20 | v1.4.0 | 2/2 | ✅ Complete | 2026-03-25 |
 
 ---
 
