@@ -3,7 +3,9 @@ package geo.layer
 import geo.core.Bounds
 import geo.core.Feature
 import geo.core.GeoSource
+import geo.core.LineString
 import geo.core.Point
+import org.openrndr.math.Vector2
 
 /**
  * Generate graticule (latitude/longitude grid) features for reference layers.
@@ -133,4 +135,78 @@ fun calculateAdaptiveSpacing(bounds: Bounds): Double {
         visibleDegrees < 60.0 -> 30.0
         else -> 90.0
     }
+}
+
+/**
+ * Data class holding latitude and longitude graticule lines as separate GeoSources.
+ * 
+ * @property latLines GeoSource containing horizontal latitude lines as LineString features
+ * @property lngLines GeoSource containing vertical longitude lines as LineString features
+ */
+data class GraticuleLines(
+    val latLines: GeoSource,
+    val lngLines: GeoSource
+)
+
+/**
+ * Generate graticule lines (LineStrings) for the given bounds and spacing.
+ * 
+ * Creates horizontal latitude lines and vertical longitude lines as separate GeoSources,
+ * each containing LineString features.
+ *
+ * @param bounds The geographic bounds to generate lines within
+ * @param spacing The spacing between lines in degrees
+ * @return GraticuleLines containing latLines and lngLines GeoSources
+ */
+fun generateGraticuleLines(bounds: Bounds, spacing: Double): GraticuleLines {
+    if (bounds.isEmpty()) {
+        val emptySource = object : GeoSource(crs = "EPSG:4326") {
+            override val features: Sequence<Feature> = emptySequence()
+        }
+        return GraticuleLines(emptySource, emptySource)
+    }
+    
+    // Validate minimum spacing
+    require(spacing >= 1.0) {
+        "Graticule spacing must be at least 1.0 degrees (got $spacing)"
+    }
+    
+    val latLineFeatures = mutableListOf<Feature>()
+    val lngLineFeatures = mutableListOf<Feature>()
+    
+    // Generate latitude lines (horizontal lines at constant y)
+    val minLat = kotlin.math.floor(bounds.minY / spacing) * spacing
+    val maxLat = kotlin.math.ceil(bounds.maxY / spacing) * spacing
+    var lat = minLat
+    while (lat <= maxLat + 0.001) {  // Small epsilon for floating point
+        val linePoints = listOf(
+            Vector2(bounds.minX, lat),
+            Vector2(bounds.maxX, lat)
+        )
+        latLineFeatures.add(Feature(LineString(linePoints)))
+        lat += spacing
+    }
+    
+    // Generate longitude lines (vertical lines at constant x)
+    val minLon = kotlin.math.floor(bounds.minX / spacing) * spacing
+    val maxLon = kotlin.math.ceil(bounds.maxX / spacing) * spacing
+    var lon = minLon
+    while (lon <= maxLon + 0.001) {  // Small epsilon for floating point
+        val linePoints = listOf(
+            Vector2(lon, bounds.minY),
+            Vector2(lon, bounds.maxY)
+        )
+        lngLineFeatures.add(Feature(LineString(linePoints)))
+        lon += spacing
+    }
+    
+    val latSource = object : GeoSource(crs = "EPSG:4326") {
+        override val features: Sequence<Feature> = latLineFeatures.asSequence()
+    }
+    
+    val lngSource = object : GeoSource(crs = "EPSG:4326") {
+        override val features: Sequence<Feature> = lngLineFeatures.asSequence()
+    }
+    
+    return GraticuleLines(latSource, lngSource)
 }
