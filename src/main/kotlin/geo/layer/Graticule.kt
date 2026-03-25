@@ -304,3 +304,31 @@ fun generateGraticuleLayer(bounds: Bounds, spacing: Double? = null): GeoLayer {
         lngLines = graticuleLines.lngLines
     )
 }
+
+/**
+ * Represents a single graticule label with its text and position.
+ *
+ * @property text The formatted label text (e.g., "45°N", "120°W")
+ * @property longitude The geographic longitude coordinate
+ * @property latitude The geographic latitude coordinate
+ * @property projectedX The projected screen X coordinate
+ * @property projectedY The projected screen Y coordinate
+ */
+data class LabelPosition(
+    val text: String,
+    val longitude: Double,
+    val latitude: Double,
+    val projectedX: Double,
+    val projectedY: Double
+)
+
+/**
+ * Container for graticule latitude and longitude labels.
+ *
+ * @property latitudeLabels List of labels for latitude lines (positioned at left edge)
+ * @property longitudeLabels List of labels for longitude lines (positioned at bottom edge)
+ */
+data class GraticuleLabels(
+    val latitudeLabels: List<LabelPosition>,
+    val longitudeLabels: List<LabelPosition>
+)
