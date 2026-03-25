@@ -90,7 +90,8 @@ data class GeoLayer(
     var source: GeoSource? = null,
     var style: Style? = null,
     var latLines: GeoSource? = null,
-    var lngLines: GeoSource? = null
+    var lngLines: GeoSource? = null,
+    var labels: GraticuleLabels? = null
 ) {
     companion object {
         /**

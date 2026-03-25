@@ -294,15 +294,29 @@ fun generateGraticuleLines(bounds: Bounds, spacing: Double): GraticuleLines {
  *
  * @param bounds The geographic bounds to generate graticule lines within
  * @param spacing The spacing between lines in degrees (default: auto-calculated)
+ * @param projection Optional projection for label generation (required if includeLabels=true)
+ * @param includeLabels Whether to generate labels (default: false)
  * @return GeoLayer with latLines and lngLines GeoSource properties
  */
-fun generateGraticuleLayer(bounds: Bounds, spacing: Double? = null): GeoLayer {
+fun generateGraticuleLayer(
+    bounds: Bounds,
+    spacing: Double? = null,
+    projection: GeoProjection? = null,
+    includeLabels: Boolean = false
+): GeoLayer {
     val effectiveSpacing = spacing ?: calculateAdaptiveSpacing(bounds)
     val graticuleLines = generateGraticuleLines(bounds, effectiveSpacing)
     
+    val labels = if (includeLabels && projection != null) {
+        generateGraticuleLabels(bounds, projection, effectiveSpacing)
+    } else {
+        null
+    }
+    
     return GeoLayer(
         latLines = graticuleLines.latLines,
-        lngLines = graticuleLines.lngLines
+        lngLines = graticuleLines.lngLines,
+        labels = labels
     )
 }
 
