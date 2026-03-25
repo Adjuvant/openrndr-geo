@@ -46,6 +46,18 @@ import geo.render.Style
  * }
  * ```
  *
+ * ## Graticule Layers
+ * For graticule layers, use the specialized properties:
+ * - **latLines**: Horizontal latitude lines as a GeoSource
+ * - **lngLines**: Vertical longitude lines as a GeoSource
+ *
+ * These can be rendered separately for different styling:
+ * ```kotlin
+ * val graticule = generateGraticuleLayer(bounds)
+ * drawer.geo(graticule.latLines)
+ * drawer.geo(graticule.lngLines)
+ * ```
+ *
  * ## Blend Modes
  * The following blend modes from orx-fx work well with geo visualizations:
  *
@@ -63,9 +75,12 @@ import geo.render.Style
  *
  * @property source The geo data source for this layer
  * @property style The rendering style applied to all features in this layer
+ * @property latLines GeoSource for horizontal latitude lines (used by graticule)
+ * @property lngLines GeoSource for vertical longitude lines (used by graticule)
  *
  * @see geo.layer.generateGraticule Generate graticule features for reference layers
  * @see geo.layer.generateGraticuleSource Generate a GeoSource from graticule features
+ * @see geo.layer.generateGraticuleLayer Generate a GeoLayer with lat/lng lines
  * @see org.openrndr.extra.fx.blend.Add Additive blend mode
  * @see org.openrndr.extra.fx.blend.Multiply Multiplicative blend mode
  * @see org.openrndr.extra.fx.blend.Overlay Overlay blend mode
@@ -73,7 +88,9 @@ import geo.render.Style
  */
 data class GeoLayer(
     var source: GeoSource? = null,
-    var style: Style? = null
+    var style: Style? = null,
+    var latLines: GeoSource? = null,
+    var lngLines: GeoSource? = null
 ) {
     companion object {
         /**

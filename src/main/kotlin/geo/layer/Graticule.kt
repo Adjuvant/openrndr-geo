@@ -273,3 +273,34 @@ fun generateGraticuleLines(bounds: Bounds, spacing: Double): GraticuleLines {
     
     return GraticuleLines(latSource, lngSource)
 }
+
+/**
+ * Generate a GeoLayer containing graticule lines with separate lat/lng sources.
+ * 
+ * Creates a GeoLayer with latLines and lngLines as separate GeoSource properties,
+ * allowing independent styling of latitude and longitude lines.
+ *
+ * ## Usage
+ * ```kotlin
+ * val graticule = generateGraticuleLayer(bounds)
+ * 
+ * // Render latitude lines
+ * drawer.geo(graticule.latLines)
+ * 
+ * // Render longitude lines
+ * drawer.geo(graticule.lngLines)
+ * ```
+ *
+ * @param bounds The geographic bounds to generate graticule lines within
+ * @param spacing The spacing between lines in degrees (default: auto-calculated)
+ * @return GeoLayer with latLines and lngLines GeoSource properties
+ */
+fun generateGraticuleLayer(bounds: Bounds, spacing: Double? = null): GeoLayer {
+    val effectiveSpacing = spacing ?: calculateAdaptiveSpacing(bounds)
+    val graticuleLines = generateGraticuleLines(bounds, effectiveSpacing)
+    
+    return GeoLayer(
+        latLines = graticuleLines.latLines,
+        lngLines = graticuleLines.lngLines
+    )
+}
