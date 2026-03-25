@@ -5,6 +5,7 @@ import geo.core.Feature
 import geo.core.GeoSource
 import geo.core.LineString
 import geo.core.Point
+import geo.projection.GeoProjection
 import geo.render.geometry.splitAtAntimeridian
 import org.openrndr.math.Vector2
 
@@ -373,4 +374,123 @@ private fun formatDegrees(value: Double): String {
     } else {
         "%.1f".format(value)
     }
+}
+
+/**
+ * Generate graticule labels with geographic coordinates and projected screen positions.
+ * 
+ * Creates labels for latitude lines (positioned at left edge) and longitude lines
+ * (positioned at bottom edge) with proper cartographic formatting.
+ *
+ * @param bounds The geographic bounds of the viewport
+ * @param projection The projection to use for screen coordinate calculation
+ * @param spacing The spacing between graticule lines in degrees
+ * @param minPixelSpacing Minimum pixel spacing between labels (for auto-thinning)
+ * @return GraticuleLabels containing latitude and longitude labels
+ */
+fun generateGraticuleLabels(
+    bounds: Bounds,
+    projection: GeoProjection,
+    spacing: Double,
+    minPixelSpacing: Double = 20.0
+): GraticuleLabels {
+    if (bounds.isEmpty()) {
+        return GraticuleLabels(emptyList(), emptyList())
+    }
+    
+    val latitudeLabels = mutableListOf<LabelPosition>()
+    val longitudeLabels = mutableListOf<LabelPosition>()
+    
+    // Generate latitude labels (at left edge of viewport)
+    val minLat = kotlin.math.floor(bounds.minY / spacing) * spacing
+    val maxLat = kotlin.math.ceil(bounds.maxY / spacing) * spacing
+    var lat = minLat
+    while (lat <= maxLat + 0.001) {
+        // Project left edge point (bounds.minX, lat)
+        val screenPos = projection.project(Vector2(bounds.minX, lat))
+        
+        val label = LabelPosition(
+            text = formatLatitude(lat),
+            longitude = bounds.minX,
+            latitude = lat,
+            projectedX = screenPos.x,
+            projectedY = screenPos.y
+        )
+        latitudeLabels.add(label)
+        lat += spacing
+    }
+    
+    // Generate longitude labels (at bottom edge of viewport)
+    val minLon = kotlin.math.floor(bounds.minX / spacing) * spacing
+    val maxLon = kotlin.math.ceil(bounds.maxX / spacing) * spacing
+    var lon = minLon
+    while (lon <= maxLon + 0.001) {
+        // Project bottom edge point (lon, bounds.minY)
+        val screenPos = projection.project(Vector2(lon, bounds.minY))
+        
+        val label = LabelPosition(
+            text = formatLongitude(lon),
+            longitude = lon,
+            latitude = bounds.minY,
+            projectedX = screenPos.x,
+            projectedY = screenPos.y
+        )
+        longitudeLabels.add(label)
+        lon += spacing
+    }
+    
+    // Apply auto-thinning if needed
+    return applyLabelThinning(
+        GraticuleLabels(latitudeLabels, longitudeLabels),
+        minPixelSpacing
+    )
+}
+
+/**
+ * Apply auto-thinning to labels based on minimum pixel spacing.
+ */
+private fun applyLabelThinning(labels: GraticuleLabels, minPixelSpacing: Double): GraticuleLabels {
+    val thinnedLatLabels = thinLabels(labels.latitudeLabels, minPixelSpacing)
+    val thinnedLngLabels = thinLabels(labels.longitudeLabels, minPixelSpacing)
+    return GraticuleLabels(thinnedLatLabels, thinnedLngLabels)
+}
+
+/**
+ * Thin labels to maintain minimum pixel spacing between adjacent labels.
+ */
+private fun thinLabels(labelPositions: List<LabelPosition>, minPixelSpacing: Double): List<LabelPosition> {
+    if (labelPositions.size < 2) return labelPositions
+    
+    // For latitude labels, check vertical spacing (projectedY)
+    // For longitude labels, check horizontal spacing (projectedX)
+    // We'll assume latitude labels are being thinned based on Y, longitude on X
+    val isLatitudeLabels = labelPositions.first().text.contains("°N") || 
+                           labelPositions.first().text.contains("°S")
+    
+    val sortedLabels = if (isLatitudeLabels) {
+        labelPositions.sortedBy { it.projectedY }
+    } else {
+        labelPositions.sortedBy { it.projectedX }
+    }
+    
+    val result = mutableListOf<LabelPosition>()
+    result.add(sortedLabels.first()) // Always keep first label
+    
+    for (i in 1 until sortedLabels.size) {
+        val prev = result.last()
+        val curr = sortedLabels[i]
+        
+        val distance = if (isLatitudeLabels) {
+            kotlin.math.abs(curr.projectedY - prev.projectedY)
+        } else {
+            kotlin.math.abs(curr.projectedX - prev.projectedX)
+        }
+        
+        if (distance >= minPixelSpacing) {
+            result.add(curr)
+        }
+        // If distance < minPixelSpacing, skip this label (thinning)
+    }
+    
+    return result
 }
