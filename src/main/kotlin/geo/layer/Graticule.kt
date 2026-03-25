@@ -332,3 +332,45 @@ data class GraticuleLabels(
     val latitudeLabels: List<LabelPosition>,
     val longitudeLabels: List<LabelPosition>
 )
+
+/**
+ * Format a latitude value as a string with N/S suffix.
+ * 
+ * @param lat The latitude value in degrees
+ * @return Formatted string (e.g., "45°N", "30°S", "0°")
+ */
+fun formatLatitude(lat: Double): String {
+    return when {
+        kotlin.math.abs(lat) < 0.001 -> "0°"
+        lat >= 0 -> "${formatDegrees(lat)}°N"
+        else -> "${formatDegrees(-lat)}°S"
+    }
+}
+
+/**
+ * Format a longitude value as a string with E/W suffix.
+ * 
+ * @param lon The longitude value in degrees
+ * @return Formatted string (e.g., "120°E", "90°W", "0°", "180°")
+ */
+fun formatLongitude(lon: Double): String {
+    return when {
+        // Handle near-zero
+        kotlin.math.abs(lon) < 0.001 -> "0°"
+        // Handle near 180 (allow small epsilon)
+        kotlin.math.abs(kotlin.math.abs(lon) - 180.0) < 0.001 -> "180°"
+        lon >= 0 -> "${formatDegrees(lon)}°E"
+        else -> "${formatDegrees(-lon)}°W"
+    }
+}
+
+/**
+ * Format a degree value for display, removing unnecessary decimal places.
+ */
+private fun formatDegrees(value: Double): String {
+    return if (value == value.toLong().toDouble()) {
+        "${value.toLong()}"
+    } else {
+        "%.1f".format(value)
+    }
+}
