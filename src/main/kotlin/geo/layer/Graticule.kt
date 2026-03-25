@@ -5,6 +5,7 @@ import geo.core.Feature
 import geo.core.GeoSource
 import geo.core.LineString
 import geo.core.Point
+import geo.render.geometry.splitAtAntimeridian
 import org.openrndr.math.Vector2
 
 /**
@@ -188,16 +189,78 @@ fun generateGraticuleLines(bounds: Bounds, spacing: Double): GraticuleLines {
     }
     
     // Generate longitude lines (vertical lines at constant x)
+    // Handle antimeridian crossing: if minX > maxX, bounds spans the antimeridian
+    val crossesAntimeridian = bounds.minX > bounds.maxX
+    
+    // For antimeridian crossing, we need to generate lines in two ranges
+    // from minLon to 180, and from -180 to maxLon
     val minLon = kotlin.math.floor(bounds.minX / spacing) * spacing
     val maxLon = kotlin.math.ceil(bounds.maxX / spacing) * spacing
-    var lon = minLon
-    while (lon <= maxLon + 0.001) {  // Small epsilon for floating point
-        val linePoints = listOf(
+    
+    // Normalize: if lon > 180, subtract 360 to get into -180 to 180 range
+    fun normalizeLon(l: Double): Double {
+        var normalized = l
+        while (normalized > 180.0) normalized -= 360.0
+        while (normalized < -180.0) normalized += 360.0
+        return normalized
+    }
+    
+    fun generateLongitudeLine(lon: Double): List<Vector2> {
+        return listOf(
             Vector2(lon, bounds.minY),
             Vector2(lon, bounds.maxY)
         )
-        lngLineFeatures.add(Feature(LineString(linePoints)))
-        lon += spacing
+    }
+    
+    if (crossesAntimeridian) {
+        // Generate from minLon to 180
+        var lon = minLon
+        while (lon <= 180.0 + 0.001) {
+            val linePoints = generateLongitudeLine(lon)
+            // Create closed ring for splitting
+            val lineRing = linePoints + linePoints.first()
+            val splitRings = splitAtAntimeridian(lineRing)
+            for (ring in splitRings) {
+                // Remove the closing point (last == first)
+                val points = if (ring.first() == ring.last() && ring.size > 2) {
+                    ring.dropLast(1)
+                } else {
+                    ring
+                }
+                if (points.size >= 2) {
+                    lngLineFeatures.add(Feature(LineString(points)))
+                }
+            }
+            lon += spacing
+        }
+        
+        // Generate from -180 to maxLon
+        lon = -180.0
+        while (lon <= maxLon + 0.001) {
+            val linePoints = generateLongitudeLine(lon)
+            // Create closed ring for splitting
+            val lineRing = linePoints + linePoints.first()
+            val splitRings = splitAtAntimeridian(lineRing)
+            for (ring in splitRings) {
+                val points = if (ring.first() == ring.last() && ring.size > 2) {
+                    ring.dropLast(1)
+                } else {
+                    ring
+                }
+                if (points.size >= 2) {
+                    lngLineFeatures.add(Feature(LineString(points)))
+                }
+            }
+            lon += spacing
+        }
+    } else {
+        // No antimeridian crossing - simple case
+        var lon = minLon
+        while (lon <= maxLon + 0.001) {
+            val linePoints = generateLongitudeLine(lon)
+            lngLineFeatures.add(Feature(LineString(linePoints)))
+            lon += spacing
+        }
     }
     
     val latSource = object : GeoSource(crs = "EPSG:4326") {
