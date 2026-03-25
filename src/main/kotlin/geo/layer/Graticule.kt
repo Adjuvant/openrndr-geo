@@ -109,3 +109,28 @@ fun generateGraticuleSource(spacing: Double, bounds: Bounds): GeoSource {
             get() = features.asSequence()
     }
 }
+
+/**
+ * Calculate adaptive spacing for graticule based on viewport size.
+ * 
+ * Uses power-of-10 grid (1°, 10°, 30°, 90°) based on visible geographic extent.
+ * Always returns at least 1.0° spacing to prevent visual clutter.
+ *
+ * @param bounds The geographic bounds of the viewport
+ * @return The optimal spacing in degrees
+ */
+fun calculateAdaptiveSpacing(bounds: Bounds): Double {
+    if (bounds.isEmpty()) return 1.0
+    
+    // Calculate visible extent
+    val visibleDegrees = maxOf(bounds.width, bounds.height)
+    
+    // Select appropriate spacing based on visible extent
+    // Always return at least 1.0° minimum floor
+    return when {
+        visibleDegrees < 2.0 -> 1.0
+        visibleDegrees < 20.0 -> 10.0
+        visibleDegrees < 60.0 -> 30.0
+        else -> 90.0
+    }
+}

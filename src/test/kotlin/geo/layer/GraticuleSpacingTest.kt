@@ -13,26 +13,36 @@ class GraticuleSpacingTest {
 
     @Test
     fun `calculateAdaptiveSpacing returns 1 degree for very zoomed in view`() {
-        // TODO: Implement test for spacing = 1.0 when visibleDegrees < 2.0
+        // Bounds with 1 degree span should use 1 degree spacing
+        val bounds = Bounds(-0.5, -0.5, 0.5, 0.5)
+        assertEquals(1.0, calculateAdaptiveSpacing(bounds), 0.001)
     }
 
     @Test
     fun `calculateAdaptiveSpacing returns 10 degrees for regional view`() {
-        // TODO: Implement test for spacing = 10.0 when visibleDegrees < 20.0
+        // Bounds with ~10 degree span should use 10 degree spacing
+        val bounds = Bounds(-10.0, -5.0, 5.0, 5.0)  // width = 15
+        assertEquals(10.0, calculateAdaptiveSpacing(bounds), 0.001)
     }
 
     @Test
     fun `calculateAdaptiveSpacing returns 30 degrees for continental view`() {
-        // TODO: Implement test for spacing = 30.0 when visibleDegrees < 60.0
+        // Bounds with ~45 degree span should use 30 degree spacing  
+        val bounds = Bounds(-50.0, -30.0, 0.0, 20.0)  // width = 50, height = 50, max = 50 < 60
+        assertEquals(30.0, calculateAdaptiveSpacing(bounds), 0.001)
     }
 
     @Test
     fun `calculateAdaptiveSpacing returns 90 degrees for global view`() {
-        // TODO: Implement test for spacing = 90.0 when visibleDegrees >= 60.0
+        // Bounds spanning nearly the whole world should use 90 degree spacing
+        val bounds = Bounds(-180.0, -60.0, 180.0, 60.0)  // width = 360, height = 120
+        assertEquals(90.0, calculateAdaptiveSpacing(bounds), 0.001)
     }
 
     @Test
     fun `calculateAdaptiveSpacing has minimum floor of 1 degree`() {
-        // TODO: Even when very zoomed in, spacing should never go below 1.0
+        // Very small bounds should still return 1.0
+        val bounds = Bounds(0.0, 0.0, 0.1, 0.1)  // 0.1 degree span
+        assertEquals(1.0, calculateAdaptiveSpacing(bounds), 0.001)
     }
 }
