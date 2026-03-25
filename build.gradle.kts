@@ -207,3 +207,30 @@ tasks.register("fileIndex") {
         println("Written ${entries.size} entries to ${outputFile.relativeTo(projectDir).path}")
     }
 }
+
+// ============================================================================
+// UAT Verification Scripts
+// ============================================================================
+// Run UAT scripts from the uat/ directory
+// Usage:
+//   ./gradlew runUAT --uats=uAtClassName    - Run specific UAT (e.g., Uat_GraticuleLayerFeatures)
+//
+// The UAT scripts provide visual verification of features that can't be unit tested.
+// They open a window showing the feature in action so you can verify it manually.
+// ============================================================================
+tasks.register<JavaExec>("runUAT") {
+    description = "Run a UAT visual verification script from uat/"
+    group = "verification"
+
+    // The UAT class to run - pass via -Puats=ClassName
+    val uatClass = project.findProperty("uats") as String? ?: "Uat_GraticuleLayerFeatures"
+    val fullClassName = "uat.$uatClass"
+
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set(fullClassName)
+
+    doFirst {
+        println("Running UAT: $fullClassName")
+        println("To run a different UAT: ./gradlew runUAT -Puats=UatClassName")
+    }
+}
