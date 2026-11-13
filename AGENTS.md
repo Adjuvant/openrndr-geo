@@ -29,3 +29,7 @@
 - **[kotlin/tooling]**: Build tools (Gradle KTS), Static Analysis (Detekt), and Testing standards. (triggers: build.gradle.kts, libs.versions.toml, detekt.yml, gradle, kts, detekt, mockk, junit)
 
 <!-- SKILLS_INDEX_END -->
+
+## Filing issues
+
+Follow [`CONTRIBUTING.md`](CONTRIBUTING.md). Start the issue body with `Found in:` and `Blocking:` lines, and add the `dogfood` label when filing in a repo you are not working in.
