@@ -1,4 +1,7 @@
+# Contributing
+
 <!-- op:issue-convention v1 start -->
+
 ## Filing issues
 
 Follow this whenever you file a GitHub issue, in this repo or any other.
@@ -16,8 +19,11 @@ Follow this whenever you file a GitHub issue, in this repo or any other.
 
 Example, filed in pi-tools while working in bpy-tool:
 
-   Found in: bpy-tool
-   Blocking: no
+```text
+Found in: bpy-tool
+Blocking: no
 
-   dev-chain retried the wrong tool after a step timeout...
+dev-chain retried the wrong tool after a step timeout...
+```
+
 <!-- op:issue-convention v1 end -->
